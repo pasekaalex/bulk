@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Amazing Bulk - Gamma Powered Memecoin | $BULK on Solana</title>
+    <meta name="description" content="The Amazing Bulk - A purple gamma-powered memecoin on Solana. Fair launch, community driven, no utility. Just pure BULK energy!">
+    <meta property="og:title" content="The Amazing Bulk - Gamma Powered Memecoin">
+    <meta property="og:description" content="Time to get BULKED! The Amazing Bulk is a purple gamma-powered memecoin on Solana.">
+    <meta property="og:image" content="https://i.imgur.com/ynAj4P7.png">
+    <meta property="og:url" content="https://theamazingbulk.com">
+    <style>
+        @font-face {
+            font-family: 'Hulk Display';
+            src: url('./public/fonts/hulk.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1A0B2E 0%, #2D1B4E 50%, #1A0B2E 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            color: #ffffff;
+            min-height: 100vh;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -400% center; }
+            100% { background-position: 400% center; }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        @keyframes bounce-icon {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        @keyframes intro-pop {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes gamma-particle {
+            0% { bottom: -10px; opacity: 1; }
+            100% { bottom: 100vh; opacity: 0; }
+        }
+
+        .gamma-particle {
+            position: absolute;
+            width: 2px;
+            height: 100px;
+            background: linear-gradient(to top, rgba(57,255,20,0.8), transparent);
+            filter: drop-shadow(0 0 5px #39FF14);
+            animation: gamma-particle linear infinite;
+        }
+
+        .shimmer {
+            animation: shimmer 3s infinite;
+        }
+
+        .float {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .bounce-icon {
+            animation: bounce-icon 1s ease-in-out infinite;
+        }
+
+        .intro-pop {
+            animation: intro-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #39FF14 0%, #FFD700 50%, #39FF14 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        #root {
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        button {
+            font-family: inherit;
+            cursor: pointer;
+            border: none;
+            background: none;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <!-- React & ReactDOM from CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
+    <script>
+        const { useState, useEffect, useCallback, useRef } = React;
+        const e = React.createElement;
+
+        // Constants
+        const CONTRACT_ADDRESS = "F4TJfiMVi7zFGRJj4FVC1Zuj7fdCo6skKa4SnAU4pump";
+        const DEXSCREENER_URL = "https://dexscreener.com/solana/ee3m75v7qmc59fum5uyamrj72hsbz8zqzsx2fro5kuw6";
+        const X_ACCOUNT_URL = "https://x.com/bulkedsol";
+        const X_COMMUNITY_URL = "https://x.com/i/communities/1993091379786895690";
+        const BANNER_IMAGE = "https://i.imgur.com/ynAj4P7.png";
+        const DEXSCREENER_API = `https://api.dexscreener.com/latest/dex/tokens/${CONTRACT_ADDRESS}`;
+
+        // Utility functions
+        function formatNumber(num) {
+            if (num === null || num === undefined) return "---";
+            if (num >= 1_000_000_000) return `$${(num / 1_000_000_000).toFixed(2)}B`;
+            if (num >= 1_000_000) return `$${(num / 1_000_000).toFixed(2)}M`;
+            if (num >= 1_000) return `$${(num / 1_000).toFixed(2)}K`;
+            return `$${num.toFixed(2)}`;
+        }
+
+        function formatPrice(price) {
+            if (!price) return "---";
+            const num = parseFloat(price);
+            if (num < 0.000001) return `$${num.toExponential(2)}`;
+            if (num < 0.01) return `$${num.toFixed(8)}`;
+            if (num < 1) return `$${num.toFixed(6)}`;
+            return `$${num.toFixed(4)}`;
+        }
+
+        // SVG Icons (simple implementations)
+        function ZapIcon() {
+            return e('svg', { width: '1em', height: '1em', viewBox: '0 0 24 24', fill: 'currentColor' },
+                e('polygon', { points: '13 2 3 14 12 14 11 22 21 10 12 10 13 2' })
+            );
+        }
+
+        function CopyIcon() {
+            return e('svg', { width: '1em', height: '1em', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 },
+                e('rect', { x: 9, y: 9, width: 13, height: 13, rx: 2, ry: 2 }),
+                e('path', { d: 'M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1' })
+            );
+        }
+
+        function CheckIcon() {
+            return e('svg', { width: '1em', height: '1em', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 },
+                e('polyline', { points: '20 6 9 17 4 12' })
+            );
+        }
+
+        function ExternalLinkIcon() {
+            return e('svg', { width: '1em', height: '1em', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 },
+                e('path', { d: 'M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6' }),
+                e('polyline', { points: '15 3 21 3 21 9' }),
+                e('line', { x1: 10, y1: 14, x2: 21, y2: 3 })
+            );
+        }
+
+        function TrendingUpIcon() {
+            return e('svg', { width: '1em', height: '1em', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 },
+                e('polyline', { points: '23 6 13.5 15.5 8.5 10.5 1 17' }),
+                e('polyline', { points: '17 6 23 6 23 12' })
+            );
+        }
+
+        function RefreshIcon() {
+            return e('svg', { width: '1em', height: '1em', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 },
+                e('polyline', { points: '23 4 23 10 17 10' }),
+                e('polyline', { points: '1 20 1 14 7 14' }),
+                e('path', { d: 'M3.51 9a9 9 0 0 1 14.85-3.36M20.49 15a9 9 0 0 1-14.85 3.36' })
+            );
+        }
+
+        function XIcon() {
+            return e('svg', { width: '1em', height: '1em', viewBox: '0 0 24 24', fill: 'currentColor' },
+                e('path', { d: 'M18 6L6 18M6 6l12 12' })
+            );
+        }
+
+        function BarChartIcon() {
+            return e('svg', { width: '1em', height: '1em', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 },
+                e('line', { x1: 12, y1: 2, x2: 12, y2: 22 }),
+                e('rect', { x: 4, y: 4, width: 6, height: 16 }),
+                e('rect', { x: 14, y: 8, width: 6, height: 12 })
+            );
+        }
+
+        function DollarIcon() {
+            return e('svg', { width: '1em', height: '1em', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 },
+                e('line', { x1: 12, y1: 1, x2: 12, y2: 23 }),
+                e('path', { d: 'M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6' })
+            );
+        }
+
+        // Market Cap Display Component
+        function MarketCapDisplay() {
+            const [marketData, setMarketData] = useState(null);
+            const [loading, setLoading] = useState(true);
+            const [isRefreshing, setIsRefreshing] = useState(false);
+
+            const fetchMarketData = useCallback(async (showRefresh = false) => {
+                if (showRefresh) setIsRefreshing(true);
+                try {
+                    const response = await fetch(DEXSCREENER_API);
+                    const data = await response.json();
+                    if (data.pairs && data.pairs.length > 0) {
+                        const pair = data.pairs[0];
+                        setMarketData({
+                            priceUsd: pair.priceUsd,
+                            marketCap: pair.marketCap || pair.fdv,
+                            volume24h: pair.volume?.h24,
+                            priceChange24h: pair.priceChange?.h24,
+                        });
+                    }
+                } catch (err) {
+                    console.error('Error fetching market data:', err);
+                }
+                setLoading(false);
+                setIsRefreshing(false);
+            }, []);
+
+            useEffect(() => {
+                fetchMarketData();
+                const interval = setInterval(() => fetchMarketData(), 30000);
+                return () => clearInterval(interval);
+            }, [fetchMarketData]);
+
+            const priceChange = marketData?.priceChange24h ?? 0;
+            const isPositive = priceChange >= 0;
+
+            return e('div', { style: { position: 'relative', width: '100%', maxWidth: '500px', margin: '0 auto' } },
+                e('div', {
+                    style: {
+                        position: 'relative',
+                        overflow: 'visible',
+                        padding: '12px',
+                        borderRadius: '8px',
+                        background: 'linear-gradient(to bottom right, rgba(45,27,78,0.95), rgba(26,11,46,0.98))',
+                        backdropFilter: 'blur(4px)',
+                        border: '2px solid rgba(57,255,20,0.6)',
+                        boxShadow: '0 0 25px rgba(57,255,20,0.4), 0 0 50px rgba(107,45,158,0.3), inset 0 0 20px rgba(57,255,20,0.1)'
+                    }
+                },
+                    // Header
+                    e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' } },
+                        e('div', { style: { display: 'flex', alignItems: 'center', gap: '4px', color: '#39FF14' } },
+                            e(BarChartIcon, null),
+                            e('span', { style: { fontSize: '12px', fontWeight: 'bold', letterSpacing: '0.05em', textShadow: '0 0 8px rgba(57,255,20,0.6)' } }, 'LIVE MARKET DATA')
+                        ),
+                        e('button', {
+                            onClick: () => fetchMarketData(true),
+                            style: {
+                                padding: '6px',
+                                borderRadius: '50%',
+                                background: 'transparent',
+                                cursor: 'pointer',
+                                border: 'none',
+                                color: '#39FF14',
+                                opacity: 0.7,
+                                animation: isRefreshing ? 'spin 1s linear infinite' : 'none'
+                            }
+                        }, e(RefreshIcon, null))
+                    ),
+                    // Stats
+                    loading ? e('div', { style: { display: 'flex', justifyContent: 'center', padding: '24px' } }, 'Loading...') : (
+                        e('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' } },
+                            e('div', { style: { background: 'rgba(0,0,0,0.5)', borderRadius: '8px', padding: '12px', border: '1px solid rgba(57,255,20,0.3)' } },
+                                e('div', { style: { fontSize: '11px', color: 'rgba(255,215,0,0.7)', marginBottom: '4px' } }, '💰 MARKET CAP'),
+                                e('div', { style: { color: 'white', fontSize: '18px', fontWeight: 'bold' } }, formatNumber(marketData?.marketCap ?? null))
+                            ),
+                            e('div', { style: { background: 'rgba(0,0,0,0.5)', borderRadius: '8px', padding: '12px', border: '1px solid rgba(155,77,202,0.3)' } },
+                                e('div', { style: { fontSize: '11px', color: 'rgba(155,77,202,0.7)', marginBottom: '4px' } }, '⚡ PRICE'),
+                                e('div', { style: { color: 'white', fontSize: '14px', fontFamily: 'monospace' } }, formatPrice(marketData?.priceUsd ?? null))
+                            ),
+                            e('div', { style: { background: 'rgba(0,0,0,0.5)', borderRadius: '8px', padding: '12px', border: '1px solid rgba(255,215,0,0.3)' } },
+                                e('div', { style: { fontSize: '11px', color: 'rgba(255,215,0,0.7)', marginBottom: '4px' } }, '📈 24H CHANGE'),
+                                e('div', { style: { color: isPositive ? '#39FF14' : '#f87171', fontSize: '18px', fontWeight: 'bold' } }, priceChange !== null ? `${isPositive ? '+' : ''}${priceChange.toFixed(2)}%` : '---')
+                            ),
+                            e('div', { style: { background: 'rgba(0,0,0,0.5)', borderRadius: '8px', padding: '12px', border: '1px solid rgba(57,255,20,0.3)' } },
+                                e('div', { style: { fontSize: '11px', color: 'rgba(57,255,20,0.7)', marginBottom: '4px' } }, '📊 24H VOLUME'),
+                                e('div', { style: { color: 'white', fontSize: '18px', fontWeight: 'bold' } }, formatNumber(marketData?.volume24h ?? null))
+                            )
+                        )
+                    )
+                )
+            );
+        }
+
+        // Main App Component
+        function App() {
+            const [showIntro, setShowIntro] = useState(true);
+            const [infoOpen, setInfoOpen] = useState(false);
+
+            return e('div', { style: { minHeight: '100vh', background: 'linear-gradient(to bottom right, #1A0B2E, #2D1B4E, #1A0B2E)', position: 'relative', overflow: 'hidden' } },
+                // Background effects
+                e('div', { style: { position: 'fixed', inset: 0, background: 'radial-gradient(ellipse at center, rgba(107,45,158,0.5) 0%, transparent 55%)', pointerEvents: 'none' } }),
+                e('div', { style: { position: 'fixed', inset: 0, background: 'radial-gradient(circle at 50% 15%, rgba(57,255,20,0.12) 0%, transparent 35%)', pointerEvents: 'none' } }),
+                e('div', { style: { position: 'fixed', inset: 0, background: 'linear-gradient(to top, #1A0B2E, transparent, #1A0B2E 60%)', pointerEvents: 'none' } }),
+
+                // Intro overlay
+                showIntro && e('div', {
+                    onClick: () => setShowIntro(false),
+                    style: {
+                        position: 'fixed',
+                        inset: 0,
+                        background: 'linear-gradient(to bottom right, #1A0B2E, #2D1B4E, #1A0B2E)',
+                        zIndex: 9999,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        cursor: 'pointer'
+                    }
+                }, e('div', { style: { textAlign: 'center', animation: 'intro-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)' } },
+                    e('div', { style: { fontSize: '64px', animation: 'bounce-icon 1s ease-in-out infinite', marginBottom: '16px' } }, '⚡'),
+                    e('h1', { style: { fontSize: '32px', color: '#39FF14', fontWeight: 'bold', marginBottom: '8px', textShadow: '0 0 30px #39FF14' } }, 'TIME TO GET BULKED!'),
+                    e('p', { style: { fontSize: '18px', color: '#FFD700', letterSpacing: '0.05em', textShadow: '0 0 15px rgba(255,215,0,0.8)' } }, 'GAMMA POWERED')
+                )),
+
+                // Main content
+                e('main', { style: { position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '100vh', padding: '12px', textAlign: 'center' } },
+                    e('div', { style: { maxWidth: '500px', margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column', gap: '16px' } },
+                        // Title
+                        e('div', null,
+                            e('h1', { style: { fontSize: '48px', fontWeight: 'bold', marginBottom: '4px', background: 'linear-gradient(135deg, #39FF14 0%, #FFD700 50%, #39FF14 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } }, 'THE AMAZING BULK'),
+                            e('p', { style: { fontSize: '14px', color: '#FFD700', letterSpacing: '0.05em', textShadow: '0 0 12px rgba(255,215,0,0.7)' } }, 'GAMMA POWERED MEMECOIN')
+                        ),
+
+                        // Banner
+                        e('img', {
+                            src: BANNER_IMAGE,
+                            style: { maxWidth: '200px', margin: '0 auto', borderRadius: '8px', filter: 'drop-shadow(0 0 25px rgba(57,255,20,0.7))', animation: 'float 3s ease-in-out infinite' }
+                        }),
+
+                        // Market Cap Display
+                        e(MarketCapDisplay, null),
+
+                        // Contract Address
+                        e('div', { style: { position: 'relative', background: 'linear-gradient(to bottom right, rgba(45,27,78,0.95), rgba(26,11,46,0.98))', border: '2px solid rgba(155,77,202,0.6)', borderRadius: '8px', padding: '12px', boxShadow: '0 0 20px rgba(155,77,202,0.4)' } },
+                            e('div', { style: { fontSize: '11px', color: '#9B4DCA', marginBottom: '8px', fontWeight: 'bold' } }, 'CONTRACT ADDRESS'),
+                            e('div', { style: { display: 'flex', gap: '8px', background: 'rgba(0,0,0,0.7)', borderRadius: '6px', padding: '8px', border: '1px solid rgba(155,77,202,0.5)' } },
+                                e('code', { style: { flex: 1, fontSize: '11px', color: 'white', fontFamily: 'monospace', wordBreak: 'break-all' } }, CONTRACT_ADDRESS),
+                                e('button', {
+                                    onClick: async () => {
+                                        try {
+                                            if (navigator.clipboard) {
+                                                await navigator.clipboard.writeText(CONTRACT_ADDRESS);
+                                                alert('Copied to clipboard!');
+                                            }
+                                        } catch (err) {
+                                            alert('Click to select, then Ctrl+C to copy');
+                                        }
+                                    },
+                                    style: { background: 'transparent', border: 'none', cursor: 'pointer', color: 'white', padding: '4px' }
+                                }, e(CopyIcon, null))
+                            )
+                        ),
+
+                        // Menu buttons
+                        e('div', { style: { display: 'flex', flexDirection: 'column', gap: '12px' } },
+                            e('a', {
+                                href: DEXSCREENER_URL,
+                                target: '_blank',
+                                rel: 'noopener noreferrer',
+                                style: {
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '12px',
+                                    padding: '12px',
+                                    borderRadius: '8px',
+                                    background: 'linear-gradient(to right, #2E7D32, #1B5E20)',
+                                    border: '2px solid #39FF14',
+                                    color: 'white',
+                                    fontWeight: 'bold',
+                                    textDecoration: 'none',
+                                    transition: 'all 0.3s',
+                                    boxShadow: '0 0 20px rgba(57,255,20,0.35)'
+                                }
+                            }, e(TrendingUpIcon, null), 'DEXSCREENER', e(ExternalLinkIcon, null)),
+                            e('a', {
+                                href: X_ACCOUNT_URL,
+                                target: '_blank',
+                                rel: 'noopener noreferrer',
+                                style: {
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '12px',
+                                    padding: '12px',
+                                    borderRadius: '8px',
+                                    background: 'linear-gradient(to right, #6B2D9E, #4A1D6E)',
+                                    border: '2px solid #9B4DCA',
+                                    color: 'white',
+                                    fontWeight: 'bold',
+                                    textDecoration: 'none',
+                                    transition: 'all 0.3s',
+                                    boxShadow: '0 0 20px rgba(155,77,202,0.35)'
+                                }
+                            }, e('span', { style: { fontSize: '16px' } }, '𝕏'), 'TWITTER / X', e(ExternalLinkIcon, null)),
+                            e('a', {
+                                href: X_COMMUNITY_URL,
+                                target: '_blank',
+                                rel: 'noopener noreferrer',
+                                style: {
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '12px',
+                                    padding: '12px',
+                                    borderRadius: '8px',
+                                    background: 'linear-gradient(to right, #6B2D9E, #4A1D6E)',
+                                    border: '2px solid #9B4DCA',
+                                    color: 'white',
+                                    fontWeight: 'bold',
+                                    textDecoration: 'none',
+                                    transition: 'all 0.3s',
+                                    boxShadow: '0 0 20px rgba(155,77,202,0.35)'
+                                }
+                            }, e('span', { style: { fontSize: '16px' } }, '👥'), 'X COMMUNITY', e(ExternalLinkIcon, null)),
+                            e('button', {
+                                onClick: () => setInfoOpen(true),
+                                style: {
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '12px',
+                                    padding: '12px',
+                                    borderRadius: '8px',
+                                    background: 'linear-gradient(to right, #6B2D9E, #4A1D6E)',
+                                    border: '2px solid #9B4DCA',
+                                    color: 'white',
+                                    fontWeight: 'bold',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.3s',
+                                    boxShadow: '0 0 20px rgba(155,77,202,0.35)'
+                                }
+                            }, e(ZapIcon, null), 'ABOUT $BULK')
+                        ),
+
+                        // Footer
+                        e('footer', { style: { marginTop: '24px', textAlign: 'center' } },
+                            e('p', { style: { color: 'rgba(255,215,0,0.6)', fontSize: '12px', letterSpacing: '0.05em' } }, '$BULK - THE AMAZING BULK'),
+                            e('p', { style: { marginTop: '4px', color: 'rgba(255,255,255,0.3)', fontSize: '10px' } }, 'Not financial advice. DYOR. Just a meme.')
+                        )
+                    )
+                ),
+
+                // Info Modal
+                infoOpen && e('div', {
+                    onClick: () => setInfoOpen(false),
+                    style: {
+                        position: 'fixed',
+                        inset: 0,
+                        background: 'rgba(0,0,0,0.92)',
+                        zIndex: 100,
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        padding: '16px'
+                    }
+                }, e('div', {
+                    onClick: (e) => e.stopPropagation(),
+                    style: {
+                        background: 'linear-gradient(to bottom right, #2D1B4E, #1A0B2E)',
+                        borderRadius: '16px',
+                        padding: '32px',
+                        maxWidth: '600px',
+                        border: '2px solid #9B4DCA',
+                        boxShadow: '0 0 60px rgba(155,77,202,0.4)',
+                        maxHeight: '80vh',
+                        overflowY: 'auto'
+                    }
+                },
+                    e('button', {
+                        onClick: () => setInfoOpen(false),
+                        style: {
+                            position: 'absolute',
+                            top: '16px',
+                            right: '16px',
+                            background: '#dc2626',
+                            color: 'white',
+                            border: 'none',
+                            width: '40px',
+                            height: '40px',
+                            borderRadius: '50%',
+                            cursor: 'pointer',
+                            fontSize: '20px',
+                            fontWeight: 'bold'
+                        }
+                    }, '×'),
+                    e('h2', { style: { fontSize: '36px', fontWeight: 'bold', textAlign: 'center', marginBottom: '24px', background: 'linear-gradient(135deg, #39FF14 0%, #FFD700 50%, #39FF14 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } }, 'ABOUT $BULK'),
+                    e('div', { style: { display: 'flex', flexDirection: 'column', gap: '16px', color: 'rgba(255,255,255,0.9)' } },
+                        e('div', { style: { background: 'rgba(0,0,0,0.5)', padding: '16px', borderRadius: '8px', border: '1px solid rgba(57,255,20,0.4)' } },
+                            e('h3', { style: { fontSize: '16px', fontWeight: 'bold', color: '#39FF14', marginBottom: '8px' } }, '⚡ WHAT IS THE AMAZING BULK?'),
+                            e('p', { style: { fontSize: '14px', lineHeight: '1.6' } }, 'Picture the Incredible Hulk... but PURPLE! The Amazing Bulk is a gamma-powered memecoin on Solana, bringing the power of memes and community together. No utility, no promises, just pure BULK energy!')
+                        ),
+                        e('div', { style: { background: 'rgba(0,0,0,0.5)', padding: '16px', borderRadius: '8px', border: '1px solid rgba(155,77,202,0.4)' } },
+                            e('h3', { style: { fontSize: '16px', fontWeight: 'bold', color: '#9B4DCA', marginBottom: '8px' } }, '📈 TOKENOMICS'),
+                            e('ul', { style: { fontSize: '14px', listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '6px' } },
+                                e('li', null, '★ 100% Fair Launch on Pump.fun'),
+                                e('li', null, '★ No Team Tokens'),
+                                e('li', null, '★ Liquidity Locked'),
+                                e('li', null, '★ Community Driven')
+                            )
+                        ),
+                        e('div', { style: { background: 'rgba(0,0,0,0.5)', padding: '16px', borderRadius: '8px', border: '1px solid rgba(255,215,0,0.4)' } },
+                            e('h3', { style: { fontSize: '16px', fontWeight: 'bold', color: '#FFD700', marginBottom: '8px' } }, '👥 JOIN THE BULK ARMY'),
+                            e('p', { style: { fontSize: '14px', lineHeight: '1.6' } }, 'Follow us on X (Twitter) and join our community to stay updated on all things BULK. Together, we BULK!')
+                        )
+                    )
+                ))
+            );
+        }
+
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(React.createElement(App));
+    </script>
+</body>
+</html>
