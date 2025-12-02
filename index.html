@@ -12,9 +12,10 @@
     <style>
         @font-face {
             font-family: 'Hulk Display';
-            src: url('./public/fonts/hulk.ttf') format('truetype');
+            src: url('/fonts/hulk.ttf') format('truetype');
             font-weight: normal;
             font-style: normal;
+            display: swap;
         }
 
         * {
@@ -117,6 +118,15 @@
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
+        }
+
+        h1 {
+            font-family: 'Hulk Display', 'Orbitron', sans-serif;
+            font-weight: bold;
+        }
+
+        h2, h3 {
+            font-family: 'Hulk Display', 'Orbitron', sans-serif;
         }
     </style>
 </head>
