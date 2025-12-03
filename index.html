@@ -146,7 +146,7 @@
             width: 100%;
             height: 100%;
             background-image: url('spin.png');
-            background-size: 250%;
+            background-size: 200%;
             background-position: center;
             background-repeat: no-repeat;
             animation: spin 15s linear infinite;
@@ -154,6 +154,12 @@
             pointer-events: none;
             z-index: 1;
             mix-blend-mode: overlay;
+        }
+
+        @media (min-width: 768px) {
+            .spinning-bg {
+                background-size: 300%;
+            }
         }
 
         .gamma-particle {
@@ -241,6 +247,21 @@
 
         h2, h3 {
             font-family: 'Hulk Display', 'Orbitron', sans-serif;
+        }
+
+        /* Mobile responsive styles */
+        @media (max-width: 767px) {
+            h1 {
+                font-size: 32px !important;
+            }
+            
+            main {
+                padding: 8px !important;
+            }
+            
+            .spinning-bg {
+                background-size: 200%;
+            }
         }
     </style>
 </head>
@@ -456,7 +477,7 @@
                         y: Math.random() * 100,
                         delay: Math.random() * 2,
                         duration: 3 + Math.random() * 2,
-                        size: 12 + Math.random() * 20,
+                        size: (12 + Math.random() * 20) * 1.5,
                         color: Math.random() > 0.5 ? '#39FF14' : '#9B4DCA'
                     });
                 }
@@ -480,7 +501,7 @@
                             text: messages[Math.floor(Math.random() * messages.length)],
                             x: Math.random() * 80 + 10,
                             y: Math.random() * 80 + 10,
-                            size: 20 + Math.random() * 30,
+                            size: (20 + Math.random() * 30) * 1.5,
                             color: Math.random() > 0.5 ? '#39FF14' : '#9B4DCA',
                             rotation: (Math.random() - 0.5) * 20
                         };
@@ -517,6 +538,7 @@
                             left: `${el.x}%`,
                             top: `${el.y}%`,
                             fontSize: `${el.size}px`,
+                            fontFamily: "'Hulk Display', 'Orbitron', sans-serif",
                             color: el.color,
                             fontWeight: 'bold',
                             textShadow: `0 0 10px ${el.color}`,
@@ -539,6 +561,7 @@
                             left: `${text.x}%`,
                             top: `${text.y}%`,
                             fontSize: `${text.size}px`,
+                            fontFamily: "'Hulk Display', 'Orbitron', sans-serif",
                             color: text.color,
                             fontWeight: 'bold',
                             textShadow: `0 0 15px ${text.color}, 2px 2px 0px rgba(0,0,0,0.8)`,
@@ -557,6 +580,8 @@
             const [showIntro, setShowIntro] = useState(true);
             const [infoOpen, setInfoOpen] = useState(false);
             const [glitchActive, setGlitchActive] = useState(false);
+            const [subtitleText, setSubtitleText] = useState('gRape Schmeg powered token');
+            const [subtitleCorrupted, setSubtitleCorrupted] = useState(false);
 
             useEffect(() => {
                 const glitchInterval = setInterval(() => {
@@ -567,6 +592,44 @@
                 }, 1000);
                 return () => clearInterval(glitchInterval);
             }, []);
+
+            // Alternate subtitle text 3 times per second
+            useEffect(() => {
+                const subtitleInterval = setInterval(() => {
+                    setSubtitleText(prev => prev === 'gRape Schmeg powered token' 
+                        ? 'Purple Schmeg powered token' 
+                        : 'gRape Schmeg powered token');
+                }, 333); // ~3 times per second
+                return () => clearInterval(subtitleInterval);
+            }, []);
+
+            // Rapid corruption for subtitle
+            useEffect(() => {
+                const corruptInterval = setInterval(() => {
+                    const subtitleEl = document.getElementById('subtitle-text');
+                    if (subtitleEl) {
+                        const originalText = subtitleText;
+                        const chars = '!@#$%^&*()_+-=[]{}|;:,.<>?~`';
+                        let corrupted = '';
+                        for (let i = 0; i < originalText.length; i++) {
+                            if (Math.random() < 0.5 && originalText[i] !== ' ') {
+                                corrupted += chars[Math.floor(Math.random() * chars.length)];
+                            } else {
+                                corrupted += originalText[i];
+                            }
+                        }
+                        subtitleEl.textContent = corrupted;
+                        setSubtitleCorrupted(true);
+                        setTimeout(() => {
+                            if (subtitleEl) {
+                                subtitleEl.textContent = originalText;
+                                setSubtitleCorrupted(false);
+                            }
+                        }, 30);
+                    }
+                }, 50); // Very rapid corruption
+                return () => clearInterval(corruptInterval);
+            }, [subtitleText]);
 
             return e('div', { 
                 style: { 
@@ -588,7 +651,6 @@
                         width: '100%',
                         height: '100%',
                         backgroundImage: 'url("spin.png")',
-                        backgroundSize: '250%',
                         backgroundPosition: 'center',
                         backgroundRepeat: 'no-repeat',
                         animation: 'spin 15s linear infinite',
@@ -644,6 +706,7 @@
                                 } 
                             }, 'THE AMAZING BULK'),
                             e('p', { 
+                                id: 'subtitle-text',
                                 className: 'flicker',
                                 style: { 
                                     fontSize: '14px', 
@@ -651,7 +714,7 @@
                                     letterSpacing: '0.05em', 
                                     textShadow: '0 0 12px rgba(255,215,0,0.7)' 
                                 } 
-                            }, 'gRape Schmeg powered token')
+                            }, subtitleText)
                         ),
 
                         // Banner
