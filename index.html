@@ -62,6 +62,79 @@
             100% { bottom: 100vh; opacity: 0; }
         }
 
+        @keyframes glitch {
+            0%, 100% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+        }
+
+        @keyframes color-shift {
+            0% { filter: hue-rotate(0deg); }
+            25% { filter: hue-rotate(90deg); }
+            50% { filter: hue-rotate(180deg); }
+            75% { filter: hue-rotate(270deg); }
+            100% { filter: hue-rotate(360deg); }
+        }
+
+        @keyframes random-jitter {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            10% { transform: translate(-3px, 2px) rotate(-1deg); }
+            20% { transform: translate(2px, -3px) rotate(1deg); }
+            30% { transform: translate(-2px, 3px) rotate(-0.5deg); }
+            40% { transform: translate(3px, -2px) rotate(0.5deg); }
+            50% { transform: translate(-1px, -1px) rotate(-1deg); }
+            60% { transform: translate(1px, 1px) rotate(1deg); }
+            70% { transform: translate(-2px, -2px) rotate(-0.5deg); }
+            80% { transform: translate(2px, 2px) rotate(0.5deg); }
+            90% { transform: translate(-1px, 2px) rotate(-1deg); }
+        }
+
+        @keyframes text-flicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        @keyframes random-scale {
+            0%, 100% { transform: scale(1); }
+            25% { transform: scale(1.05); }
+            50% { transform: scale(0.95); }
+            75% { transform: scale(1.02); }
+        }
+
+        @keyframes chaos-rotate {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(2deg); }
+            50% { transform: rotate(-2deg); }
+            75% { transform: rotate(1deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        @keyframes random-blur {
+            0%, 100% { filter: blur(0px); }
+            50% { filter: blur(2px); }
+        }
+
+        @keyframes scanline {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(100vh); }
+        }
+
+        @keyframes border-flash {
+            0%, 100% { border-color: rgba(57,255,20,0.6); }
+            25% { border-color: rgba(155,77,202,0.8); }
+            50% { border-color: rgba(255,215,0,0.8); }
+            75% { border-color: rgba(57,255,20,0.8); }
+        }
+
+        @keyframes distort {
+            0%, 100% { transform: scale(1) skew(0deg); }
+            25% { transform: scale(1.02) skew(1deg, 0deg); }
+            50% { transform: scale(0.98) skew(-1deg, 0deg); }
+            75% { transform: scale(1.01) skew(0.5deg, 0deg); }
+        }
+
         .gamma-particle {
             position: absolute;
             width: 2px;
@@ -69,6 +142,26 @@
             background: linear-gradient(to top, rgba(57,255,20,0.8), transparent);
             filter: drop-shadow(0 0 5px #39FF14);
             animation: gamma-particle linear infinite;
+        }
+
+        .glitch-text {
+            animation: glitch 0.3s infinite;
+        }
+
+        .chaos-element {
+            animation: random-jitter 0.5s infinite;
+        }
+
+        .flicker {
+            animation: text-flicker 0.1s infinite;
+        }
+
+        .random-scale {
+            animation: random-scale 2s infinite;
+        }
+
+        .chaos-rotate {
+            animation: chaos-rotate 3s infinite;
         }
 
         .shimmer {
@@ -325,12 +418,146 @@
             );
         }
 
+        // Random floating chaos elements
+        function ChaosOverlay() {
+            const [chaosElements, setChaosElements] = useState([]);
+            const [randomTexts, setRandomTexts] = useState([]);
+
+            useEffect(() => {
+                const elements = [];
+                const messages = ['BULK!', 'GAMMA!', 'PURPLE!', 'HULK!', 'MOON!', 'PUMP!', 'WEN?', 'LFG!', 'TO THE MOON!', 'DIAMOND HANDS!'];
+                
+                for (let i = 0; i < 5; i++) {
+                    elements.push({
+                        id: i,
+                        text: messages[Math.floor(Math.random() * messages.length)],
+                        x: Math.random() * 100,
+                        y: Math.random() * 100,
+                        delay: Math.random() * 2,
+                        duration: 3 + Math.random() * 2,
+                        size: 12 + Math.random() * 20,
+                        color: Math.random() > 0.5 ? '#39FF14' : '#9B4DCA'
+                    });
+                }
+                setChaosElements(elements);
+
+                const interval = setInterval(() => {
+                    setChaosElements(prev => prev.map(el => ({
+                        ...el,
+                        x: Math.random() * 100,
+                        y: Math.random() * 100,
+                        text: messages[Math.floor(Math.random() * messages.length)],
+                        delay: Math.random() * 2
+                    })));
+                }, 5000);
+
+                // Random text overlays
+                const textInterval = setInterval(() => {
+                    if (Math.random() < 0.4) {
+                        const newText = {
+                            id: Date.now(),
+                            text: messages[Math.floor(Math.random() * messages.length)],
+                            x: Math.random() * 80 + 10,
+                            y: Math.random() * 80 + 10,
+                            size: 20 + Math.random() * 30,
+                            color: Math.random() > 0.5 ? '#39FF14' : '#9B4DCA',
+                            rotation: (Math.random() - 0.5) * 20
+                        };
+                        setRandomTexts(prev => [...prev, newText]);
+                        setTimeout(() => {
+                            setRandomTexts(prev => prev.filter(t => t.id !== newText.id));
+                        }, 1000);
+                    }
+                }, 2000);
+
+                return () => {
+                    clearInterval(interval);
+                    clearInterval(textInterval);
+                };
+            }, []);
+
+            return e('div', { style: { position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 9996, overflow: 'hidden' } },
+                // Scanline effect
+                e('div', {
+                    style: {
+                        position: 'absolute',
+                        inset: 0,
+                        background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(57,255,20,0.03) 2px, rgba(57,255,20,0.03) 4px)',
+                        pointerEvents: 'none',
+                        animation: 'scanline 8s linear infinite'
+                    }
+                }),
+                // Floating elements
+                ...chaosElements.map(el => 
+                    e('div', {
+                        key: el.id,
+                        style: {
+                            position: 'absolute',
+                            left: `${el.x}%`,
+                            top: `${el.y}%`,
+                            fontSize: `${el.size}px`,
+                            color: el.color,
+                            fontWeight: 'bold',
+                            textShadow: `0 0 10px ${el.color}`,
+                            opacity: 0.4,
+                            transform: 'translate(-50%, -50%)',
+                            animation: `float ${el.duration}s ease-in-out infinite`,
+                            animationDelay: `${el.delay}s`,
+                            filter: 'blur(0.5px)',
+                            userSelect: 'none'
+                        }
+                    }, el.text)
+                ),
+                // Random text overlays
+                ...randomTexts.map(text => 
+                    e('div', {
+                        key: text.id,
+                        className: 'glitch-text',
+                        style: {
+                            position: 'absolute',
+                            left: `${text.x}%`,
+                            top: `${text.y}%`,
+                            fontSize: `${text.size}px`,
+                            color: text.color,
+                            fontWeight: 'bold',
+                            textShadow: `0 0 15px ${text.color}, 2px 2px 0px rgba(0,0,0,0.8)`,
+                            transform: `translate(-50%, -50%) rotate(${text.rotation}deg)`,
+                            opacity: 0.7,
+                            userSelect: 'none',
+                            animation: 'fade-out 1s forwards'
+                        }
+                    }, text.text)
+                )
+            );
+        }
+
         // Main App Component
         function App() {
             const [showIntro, setShowIntro] = useState(true);
             const [infoOpen, setInfoOpen] = useState(false);
+            const [glitchActive, setGlitchActive] = useState(false);
 
-            return e('div', { style: { minHeight: '100vh', background: 'linear-gradient(to bottom right, #1A0B2E, #2D1B4E, #1A0B2E)', position: 'relative', overflow: 'hidden' } },
+            useEffect(() => {
+                const glitchInterval = setInterval(() => {
+                    if (Math.random() < 0.3) {
+                        setGlitchActive(true);
+                        setTimeout(() => setGlitchActive(false), 200);
+                    }
+                }, 1000);
+                return () => clearInterval(glitchInterval);
+            }, []);
+
+            return e('div', { 
+                style: { 
+                    minHeight: '100vh', 
+                    background: 'linear-gradient(to bottom right, #1A0B2E, #2D1B4E, #1A0B2E)', 
+                    position: 'relative', 
+                    overflow: 'hidden',
+                    filter: glitchActive ? 'contrast(1.2) brightness(1.1)' : 'none',
+                    transition: 'filter 0.1s'
+                } 
+            },
+                e(ChaosOverlay, null),
                 // Background effects
                 e('div', { style: { position: 'fixed', inset: 0, background: 'radial-gradient(ellipse at center, rgba(107,45,158,0.5) 0%, transparent 55%)', pointerEvents: 'none' } }),
                 e('div', { style: { position: 'fixed', inset: 0, background: 'radial-gradient(circle at 50% 15%, rgba(57,255,20,0.12) 0%, transparent 35%)', pointerEvents: 'none' } }),
@@ -360,15 +587,44 @@
                 e('main', { style: { position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '100vh', padding: '12px', textAlign: 'center' } },
                     e('div', { style: { maxWidth: '500px', margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column', gap: '16px' } },
                         // Title
-                        e('div', null,
-                            e('h1', { style: { fontSize: '48px', fontWeight: 'bold', marginBottom: '4px', background: 'linear-gradient(135deg, #39FF14 0%, #FFD700 50%, #39FF14 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } }, 'THE AMAZING BULK'),
-                            e('p', { style: { fontSize: '14px', color: '#FFD700', letterSpacing: '0.05em', textShadow: '0 0 12px rgba(255,215,0,0.7)' } }, 'GAMMA POWERED MEMECOIN')
+                        e('div', { className: 'chaos-element', style: { position: 'relative' } },
+                            e('h1', { 
+                                className: 'glitch-text random-scale',
+                                style: { 
+                                    fontSize: '48px', 
+                                    fontWeight: 'bold', 
+                                    marginBottom: '4px', 
+                                    background: 'linear-gradient(135deg, #39FF14 0%, #FFD700 50%, #39FF14 100%)', 
+                                    WebkitBackgroundClip: 'text', 
+                                    WebkitTextFillColor: 'transparent', 
+                                    backgroundClip: 'text',
+                                    textShadow: '2px 2px 0px rgba(57,255,20,0.5), -2px -2px 0px rgba(155,77,202,0.5)',
+                                    filter: 'drop-shadow(0 0 10px rgba(57,255,20,0.8))'
+                                } 
+                            }, 'THE AMAZING BULK'),
+                            e('p', { 
+                                className: 'flicker',
+                                style: { 
+                                    fontSize: '14px', 
+                                    color: '#FFD700', 
+                                    letterSpacing: '0.05em', 
+                                    textShadow: '0 0 12px rgba(255,215,0,0.7)' 
+                                } 
+                            }, 'GAMMA POWERED MEMECOIN')
                         ),
 
                         // Banner
                         e('img', {
                             src: BANNER_IMAGE,
-                            style: { maxWidth: '200px', margin: '0 auto', borderRadius: '8px', filter: 'drop-shadow(0 0 25px rgba(57,255,20,0.7))', animation: 'float 3s ease-in-out infinite' }
+                            className: 'chaos-rotate random-scale',
+                            style: { 
+                                maxWidth: '200px', 
+                                margin: '0 auto', 
+                                borderRadius: '8px', 
+                                filter: 'drop-shadow(0 0 25px rgba(57,255,20,0.7)) hue-rotate(0deg)', 
+                                animation: 'float 3s ease-in-out infinite, color-shift 5s infinite',
+                                transform: 'perspective(1000px) rotateY(0deg)'
+                            }
                         }),
 
                         // Market Cap Display
@@ -401,6 +657,7 @@
                                 href: DEXSCREENER_URL,
                                 target: '_blank',
                                 rel: 'noopener noreferrer',
+                                className: 'chaos-element',
                                 style: {
                                     display: 'flex',
                                     alignItems: 'center',
@@ -414,13 +671,15 @@
                                     fontWeight: 'bold',
                                     textDecoration: 'none',
                                     transition: 'all 0.3s',
-                                    boxShadow: '0 0 20px rgba(57,255,20,0.35)'
+                                    boxShadow: '0 0 20px rgba(57,255,20,0.35)',
+                                    animation: 'border-flash 3s infinite, distort 4s infinite'
                                 }
                             }, e(TrendingUpIcon, null), 'DEXSCREENER', e(ExternalLinkIcon, null)),
                             e('a', {
                                 href: X_ACCOUNT_URL,
                                 target: '_blank',
                                 rel: 'noopener noreferrer',
+                                className: 'chaos-element',
                                 style: {
                                     display: 'flex',
                                     alignItems: 'center',
@@ -434,13 +693,15 @@
                                     fontWeight: 'bold',
                                     textDecoration: 'none',
                                     transition: 'all 0.3s',
-                                    boxShadow: '0 0 20px rgba(155,77,202,0.35)'
+                                    boxShadow: '0 0 20px rgba(155,77,202,0.35)',
+                                    animation: 'border-flash 3s infinite, distort 5s infinite'
                                 }
                             }, e('span', { style: { fontSize: '16px' } }, '𝕏'), 'TWITTER / X', e(ExternalLinkIcon, null)),
                             e('a', {
                                 href: X_COMMUNITY_URL,
                                 target: '_blank',
                                 rel: 'noopener noreferrer',
+                                className: 'chaos-element',
                                 style: {
                                     display: 'flex',
                                     alignItems: 'center',
@@ -454,11 +715,13 @@
                                     fontWeight: 'bold',
                                     textDecoration: 'none',
                                     transition: 'all 0.3s',
-                                    boxShadow: '0 0 20px rgba(155,77,202,0.35)'
+                                    boxShadow: '0 0 20px rgba(155,77,202,0.35)',
+                                    animation: 'border-flash 3s infinite, distort 4.5s infinite'
                                 }
                             }, e('span', { style: { fontSize: '16px' } }, '👥'), 'X COMMUNITY', e(ExternalLinkIcon, null)),
                             e('button', {
                                 onClick: () => setInfoOpen(true),
+                                className: 'chaos-element',
                                 style: {
                                     display: 'flex',
                                     alignItems: 'center',
@@ -472,7 +735,8 @@
                                     fontWeight: 'bold',
                                     cursor: 'pointer',
                                     transition: 'all 0.3s',
-                                    boxShadow: '0 0 20px rgba(155,77,202,0.35)'
+                                    boxShadow: '0 0 20px rgba(155,77,202,0.35)',
+                                    animation: 'border-flash 3s infinite, distort 5.5s infinite'
                                 }
                             }, e(ZapIcon, null), 'ABOUT $BULK')
                         ),
@@ -552,9 +816,203 @@
             );
         }
 
+        // Schizophrenic effects system
+        function initChaosEffects() {
+            // Random glitch overlays
+            function createGlitchOverlay() {
+                const overlay = document.createElement('div');
+                overlay.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    pointer-events: none;
+                    z-index: 9998;
+                    opacity: 0;
+                    background: linear-gradient(
+                        90deg,
+                        transparent 0%,
+                        rgba(57,255,20,0.1) 25%,
+                        transparent 50%,
+                        rgba(155,77,202,0.1) 75%,
+                        transparent 100%
+                    );
+                    animation: glitch-flash 0.1s;
+                `;
+                document.body.appendChild(overlay);
+                setTimeout(() => overlay.remove(), 100);
+            }
+
+            // Add CSS for glitch flash
+            const style = document.createElement('style');
+            style.textContent += `
+                @keyframes glitch-flash {
+                    0%, 100% { opacity: 0; transform: translateX(0); }
+                    50% { opacity: 0.3; transform: translateX(-5px); }
+                }
+            `;
+            document.head.appendChild(style);
+
+            // Random text corruption
+            function corruptText() {
+                const elements = document.querySelectorAll('h1, h2, h3, p, span, code');
+                elements.forEach(el => {
+                    if (Math.random() < 0.1) {
+                        const originalText = el.textContent;
+                        const chars = '!@#$%^&*()_+-=[]{}|;:,.<>?~`';
+                        let corrupted = '';
+                        for (let i = 0; i < originalText.length; i++) {
+                            if (Math.random() < 0.1 && originalText[i] !== ' ') {
+                                corrupted += chars[Math.floor(Math.random() * chars.length)];
+                            } else {
+                                corrupted += originalText[i];
+                            }
+                        }
+                        el.textContent = corrupted;
+                        setTimeout(() => {
+                            el.textContent = originalText;
+                        }, 200);
+                    }
+                });
+            }
+
+            // Random element jitter
+            function applyRandomJitter() {
+                const elements = document.querySelectorAll('div, button, a, img');
+                elements.forEach(el => {
+                    if (Math.random() < 0.05 && !el.classList.contains('no-jitter')) {
+                        const x = (Math.random() - 0.5) * 10;
+                        const y = (Math.random() - 0.5) * 10;
+                        const rot = (Math.random() - 0.5) * 5;
+                        el.style.transform = `translate(${x}px, ${y}px) rotate(${rot}deg)`;
+                        setTimeout(() => {
+                            el.style.transform = '';
+                        }, 100);
+                    }
+                });
+            }
+
+            // Random color shifts
+            function randomColorShift() {
+                const elements = document.querySelectorAll('h1, h2, button, a');
+                elements.forEach(el => {
+                    if (Math.random() < 0.08) {
+                        const hue = Math.random() * 360;
+                        el.style.filter = `hue-rotate(${hue}deg)`;
+                        setTimeout(() => {
+                            el.style.filter = '';
+                        }, 300);
+                    }
+                });
+            }
+
+            // Random element visibility flicker
+            function randomFlicker() {
+                const elements = document.querySelectorAll('div, button, a');
+                elements.forEach(el => {
+                    if (Math.random() < 0.03) {
+                        el.style.opacity = '0.3';
+                        setTimeout(() => {
+                            el.style.opacity = '';
+                        }, 50);
+                    }
+                });
+            }
+
+            // Random background color flashes
+            function randomBgFlash() {
+                if (Math.random() < 0.05) {
+                    const flash = document.createElement('div');
+                    flash.style.cssText = `
+                        position: fixed;
+                        inset: 0;
+                        background: rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 0.2);
+                        pointer-events: none;
+                        z-index: 9997;
+                        animation: fade-out 0.3s;
+                    `;
+                    document.body.appendChild(flash);
+                    setTimeout(() => flash.remove(), 300);
+                }
+            }
+
+            // Random text size changes
+            function randomTextSize() {
+                const elements = document.querySelectorAll('h1, h2, h3');
+                elements.forEach(el => {
+                    if (Math.random() < 0.1) {
+                        const scale = 0.8 + Math.random() * 0.4;
+                        el.style.transform = `scale(${scale})`;
+                        setTimeout(() => {
+                            el.style.transform = '';
+                        }, 200);
+                    }
+                });
+            }
+
+            // Random rotation on elements
+            function randomRotation() {
+                const elements = document.querySelectorAll('img, button, a');
+                elements.forEach(el => {
+                    if (Math.random() < 0.05) {
+                        const rot = (Math.random() - 0.5) * 10;
+                        el.style.transform = `rotate(${rot}deg)`;
+                        setTimeout(() => {
+                            el.style.transform = '';
+                        }, 150);
+                    }
+                });
+            }
+
+            // Add CSS for fade-out
+            const fadeStyle = document.createElement('style');
+            fadeStyle.textContent += `
+                @keyframes fade-out {
+                    from { opacity: 1; }
+                    to { opacity: 0; }
+                }
+            `;
+            document.head.appendChild(fadeStyle);
+
+            // Run chaos effects at random intervals
+            setInterval(() => {
+                if (Math.random() < 0.3) createGlitchOverlay();
+                if (Math.random() < 0.4) corruptText();
+                if (Math.random() < 0.5) applyRandomJitter();
+                if (Math.random() < 0.3) randomColorShift();
+                if (Math.random() < 0.4) randomFlicker();
+                if (Math.random() < 0.2) randomBgFlash();
+                if (Math.random() < 0.3) randomTextSize();
+                if (Math.random() < 0.3) randomRotation();
+            }, 200);
+
+            // More intense chaos on mouse movement
+            let mouseMoveCount = 0;
+            document.addEventListener('mousemove', () => {
+                mouseMoveCount++;
+                if (mouseMoveCount % 10 === 0) {
+                    if (Math.random() < 0.5) createGlitchOverlay();
+                    if (Math.random() < 0.3) applyRandomJitter();
+                }
+            });
+
+            // Chaos on click
+            document.addEventListener('click', () => {
+                if (Math.random() < 0.7) {
+                    createGlitchOverlay();
+                    corruptText();
+                    randomBgFlash();
+                }
+            });
+        }
+
         // Render the app
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(React.createElement(App));
+        
+        // Initialize chaos effects after a short delay
+        setTimeout(initChaosEffects, 1000);
     </script>
 </body>
 </html>
