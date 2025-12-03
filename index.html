@@ -60,12 +60,11 @@
         }
 
         .title-image {
-            max-width: 100%;
+            max-width: 33.33%;
+            width: 33.33%;
             height: auto;
-            margin-bottom: 20px;
-            filter: drop-shadow(0 0 10px rgba(57,255,20,0.8));
+            margin: 0 auto 20px;
             display: block;
-            width: 100%;
         }
 
         .subtitle {
@@ -78,11 +77,10 @@
         }
 
         .banner {
-            max-width: 300px;
+            max-width: 600px;
             width: 100%;
             margin: 0 auto 40px;
             border-radius: 12px;
-            filter: drop-shadow(0 0 25px rgba(57,255,20,0.7));
             animation: float 3s ease-in-out infinite;
             display: block;
         }
@@ -142,7 +140,8 @@
 
         @media (max-width: 767px) {
             .title-image {
-                max-width: 90%;
+                max-width: 50%;
+                width: 50%;
             }
             
             .subtitle {
@@ -150,7 +149,7 @@
             }
             
             .banner {
-                max-width: 200px;
+                max-width: 400px;
             }
         }
     </style>
@@ -179,9 +178,9 @@
     <script>
         const CONTRACT_ADDRESS = "F4TJfiMVi7zFGRJj4FVC1Zuj7fdCo6skKa4SnAU4pump";
 
-        function copyContract() {
+        function copyContract(event) {
             navigator.clipboard.writeText(CONTRACT_ADDRESS).then(() => {
-                const btn = event.target.closest('.copy-btn');
+                const btn = event.target.closest('.copy-btn') || event.currentTarget;
                 const originalHTML = btn.innerHTML;
                 btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>';
                 btn.style.color = '#39FF14';
@@ -189,8 +188,28 @@
                     btn.innerHTML = originalHTML;
                     btn.style.color = '';
                 }, 2000);
-            }).catch(() => {
-                alert('Click to select, then Ctrl+C to copy');
+            }).catch((err) => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = CONTRACT_ADDRESS;
+                textArea.style.position = 'fixed';
+                textArea.style.opacity = '0';
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    const btn = event.target.closest('.copy-btn') || event.currentTarget;
+                    const originalHTML = btn.innerHTML;
+                    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+                    btn.style.color = '#39FF14';
+                    setTimeout(() => {
+                        btn.innerHTML = originalHTML;
+                        btn.style.color = '';
+                    }, 2000);
+                } catch (err) {
+                    alert('Click to select, then Ctrl+C to copy');
+                }
+                document.body.removeChild(textArea);
             });
         }
 
