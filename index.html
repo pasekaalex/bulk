@@ -12,7 +12,7 @@
     <style>
         @font-face {
             font-family: 'Hulk Display';
-            src: url('/fonts/hulk.ttf') format('truetype');
+            src: url('hulk.ttf') format('truetype');
             font-weight: normal;
             font-style: normal;
             display: swap;
@@ -146,7 +146,7 @@
             width: 100%;
             height: 100%;
             background-image: url('spin.png');
-            background-size: 150%;
+            background-size: 250%;
             background-position: center;
             background-repeat: no-repeat;
             animation: spin 15s linear infinite;
@@ -446,7 +446,7 @@
 
             useEffect(() => {
                 const elements = [];
-                const messages = ['Schmeg', 'Purple', 'Inject Schmeg', 'gRape Schmeg', 'Purple Schmeg'];
+                const messages = ['Schmeg', 'Purple', 'Inject Schmeg', 'gRape Schmeg', 'Purple Schmeg', 'Get Bulked'];
                 
                 for (let i = 0; i < 5; i++) {
                     elements.push({
@@ -588,7 +588,7 @@
                         width: '100%',
                         height: '100%',
                         backgroundImage: 'url("spin.png")',
-                        backgroundSize: '150%',
+                        backgroundSize: '250%',
                         backgroundPosition: 'center',
                         backgroundRepeat: 'no-repeat',
                         animation: 'spin 15s linear infinite',
@@ -632,7 +632,8 @@
                                 className: 'glitch-text random-scale',
                                 style: { 
                                     fontSize: '48px', 
-                                    fontWeight: 'bold', 
+                                    fontWeight: 'bold',
+                                    fontFamily: "'Hulk Display', 'Orbitron', sans-serif",
                                     marginBottom: '4px', 
                                     background: 'linear-gradient(135deg, #39FF14 0%, #FFD700 50%, #39FF14 100%)', 
                                     WebkitBackgroundClip: 'text', 
