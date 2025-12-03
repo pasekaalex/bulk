@@ -607,33 +607,43 @@
                 return () => clearInterval(subtitleInterval);
             }, []);
 
-            // Rapid corruption for subtitle
+            // Rapid corruption for subtitle (disabled)
+            // useEffect(() => {
+            //     const corruptInterval = setInterval(() => {
+            //         const subtitleEl = document.getElementById('subtitle-text');
+            //         if (subtitleEl) {
+            //             const originalText = subtitleText;
+            //             const chars = '!@#$%^&*()_+-=[]{}|;:,.<>?~`';
+            //             let corrupted = '';
+            //             for (let i = 0; i < originalText.length; i++) {
+            //                 if (Math.random() < 0.5 && originalText[i] !== ' ') {
+            //                     corrupted += chars[Math.floor(Math.random() * chars.length)];
+            //                 } else {
+            //                     corrupted += originalText[i];
+            //                 }
+            //             }
+            //             subtitleEl.textContent = corrupted;
+            //             setSubtitleCorrupted(true);
+            //             setTimeout(() => {
+            //                 if (subtitleEl) {
+            //                     subtitleEl.textContent = originalText;
+            //                     setSubtitleCorrupted(false);
+            //                 }
+            //             }, 30);
+            //         }
+            //     }, 50); // Very rapid corruption
+            //     return () => clearInterval(corruptInterval);
+            // }, [subtitleText]);
+
+            // Play sound on site entry
             useEffect(() => {
-                const corruptInterval = setInterval(() => {
-                    const subtitleEl = document.getElementById('subtitle-text');
-                    if (subtitleEl) {
-                        const originalText = subtitleText;
-                        const chars = '!@#$%^&*()_+-=[]{}|;:,.<>?~`';
-                        let corrupted = '';
-                        for (let i = 0; i < originalText.length; i++) {
-                            if (Math.random() < 0.5 && originalText[i] !== ' ') {
-                                corrupted += chars[Math.floor(Math.random() * chars.length)];
-                            } else {
-                                corrupted += originalText[i];
-                            }
-                        }
-                        subtitleEl.textContent = corrupted;
-                        setSubtitleCorrupted(true);
-                        setTimeout(() => {
-                            if (subtitleEl) {
-                                subtitleEl.textContent = originalText;
-                                setSubtitleCorrupted(false);
-                            }
-                        }, 30);
-                    }
-                }, 50); // Very rapid corruption
-                return () => clearInterval(corruptInterval);
-            }, [subtitleText]);
+                const audio = document.getElementById('nuke-audio');
+                if (audio) {
+                    audio.play().catch(err => {
+                        console.log('Audio play failed:', err);
+                    });
+                }
+            }, []);
 
             return e('div', { 
                 style: { 
@@ -645,6 +655,11 @@
                     transition: 'filter 0.1s'
                 } 
             },
+                e('audio', {
+                    id: 'nuke-audio',
+                    src: 'nuke.mp3',
+                    preload: 'auto'
+                }),
                 e(ChaosOverlay, null),
                 // Spinning background
                 e('div', { 
@@ -766,7 +781,14 @@
                                     const newState = !getBulked;
                                     setGetBulked(newState);
                                     chaosIntensity = newState ? 'intense' : 'toned';
-                                    // Effects will automatically use new intensity on next check
+                                    // Play sound when button is clicked
+                                    const audio = document.getElementById('nuke-audio');
+                                    if (audio) {
+                                        audio.currentTime = 0;
+                                        audio.play().catch(err => {
+                                            console.log('Audio play failed:', err);
+                                        });
+                                    }
                                 },
                                 className: 'chaos-element',
                                 style: {
@@ -1034,32 +1056,10 @@
             `;
             document.head.appendChild(style);
 
-            // Random text corruption
+            // Random text corruption (disabled)
             function corruptText() {
-                const elements = document.querySelectorAll('h1, h2, h3, p, span, code');
-                const corruptChance = isIntense() ? 0.5 : 0.15;
-                const charChance = isIntense() ? 0.4 : 0.15;
-                const recoveryTime = isIntense() ? 50 : 150;
-                elements.forEach(el => {
-                    // Skip subtitle as it has its own corruption
-                    if (el.id === 'subtitle-text') return;
-                    if (Math.random() < corruptChance) {
-                        const originalText = el.textContent;
-                        const chars = '!@#$%^&*()_+-=[]{}|;:,.<>?~`';
-                        let corrupted = '';
-                        for (let i = 0; i < originalText.length; i++) {
-                            if (Math.random() < charChance && originalText[i] !== ' ') {
-                                corrupted += chars[Math.floor(Math.random() * chars.length)];
-                            } else {
-                                corrupted += originalText[i];
-                            }
-                        }
-                        el.textContent = corrupted;
-                        setTimeout(() => {
-                            el.textContent = originalText;
-                        }, recoveryTime);
-                    }
-                });
+                // Text corruption disabled
+                return;
             }
 
             // Screen shake effect
