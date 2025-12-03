@@ -85,57 +85,23 @@
             display: block;
         }
 
-        .contract-section {
-            background: linear-gradient(to bottom right, rgba(45,27,78,0.95), rgba(26,11,46,0.98));
-            border: 2px solid rgba(155,77,202,0.6);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 0 20px rgba(155,77,202,0.4);
-            margin-top: 40px;
-        }
-
-        .contract-label {
-            font-size: 12px;
-            color: #9B4DCA;
-            margin-bottom: 12px;
-            font-weight: bold;
-            letter-spacing: 0.05em;
-        }
-
-        .contract-display {
-            display: flex;
-            gap: 8px;
-            background: rgba(0,0,0,0.7);
-            border-radius: 8px;
-            padding: 12px;
-            border: 1px solid rgba(155,77,202,0.5);
-        }
-
         .contract-address {
-            flex: 1;
+            display: inline-block;
             font-size: 12px;
             color: white;
             font-family: monospace;
             word-break: break-all;
-        }
-
-        .copy-btn {
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            color: white;
-            padding: 4px 8px;
+            padding: 8px 12px;
+            border: 1px solid rgba(255,255,255,0.3);
             border-radius: 4px;
-            transition: background 0.2s;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 40px;
         }
 
-        .copy-btn:hover {
-            background: rgba(155,77,202,0.3);
-        }
-
-        .copy-btn svg {
-            width: 18px;
-            height: 18px;
+        .contract-address:hover {
+            border-color: rgba(255,255,255,0.6);
+            background: rgba(255,255,255,0.05);
         }
 
         .sound-toggle-btn {
@@ -265,20 +231,9 @@
             <video src="title.mp4" class="title-image" autoplay loop muted playsinline></video>
             <p class="subtitle">FULL SITE BEING BULKED UP</p>
             
-            <video src="bulk.mp4" class="banner" id="banner-video" autoplay loop muted playsinline></video>
+            <video src="bulk.mp4" class="banner" id="banner-video" autoplay loop playsinline></video>
             
-            <div class="contract-section">
-                <div class="contract-label">CONTRACT ADDRESS</div>
-                <div class="contract-display">
-                    <code class="contract-address" id="contract-address">F4TJfiMVi7zFGRJj4FVC1Zuj7fdCo6skKa4SnAU4pump</code>
-                    <button class="copy-btn" onclick="copyContract()" title="Copy to clipboard">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                        </svg>
-                    </button>
-                </div>
-            </div>
+            <code class="contract-address" id="contract-address" onclick="copyContract(event)" title="Click to copy">F4TJfiMVi7zFGRJj4FVC1Zuj7fdCo6skKa4SnAU4pump</code>
 
             <div class="links-section">
                 <a href="https://dexscreener.com/solana/ee3m75v7qmc59fum5uyamrj72hsbz8zqzsx2fro5kuw6" target="_blank" rel="noopener noreferrer" class="link-btn dexscreener-btn">
@@ -328,14 +283,15 @@
         const CONTRACT_ADDRESS = "F4TJfiMVi7zFGRJj4FVC1Zuj7fdCo6skKa4SnAU4pump";
 
         function copyContract(event) {
+            const addressElement = document.getElementById('contract-address');
+            const originalText = addressElement.textContent;
+            
             navigator.clipboard.writeText(CONTRACT_ADDRESS).then(() => {
-                const btn = event.target.closest('.copy-btn') || event.currentTarget;
-                const originalHTML = btn.innerHTML;
-                btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>';
-                btn.style.color = '#39FF14';
+                addressElement.textContent = 'Copied!';
+                addressElement.style.color = '#39FF14';
                 setTimeout(() => {
-                    btn.innerHTML = originalHTML;
-                    btn.style.color = '';
+                    addressElement.textContent = originalText;
+                    addressElement.style.color = '';
                 }, 2000);
             }).catch((err) => {
                 // Fallback for older browsers
@@ -347,13 +303,11 @@
                 textArea.select();
                 try {
                     document.execCommand('copy');
-                    const btn = event.target.closest('.copy-btn') || event.currentTarget;
-                    const originalHTML = btn.innerHTML;
-                    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>';
-                    btn.style.color = '#39FF14';
+                    addressElement.textContent = 'Copied!';
+                    addressElement.style.color = '#39FF14';
                     setTimeout(() => {
-                        btn.innerHTML = originalHTML;
-                        btn.style.color = '';
+                        addressElement.textContent = originalText;
+                        addressElement.style.color = '';
                     }, 2000);
                 } catch (err) {
                     alert('Click to select, then Ctrl+C to copy');
@@ -383,18 +337,28 @@
             }
         }
 
-        // Initialize: start with sound muted (for autoplay)
+        // Initialize: start with sound on
         window.addEventListener('DOMContentLoaded', () => {
             const video = document.getElementById('banner-video');
             const btn = document.querySelector('.sound-toggle-btn');
             const icon = document.getElementById('sound-icon');
             const text = document.getElementById('sound-text');
             
-            // Start muted for autoplay, but show as "SOUND OFF"
-            video.muted = true;
-            btn.classList.add('muted');
-            text.textContent = 'SOUND OFF';
-            icon.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4V5z"></path><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line>';
+            // Start with sound on
+            video.muted = false;
+            btn.classList.remove('muted');
+            text.textContent = 'SOUND ON';
+            icon.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>';
+            
+            // Try to play with sound (may be blocked by browser autoplay policy)
+            video.play().catch(err => {
+                console.log('Autoplay with sound blocked:', err);
+                // If blocked, mute it for autoplay
+                video.muted = true;
+                btn.classList.add('muted');
+                text.textContent = 'SOUND OFF';
+                icon.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4V5z"></path><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line>';
+            });
         });
 
         // Allow replacing banner with GIF later
