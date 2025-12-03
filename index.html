@@ -135,6 +135,27 @@
             75% { transform: scale(1.01) skew(0.5deg, 0deg); }
         }
 
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .spinning-bg {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('spin.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            animation: spin 20s linear infinite;
+            opacity: 0.15;
+            pointer-events: none;
+            z-index: 1;
+            mix-blend-mode: overlay;
+        }
+
         .gamma-particle {
             position: absolute;
             width: 2px;
@@ -558,10 +579,29 @@
                 } 
             },
                 e(ChaosOverlay, null),
+                // Spinning background
+                e('div', { 
+                    className: 'spinning-bg',
+                    style: {
+                        position: 'fixed',
+                        inset: 0,
+                        width: '100%',
+                        height: '100%',
+                        backgroundImage: 'url("spin.png")',
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        backgroundRepeat: 'no-repeat',
+                        animation: 'spin 20s linear infinite',
+                        opacity: 0.2,
+                        pointerEvents: 'none',
+                        zIndex: 1,
+                        mixBlendMode: 'overlay'
+                    }
+                }),
                 // Background effects
-                e('div', { style: { position: 'fixed', inset: 0, background: 'radial-gradient(ellipse at center, rgba(107,45,158,0.5) 0%, transparent 55%)', pointerEvents: 'none' } }),
-                e('div', { style: { position: 'fixed', inset: 0, background: 'radial-gradient(circle at 50% 15%, rgba(57,255,20,0.12) 0%, transparent 35%)', pointerEvents: 'none' } }),
-                e('div', { style: { position: 'fixed', inset: 0, background: 'linear-gradient(to top, #1A0B2E, transparent, #1A0B2E 60%)', pointerEvents: 'none' } }),
+                e('div', { style: { position: 'fixed', inset: 0, background: 'radial-gradient(ellipse at center, rgba(107,45,158,0.5) 0%, transparent 55%)', pointerEvents: 'none', zIndex: 2 } }),
+                e('div', { style: { position: 'fixed', inset: 0, background: 'radial-gradient(circle at 50% 15%, rgba(57,255,20,0.12) 0%, transparent 35%)', pointerEvents: 'none', zIndex: 2 } }),
+                e('div', { style: { position: 'fixed', inset: 0, background: 'linear-gradient(to top, #1A0B2E, transparent, #1A0B2E 60%)', pointerEvents: 'none', zIndex: 2 } }),
 
                 // Intro overlay
                 showIntro && e('div', {
