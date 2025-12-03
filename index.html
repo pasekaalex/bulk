@@ -138,6 +138,39 @@
             height: 18px;
         }
 
+        .sound-toggle-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 16px;
+            padding: 10px 20px;
+            background: linear-gradient(to right, rgba(45,27,78,0.95), rgba(26,11,46,0.98));
+            border: 2px solid rgba(155,77,202,0.6);
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .sound-toggle-btn:hover {
+            background: linear-gradient(to right, rgba(155,77,202,0.3), rgba(107,45,158,0.3));
+            border-color: rgba(155,77,202,0.8);
+            box-shadow: 0 0 15px rgba(155,77,202,0.4);
+        }
+
+        .sound-toggle-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .sound-toggle-btn.muted svg {
+            opacity: 0.5;
+        }
+
         @media (max-width: 767px) {
             .title-image {
                 max-width: 50%;
@@ -159,7 +192,7 @@
         <video src="title.mp4" class="title-image" autoplay loop muted playsinline></video>
         <p class="subtitle">FULL SITE BEING BULKED UP</p>
         
-        <video src="bulk.mp4" class="banner" id="banner-image" autoplay loop muted playsinline></video>
+        <video src="bulk.mp4" class="banner" id="banner-video" autoplay loop playsinline></video>
         
         <div class="contract-section">
             <div class="contract-label">CONTRACT ADDRESS</div>
@@ -172,6 +205,13 @@
                     </svg>
                 </button>
             </div>
+            <button class="sound-toggle-btn" onclick="toggleSound()" title="Toggle sound">
+                <svg id="sound-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                </svg>
+                <span id="sound-text">SOUND ON</span>
+            </button>
         </div>
     </div>
 
@@ -212,6 +252,41 @@
                 document.body.removeChild(textArea);
             });
         }
+
+        function toggleSound() {
+            const video = document.getElementById('banner-video');
+            const btn = document.querySelector('.sound-toggle-btn');
+            const icon = document.getElementById('sound-icon');
+            const text = document.getElementById('sound-text');
+            
+            if (video.muted) {
+                video.muted = false;
+                btn.classList.remove('muted');
+                text.textContent = 'SOUND ON';
+                // Update icon to show sound on
+                icon.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>';
+            } else {
+                video.muted = true;
+                btn.classList.add('muted');
+                text.textContent = 'SOUND OFF';
+                // Update icon to show sound off
+                icon.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4V5z"></path><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line>';
+            }
+        }
+
+        // Initialize: start with sound muted (browser autoplay policy)
+        window.addEventListener('DOMContentLoaded', () => {
+            const video = document.getElementById('banner-video');
+            const btn = document.querySelector('.sound-toggle-btn');
+            const icon = document.getElementById('sound-icon');
+            const text = document.getElementById('sound-text');
+            
+            // Start muted for autoplay, but show as "SOUND OFF"
+            video.muted = true;
+            btn.classList.add('muted');
+            text.textContent = 'SOUND OFF';
+            icon.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4V5z"></path><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line>';
+        });
 
         // Allow replacing banner with GIF later
         // Just change the src of #banner-image to your GIF file
