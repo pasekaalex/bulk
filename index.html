@@ -575,6 +575,9 @@
             );
         }
 
+        // Global state for chaos intensity
+        let chaosIntensity = 'toned'; // 'toned' or 'intense'
+
         // Main App Component
         function App() {
             const [showIntro, setShowIntro] = useState(true);
@@ -582,6 +585,7 @@
             const [glitchActive, setGlitchActive] = useState(false);
             const [subtitleText, setSubtitleText] = useState('gRape Schmeg powered token');
             const [subtitleCorrupted, setSubtitleCorrupted] = useState(false);
+            const [getBulked, setGetBulked] = useState(false);
 
             useEffect(() => {
                 const glitchInterval = setInterval(() => {
@@ -757,6 +761,35 @@
 
                         // Menu buttons
                         e('div', { style: { display: 'flex', flexDirection: 'column', gap: '12px' } },
+                            e('button', {
+                                onClick: () => {
+                                    const newState = !getBulked;
+                                    setGetBulked(newState);
+                                    chaosIntensity = newState ? 'intense' : 'toned';
+                                    // Effects will automatically use new intensity on next check
+                                },
+                                className: 'chaos-element',
+                                style: {
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '12px',
+                                    padding: '12px',
+                                    borderRadius: '8px',
+                                    background: getBulked 
+                                        ? 'linear-gradient(to right, #39FF14, #2E7D32)' 
+                                        : 'linear-gradient(to right, #6B2D9E, #4A1D6E)',
+                                    border: `2px solid ${getBulked ? '#39FF14' : '#9B4DCA'}`,
+                                    color: 'white',
+                                    fontWeight: 'bold',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.3s',
+                                    boxShadow: getBulked 
+                                        ? '0 0 30px rgba(57,255,20,0.6)' 
+                                        : '0 0 20px rgba(155,77,202,0.35)',
+                                    animation: 'border-flash 3s infinite, distort 4s infinite'
+                                }
+                            }, e(ZapIcon, null), getBulked ? 'GET BULKED (ON)' : 'GET BULKED (OFF)'),
                             e('a', {
                                 href: DEXSCREENER_URL,
                                 target: '_blank',
@@ -953,8 +986,18 @@
 
         // Schizophrenic effects system
         function initChaosEffects() {
-            // Random glitch overlays (toned down)
+            // Clear any existing interval
+            if (window.chaosInterval) {
+                clearInterval(window.chaosInterval);
+                window.chaosInterval = null;
+            }
+            
+            // Helper to check intensity dynamically
+            const isIntense = () => chaosIntensity === 'intense';
+            
+            // Random glitch overlays
             function createGlitchOverlay() {
+                const opacity = isIntense() ? 0.1 : 0.03;
                 const overlay = document.createElement('div');
                 overlay.style.cssText = `
                     position: fixed;
@@ -968,9 +1011,9 @@
                     background: linear-gradient(
                         90deg,
                         transparent 0%,
-                        rgba(57,255,20,0.03) 25%,
+                        rgba(57,255,20,${opacity}) 25%,
                         transparent 50%,
-                        rgba(155,77,202,0.03) 75%,
+                        rgba(155,77,202,${opacity}) 75%,
                         transparent 100%
                     );
                     animation: glitch-flash 0.1s;
@@ -979,28 +1022,33 @@
                 setTimeout(() => overlay.remove(), 100);
             }
 
-            // Add CSS for glitch flash (toned down)
+            // Add CSS for glitch flash
             const style = document.createElement('style');
+            const flashOpacity = isIntense() ? 0.3 : 0.1;
+            const flashTransform = isIntense() ? '-5px' : '-2px';
             style.textContent += `
                 @keyframes glitch-flash {
                     0%, 100% { opacity: 0; transform: translateX(0); }
-                    50% { opacity: 0.1; transform: translateX(-2px); }
+                    50% { opacity: ${flashOpacity}; transform: translateX(${flashTransform}); }
                 }
             `;
             document.head.appendChild(style);
 
-            // Random text corruption (toned down)
+            // Random text corruption
             function corruptText() {
                 const elements = document.querySelectorAll('h1, h2, h3, p, span, code');
+                const corruptChance = isIntense() ? 0.5 : 0.15;
+                const charChance = isIntense() ? 0.4 : 0.15;
+                const recoveryTime = isIntense() ? 50 : 150;
                 elements.forEach(el => {
                     // Skip subtitle as it has its own corruption
                     if (el.id === 'subtitle-text') return;
-                    if (Math.random() < 0.15) {
+                    if (Math.random() < corruptChance) {
                         const originalText = el.textContent;
                         const chars = '!@#$%^&*()_+-=[]{}|;:,.<>?~`';
                         let corrupted = '';
                         for (let i = 0; i < originalText.length; i++) {
-                            if (Math.random() < 0.15 && originalText[i] !== ' ') {
+                            if (Math.random() < charChance && originalText[i] !== ' ') {
                                 corrupted += chars[Math.floor(Math.random() * chars.length)];
                             } else {
                                 corrupted += originalText[i];
@@ -1009,39 +1057,43 @@
                         el.textContent = corrupted;
                         setTimeout(() => {
                             el.textContent = originalText;
-                        }, 150);
+                        }, recoveryTime);
                     }
                 });
             }
 
-            // Screen shake effect (10% more shakes)
+            // Screen shake effect
             function screenShake() {
-                if (Math.random() < 0.11) {
-                    document.body.style.animation = 'shake 0.2s';
+                const shakeChance = isIntense() ? 0.3 : 0.11;
+                const shakeDuration = isIntense() ? 0.3 : 0.2;
+                if (Math.random() < shakeChance) {
+                    document.body.style.animation = `shake ${shakeDuration}s`;
                     setTimeout(() => {
                         document.body.style.animation = '';
-                    }, 200);
+                    }, shakeDuration * 1000);
                 }
             }
 
-            // Random element inversion (toned down)
+            // Random element inversion
             function randomInvert() {
+                const invertChance = isIntense() ? 0.1 : 0.03;
                 const elements = document.querySelectorAll('div, button, a, img, h1, h2');
                 elements.forEach(el => {
-                    if (Math.random() < 0.03) {
+                    if (Math.random() < invertChance) {
                         el.style.filter = 'invert(1)';
                         setTimeout(() => {
                             el.style.filter = '';
-                        }, 150);
+                        }, isIntense() ? 100 : 150);
                     }
                 });
             }
 
-            // Random element mirroring (toned down)
+            // Random element mirroring
             function randomMirror() {
+                const mirrorChance = isIntense() ? 0.08 : 0.03;
                 const elements = document.querySelectorAll('img, button, a');
                 elements.forEach(el => {
-                    if (Math.random() < 0.03) {
+                    if (Math.random() < mirrorChance) {
                         el.style.transform = 'scaleX(-1)';
                         setTimeout(() => {
                             el.style.transform = '';
@@ -1050,99 +1102,125 @@
                 });
             }
 
-            // Random brightness flashes (disabled - too intense)
+            // Random brightness flashes
             function randomBrightness() {
-                // Disabled to avoid white flashes
+                if (isIntense() && Math.random() < 0.4) {
+                    document.body.style.filter = 'brightness(1.5) contrast(1.3)';
+                    setTimeout(() => {
+                        document.body.style.filter = '';
+                    }, 50);
+                }
             }
 
-            // Random element jitter (15% more shakes)
+            // Random element jitter
             function applyRandomJitter() {
+                const jitterChance = isIntense() ? 0.15 : 0.0575;
+                const jitterAmount = isIntense() ? 20 : 8;
+                const rotAmount = isIntense() ? 10 : 3;
                 const elements = document.querySelectorAll('div, button, a, img');
                 elements.forEach(el => {
-                    if (Math.random() < 0.0575 && !el.classList.contains('no-jitter')) {
-                        const x = (Math.random() - 0.5) * 8;
-                        const y = (Math.random() - 0.5) * 8;
-                        const rot = (Math.random() - 0.5) * 3;
+                    if (Math.random() < jitterChance && !el.classList.contains('no-jitter')) {
+                        const x = (Math.random() - 0.5) * jitterAmount;
+                        const y = (Math.random() - 0.5) * jitterAmount;
+                        const rot = (Math.random() - 0.5) * rotAmount;
                         el.style.transform = `translate(${x}px, ${y}px) rotate(${rot}deg)`;
                         setTimeout(() => {
                             el.style.transform = '';
-                        }, 150);
+                        }, isIntense() ? 80 : 150);
                     }
                 });
             }
 
-            // Random color shifts (toned down)
+            // Random color shifts
             function randomColorShift() {
+                const shiftChance = isIntense() ? 0.15 : 0.08;
+                const hueRange = isIntense() ? 360 : 30;
                 const elements = document.querySelectorAll('h1, h2, button, a, img');
                 elements.forEach(el => {
-                    if (Math.random() < 0.08) {
-                        const hue = (Math.random() - 0.5) * 30; // Smaller hue shift
-                        el.style.filter = `hue-rotate(${hue}deg)`;
+                    if (Math.random() < shiftChance) {
+                        const hue = isIntense() ? Math.random() * 360 : (Math.random() - 0.5) * 30;
+                        const saturate = isIntense() ? ' saturate(2)' : '';
+                        el.style.filter = `hue-rotate(${hue}deg)${saturate}`;
                         setTimeout(() => {
                             el.style.filter = '';
-                        }, 300);
+                        }, isIntense() ? 200 : 300);
                     }
                 });
             }
 
-            // Random element visibility flicker (toned down)
+            // Random element visibility flicker
             function randomFlicker() {
+                const flickerChance = isIntense() ? 0.1 : 0.03;
                 const elements = document.querySelectorAll('div, button, a, img, h1, h2');
                 elements.forEach(el => {
-                    if (Math.random() < 0.03) {
-                        el.style.opacity = '0.7';
+                    if (Math.random() < flickerChance) {
+                        el.style.opacity = isIntense() ? (Math.random() > 0.5 ? '0.1' : '0.8') : '0.7';
                         setTimeout(() => {
                             el.style.opacity = '';
-                        }, 100);
+                        }, isIntense() ? 30 : 100);
                     }
                 });
             }
 
-            // Random background color flashes (toned down, no white)
+            // Random background color flashes
             function randomBgFlash() {
-                if (Math.random() < 0.05) {
-                    // Only use dark colors, avoid white/bright
-                    const r = Math.floor(Math.random() * 100);
-                    const g = Math.floor(Math.random() * 100);
-                    const b = Math.floor(Math.random() * 150);
+                const flashChance = isIntense() ? 0.15 : 0.05;
+                if (Math.random() < flashChance) {
+                    let r, g, b, opacity;
+                    if (isIntense()) {
+                        // Intense mode: can use any colors including bright
+                        r = Math.floor(Math.random() * 255);
+                        g = Math.floor(Math.random() * 255);
+                        b = Math.floor(Math.random() * 255);
+                        opacity = 0.3 + Math.random() * 0.3;
+                    } else {
+                        // Toned: only dark colors, avoid white/bright
+                        r = Math.floor(Math.random() * 100);
+                        g = Math.floor(Math.random() * 100);
+                        b = Math.floor(Math.random() * 150);
+                        opacity = 0.1 + Math.random() * 0.1;
+                    }
                     const flash = document.createElement('div');
                     flash.style.cssText = `
                         position: fixed;
                         inset: 0;
-                        background: rgba(${r}, ${g}, ${b}, ${0.1 + Math.random() * 0.1});
+                        background: rgba(${r}, ${g}, ${b}, ${opacity});
                         pointer-events: none;
                         z-index: 9997;
-                        animation: fade-out 0.3s;
+                        animation: fade-out ${isIntense() ? 0.2 : 0.3}s;
                     `;
                     document.body.appendChild(flash);
-                    setTimeout(() => flash.remove(), 300);
+                    setTimeout(() => flash.remove(), isIntense() ? 200 : 300);
                 }
             }
 
-            // Random text size changes (toned down)
+            // Random text size changes
             function randomTextSize() {
+                const sizeChance = isIntense() ? 0.2 : 0.08;
                 const elements = document.querySelectorAll('h1, h2, h3, p');
                 elements.forEach(el => {
-                    if (Math.random() < 0.08) {
-                        const scale = 0.9 + Math.random() * 0.2;
+                    if (Math.random() < sizeChance) {
+                        const scale = isIntense() ? (0.5 + Math.random() * 1.0) : (0.9 + Math.random() * 0.2);
                         el.style.transform = `scale(${scale})`;
                         setTimeout(() => {
                             el.style.transform = '';
-                        }, 200);
+                        }, isIntense() ? 150 : 200);
                     }
                 });
             }
 
-            // Random rotation on elements (toned down)
+            // Random rotation on elements
             function randomRotation() {
+                const rotChance = isIntense() ? 0.12 : 0.05;
+                const rotAmount = isIntense() ? 20 : 5;
                 const elements = document.querySelectorAll('img, button, a, div');
                 elements.forEach(el => {
-                    if (Math.random() < 0.05) {
-                        const rot = (Math.random() - 0.5) * 5;
+                    if (Math.random() < rotChance) {
+                        const rot = (Math.random() - 0.5) * rotAmount;
                         el.style.transform = `rotate(${rot}deg)`;
                         setTimeout(() => {
                             el.style.transform = '';
-                        }, 200);
+                        }, isIntense() ? 100 : 200);
                     }
                 });
             }
@@ -1169,36 +1247,65 @@
             `;
             document.head.appendChild(fadeStyle);
 
-            // Run chaos effects at random intervals (toned down)
-            setInterval(() => {
-                if (Math.random() < 0.2) createGlitchOverlay();
-                if (Math.random() < 0.3) corruptText();
-                if (Math.random() < 0.2875) applyRandomJitter();
-                if (Math.random() < 0.2) randomColorShift();
-                if (Math.random() < 0.2) randomFlicker();
-                if (Math.random() < 0.1) randomBgFlash();
-                if (Math.random() < 0.15) randomTextSize();
-                if (Math.random() < 0.15) randomRotation();
-                if (Math.random() < 0.11) screenShake();
-                if (Math.random() < 0.1) randomInvert();
-                if (Math.random() < 0.1) randomMirror();
-                // randomBrightness disabled
-            }, 300);
+            // Run chaos effects at random intervals
+            window.chaosInterval = setInterval(() => {
+                const intervalTime = isIntense() ? 100 : 300;
+                const glitchChance = isIntense() ? 0.6 : 0.2;
+                const corruptChance = isIntense() ? 0.9 : 0.3;
+                const jitterChance = isIntense() ? 0.8 : 0.2875;
+                const colorChance = isIntense() ? 0.6 : 0.2;
+                const flickerChance = isIntense() ? 0.7 : 0.2;
+                const bgFlashChance = isIntense() ? 0.5 : 0.1;
+                const textSizeChance = isIntense() ? 0.6 : 0.15;
+                const rotChance = isIntense() ? 0.6 : 0.15;
+                const shakeChance = isIntense() ? 0.4 : 0.11;
+                const invertChance = isIntense() ? 0.5 : 0.1;
+                const mirrorChance = isIntense() ? 0.4 : 0.1;
+                const brightnessChance = isIntense() ? 0.5 : 0;
+                
+                if (Math.random() < glitchChance) createGlitchOverlay();
+                if (Math.random() < corruptChance) corruptText();
+                if (Math.random() < jitterChance) applyRandomJitter();
+                if (Math.random() < colorChance) randomColorShift();
+                if (Math.random() < flickerChance) randomFlicker();
+                if (Math.random() < bgFlashChance) randomBgFlash();
+                if (Math.random() < textSizeChance) randomTextSize();
+                if (Math.random() < rotChance) randomRotation();
+                if (Math.random() < shakeChance) screenShake();
+                if (Math.random() < invertChance) randomInvert();
+                if (Math.random() < mirrorChance) randomMirror();
+                if (Math.random() < brightnessChance) randomBrightness();
+            }, 100); // Check every 100ms, but probabilities control frequency
 
-            // Toned down chaos on mouse movement
+            // Chaos on mouse movement
             let mouseMoveCount = 0;
             document.addEventListener('mousemove', () => {
                 mouseMoveCount++;
-                if (mouseMoveCount % 15 === 0) {
-                    if (Math.random() < 0.3) createGlitchOverlay();
-                    if (Math.random() < 0.2) applyRandomJitter();
+                const mouseMoveThreshold = isIntense() ? 5 : 15;
+                if (mouseMoveCount % mouseMoveThreshold === 0) {
+                    const mouseGlitchChance = isIntense() ? 0.7 : 0.3;
+                    const mouseJitterChance = isIntense() ? 0.6 : 0.2;
+                    if (Math.random() < mouseGlitchChance) createGlitchOverlay();
+                    if (Math.random() < mouseJitterChance) applyRandomJitter();
+                    if (isIntense() && Math.random() < 0.4) randomColorShift();
+                    if (isIntense() && Math.random() < 0.3) screenShake();
                 }
             });
 
-            // Chaos on click (toned down)
+            // Chaos on click
             document.addEventListener('click', () => {
-                if (Math.random() < 0.5) createGlitchOverlay();
-                if (Math.random() < 0.3) corruptText();
+                if (isIntense()) {
+                    createGlitchOverlay();
+                    corruptText();
+                    randomBgFlash();
+                    screenShake();
+                    randomBrightness();
+                    if (Math.random() < 0.5) randomInvert();
+                    if (Math.random() < 0.5) randomMirror();
+                } else {
+                    if (Math.random() < 0.5) createGlitchOverlay();
+                    if (Math.random() < 0.3) corruptText();
+                }
             });
         }
 
