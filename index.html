@@ -171,6 +171,147 @@
             opacity: 0.5;
         }
 
+        .links-section {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 20px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .link-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            text-decoration: none;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .dexscreener-btn {
+            background: linear-gradient(to right, #2E7D32, #1B5E20);
+            border: 2px solid #39FF14;
+            box-shadow: 0 0 20px rgba(57,255,20,0.35);
+        }
+
+        .dexscreener-btn:hover {
+            background: linear-gradient(to right, #39FF14, #2E7D32);
+            box-shadow: 0 0 30px rgba(57,255,20,0.6);
+        }
+
+        .x-btn, .x-community-btn {
+            background: linear-gradient(to right, #6B2D9E, #4A1D6E);
+            border: 2px solid #9B4DCA;
+            box-shadow: 0 0 20px rgba(155,77,202,0.35);
+        }
+
+        .x-btn:hover, .x-community-btn:hover {
+            background: linear-gradient(to right, #9B4DCA, #6B2D9E);
+            box-shadow: 0 0 30px rgba(155,77,202,0.6);
+        }
+
+        .link-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .external-icon {
+            margin-left: auto;
+            width: 14px;
+            height: 14px;
+        }
+
+        .market-cap-section {
+            margin-top: 20px;
+            max-width: 600px;
+            width: 100%;
+            background: linear-gradient(to bottom right, rgba(45,27,78,0.95), rgba(26,11,46,0.98));
+            border: 2px solid rgba(57,255,20,0.6);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 0 25px rgba(57,255,20,0.4);
+        }
+
+        .market-cap-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .market-cap-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #39FF14;
+            font-size: 12px;
+            font-weight: bold;
+            letter-spacing: 0.05em;
+            text-shadow: 0 0 8px rgba(57,255,20,0.6);
+        }
+
+        .refresh-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            color: #39FF14;
+            padding: 6px;
+            border-radius: 50%;
+            transition: background 0.2s;
+            opacity: 0.7;
+        }
+
+        .refresh-btn:hover {
+            background: rgba(57,255,20,0.2);
+            opacity: 1;
+        }
+
+        .refresh-btn.refreshing {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .market-cap-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .market-cap-item {
+            background: rgba(0,0,0,0.5);
+            border-radius: 8px;
+            padding: 12px;
+            border: 1px solid rgba(57,255,20,0.3);
+        }
+
+        .market-cap-item-label {
+            font-size: 11px;
+            color: rgba(255,215,0,0.7);
+            margin-bottom: 4px;
+        }
+
+        .market-cap-item-value {
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .market-cap-loading {
+            text-align: center;
+            padding: 24px;
+            color: rgba(255,255,255,0.7);
+        }
+
         @media (max-width: 767px) {
             .title-image {
                 max-width: 50%;
@@ -189,7 +330,7 @@
 </head>
 <body>
     <div class="container">
-        <video src="title.mp4" class="title-image" autoplay loop muted playsinline></video>
+        <img src="title.gif" class="title-image" alt="THE AMAZING BULK">
         <p class="subtitle">FULL SITE BEING BULKED UP</p>
         
         <video src="bulk.mp4" class="banner" id="banner-video" autoplay loop playsinline></video>
@@ -213,10 +354,149 @@
                 <span id="sound-text">SOUND ON</span>
             </button>
         </div>
+
+        <div class="links-section">
+            <a href="https://dexscreener.com/solana/ee3m75v7qmc59fum5uyamrj72hsbz8zqzsx2fro5kuw6" target="_blank" rel="noopener noreferrer" class="link-btn dexscreener-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 17"></polyline>
+                    <polyline points="17 6 23 6 23 12"></polyline>
+                </svg>
+                DEXSCREENER
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="external-icon">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                    <polyline points="15 3 21 3 21 9"></polyline>
+                    <line x1="10" y1="14" x2="21" y2="3"></line>
+                </svg>
+            </a>
+            <a href="https://x.com/bulkedsol" target="_blank" rel="noopener noreferrer" class="link-btn x-btn">
+                <span style="font-size: 16px;">𝕏</span>
+                TWITTER / X
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="external-icon">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                    <polyline points="15 3 21 3 21 9"></polyline>
+                    <line x1="10" y1="14" x2="21" y2="3"></line>
+                </svg>
+            </a>
+            <a href="https://x.com/i/communities/1993091379786895690" target="_blank" rel="noopener noreferrer" class="link-btn x-community-btn">
+                <span style="font-size: 16px;">👥</span>
+                X COMMUNITY
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="external-icon">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                    <polyline points="15 3 21 3 21 9"></polyline>
+                    <line x1="10" y1="14" x2="21" y2="3"></line>
+                </svg>
+            </a>
+        </div>
+
+        <div class="market-cap-section" id="market-cap-section">
+            <div class="market-cap-header">
+                <div class="market-cap-label">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;">
+                        <line x1="12" y1="2" x2="12" y2="22"></line>
+                        <rect x="4" y="4" width="6" height="16"></rect>
+                        <rect x="14" y="8" width="6" height="12"></rect>
+                    </svg>
+                    LIVE MARKET DATA
+                </div>
+                <button class="refresh-btn" onclick="refreshMarketData()" id="refresh-btn" title="Refresh">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;">
+                        <polyline points="23 4 23 10 17 10"></polyline>
+                        <polyline points="1 20 1 14 7 14"></polyline>
+                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36M20.49 15a9 9 0 0 1-14.85 3.36"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="market-cap-content" id="market-cap-content">
+                <div class="market-cap-loading">Loading...</div>
+            </div>
+        </div>
     </div>
 
     <script>
         const CONTRACT_ADDRESS = "F4TJfiMVi7zFGRJj4FVC1Zuj7fdCo6skKa4SnAU4pump";
+        const DEXSCREENER_API = `https://api.dexscreener.com/latest/dex/tokens/${CONTRACT_ADDRESS}`;
+
+        function formatNumber(num) {
+            if (num === null || num === undefined) return "---";
+            if (num >= 1_000_000_000) return `$${(num / 1_000_000_000).toFixed(2)}B`;
+            if (num >= 1_000_000) return `$${(num / 1_000_000).toFixed(2)}M`;
+            if (num >= 1_000) return `$${(num / 1_000).toFixed(2)}K`;
+            return `$${num.toFixed(2)}`;
+        }
+
+        function formatPrice(price) {
+            if (!price) return "---";
+            const num = parseFloat(price);
+            if (num < 0.000001) return `$${num.toExponential(2)}`;
+            if (num < 0.01) return `$${num.toFixed(8)}`;
+            if (num < 1) return `$${num.toFixed(6)}`;
+            return `$${num.toFixed(4)}`;
+        }
+
+        async function fetchMarketData(showRefresh = false) {
+            const refreshBtn = document.getElementById('refresh-btn');
+            const contentDiv = document.getElementById('market-cap-content');
+            
+            if (showRefresh && refreshBtn) {
+                refreshBtn.classList.add('refreshing');
+            }
+
+            try {
+                const response = await fetch(DEXSCREENER_API);
+                const data = await response.json();
+                
+                if (data.pairs && data.pairs.length > 0) {
+                    const pair = data.pairs[0];
+                    const marketData = {
+                        priceUsd: pair.priceUsd,
+                        marketCap: pair.marketCap || pair.fdv,
+                        volume24h: pair.volume?.h24,
+                        priceChange24h: pair.priceChange?.h24,
+                    };
+
+                    const priceChange = marketData.priceChange24h ?? 0;
+                    const isPositive = priceChange >= 0;
+
+                    contentDiv.innerHTML = `
+                        <div class="market-cap-item">
+                            <div class="market-cap-item-label">💰 MARKET CAP</div>
+                            <div class="market-cap-item-value">${formatNumber(marketData.marketCap)}</div>
+                        </div>
+                        <div class="market-cap-item">
+                            <div class="market-cap-item-label">⚡ PRICE</div>
+                            <div class="market-cap-item-value" style="font-size: 14px; font-family: monospace;">${formatPrice(marketData.priceUsd)}</div>
+                        </div>
+                        <div class="market-cap-item">
+                            <div class="market-cap-item-label">📈 24H CHANGE</div>
+                            <div class="market-cap-item-value" style="color: ${isPositive ? '#39FF14' : '#f87171'}">${priceChange !== null ? `${isPositive ? '+' : ''}${priceChange.toFixed(2)}%` : '---'}</div>
+                        </div>
+                        <div class="market-cap-item">
+                            <div class="market-cap-item-label">📊 24H VOLUME</div>
+                            <div class="market-cap-item-value">${formatNumber(marketData.volume24h)}</div>
+                        </div>
+                    `;
+                } else {
+                    contentDiv.innerHTML = '<div class="market-cap-loading">No market data available</div>';
+                }
+            } catch (err) {
+                console.error('Error fetching market data:', err);
+                contentDiv.innerHTML = '<div class="market-cap-loading">Error loading market data</div>';
+            }
+
+            if (refreshBtn) {
+                refreshBtn.classList.remove('refreshing');
+            }
+        }
+
+        function refreshMarketData() {
+            fetchMarketData(true);
+        }
+
+        // Fetch market data on load and every 30 seconds
+        window.addEventListener('DOMContentLoaded', () => {
+            fetchMarketData();
+            setInterval(() => fetchMarketData(), 30000);
+        });
 
         function copyContract(event) {
             navigator.clipboard.writeText(CONTRACT_ADDRESS).then(() => {
@@ -274,18 +554,18 @@
             }
         }
 
-        // Initialize: start with sound muted (browser autoplay policy)
+        // Initialize: start with sound on
         window.addEventListener('DOMContentLoaded', () => {
             const video = document.getElementById('banner-video');
             const btn = document.querySelector('.sound-toggle-btn');
             const icon = document.getElementById('sound-icon');
             const text = document.getElementById('sound-text');
             
-            // Start muted for autoplay, but show as "SOUND OFF"
-            video.muted = true;
-            btn.classList.add('muted');
-            text.textContent = 'SOUND OFF';
-            icon.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4V5z"></path><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line>';
+            // Start with sound on
+            video.muted = false;
+            btn.classList.remove('muted');
+            text.textContent = 'SOUND ON';
+            icon.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>';
         });
 
         // Allow replacing banner with GIF later
