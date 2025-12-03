@@ -41,17 +41,6 @@
             overflow: hidden;
         }
 
-        /* Video background */
-        .video-background {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: 0;
-            opacity: 0.8;
-        }
 
         @keyframes float {
             0%, 100% { transform: translateY(0px); }
@@ -68,26 +57,17 @@
             z-index: 10;
             max-width: 600px;
             width: 100%;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 20px;
-            border-radius: 12px;
-            backdrop-filter: blur(2px);
         }
 
-        h1 {
-            font-family: 'Hulk Display', 'Orbitron', sans-serif;
-            font-size: 64px;
-            font-weight: bold;
+        .title-image {
+            max-width: 100%;
+            height: auto;
             margin-bottom: 20px;
-            background: linear-gradient(135deg, #39FF14 0%, #FFD700 50%, #39FF14 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-shadow: 2px 2px 0px rgba(57,255,20,0.5), -2px -2px 0px rgba(155,77,202,0.5);
             filter: drop-shadow(0 0 10px rgba(57,255,20,0.8));
         }
 
         .subtitle {
+            font-family: 'Hulk Display', 'Orbitron', sans-serif;
             font-size: 24px;
             color: #FFD700;
             letter-spacing: 0.1em;
@@ -158,8 +138,8 @@
         }
 
         @media (max-width: 767px) {
-            h1 {
-                font-size: 42px;
+            .title-image {
+                max-width: 90%;
             }
             
             .subtitle {
@@ -173,14 +153,11 @@
     </style>
 </head>
 <body>
-    <video class="video-background" autoplay loop muted playsinline>
-        <source src="bulk.mp4" type="video/mp4">
-    </video>
     <div class="container">
-        <h1>THE AMAZING BULK</h1>
+        <img src="title.gif" alt="THE AMAZING BULK" class="title-image">
         <p class="subtitle">FULL SITE BEING BULKED UP</p>
         
-        <img src="https://i.imgur.com/ynAj4P7.png" alt="The Amazing Bulk" class="banner" id="banner-image">
+        <img src="bulk.gif" alt="The Amazing Bulk" class="banner" id="banner-image">
         
         <div class="contract-section">
             <div class="contract-label">CONTRACT ADDRESS</div>
