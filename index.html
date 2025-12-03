@@ -38,7 +38,13 @@
             text-align: center;
             padding: 20px;
             position: relative;
-            overflow: hidden;
+        }
+
+        @media (max-width: 1024px) {
+            body {
+                overflow-y: auto;
+                justify-content: flex-start;
+            }
         }
 
 
@@ -55,8 +61,22 @@
         .container {
             position: relative;
             z-index: 10;
-            max-width: 600px;
+            max-width: 1200px;
             width: 100%;
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        .main-content {
+            flex: 1;
+            max-width: 600px;
+        }
+
+        .sidebar {
+            flex: 0 0 280px;
+            position: sticky;
+            top: 20px;
         }
 
         .title-image {
@@ -244,52 +264,53 @@
         }
 
         .market-cap-section {
-            margin-top: 20px;
-            max-width: 600px;
-            width: 100%;
             background: linear-gradient(to bottom right, rgba(45,27,78,0.95), rgba(26,11,46,0.98));
-            border: 2px solid rgba(57,255,20,0.6);
+            border: 2px solid rgba(155,77,202,0.6);
             border-radius: 12px;
-            padding: 16px;
-            box-shadow: 0 0 25px rgba(57,255,20,0.4);
+            padding: 12px;
+            box-shadow: 0 0 25px rgba(155,77,202,0.4);
         }
 
         .market-cap-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
         }
 
         .market-cap-label {
             display: flex;
             align-items: center;
-            gap: 6px;
-            color: #39FF14;
-            font-size: 12px;
+            gap: 4px;
+            color: #9B4DCA;
+            font-size: 10px;
             font-weight: bold;
             letter-spacing: 0.05em;
-            text-shadow: 0 0 8px rgba(57,255,20,0.6);
         }
 
         .refresh-btn {
             background: transparent;
             border: none;
             cursor: pointer;
-            color: #39FF14;
-            padding: 6px;
+            color: #9B4DCA;
+            padding: 4px;
             border-radius: 50%;
             transition: background 0.2s;
             opacity: 0.7;
         }
 
         .refresh-btn:hover {
-            background: rgba(57,255,20,0.2);
+            background: rgba(155,77,202,0.2);
             opacity: 1;
         }
 
         .refresh-btn.refreshing {
             animation: spin 1s linear infinite;
+        }
+
+        .refresh-btn svg {
+            width: 14px;
+            height: 14px;
         }
 
         @keyframes spin {
@@ -298,37 +319,74 @@
         }
 
         .market-cap-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
 
         .market-cap-item {
             background: rgba(0,0,0,0.5);
-            border-radius: 8px;
-            padding: 12px;
-            border: 1px solid rgba(57,255,20,0.3);
+            border-radius: 6px;
+            padding: 8px;
+            border: 1px solid rgba(155,77,202,0.3);
         }
 
         .market-cap-item-label {
-            font-size: 11px;
+            font-size: 9px;
             color: rgba(255,215,0,0.7);
-            margin-bottom: 4px;
+            margin-bottom: 3px;
         }
 
         .market-cap-item-value {
             color: white;
-            font-size: 18px;
+            font-size: 14px;
             font-weight: bold;
         }
 
         .market-cap-loading {
             text-align: center;
-            padding: 24px;
+            padding: 16px;
             color: rgba(255,255,255,0.7);
+            font-size: 11px;
+        }
+
+        @media (max-width: 1024px) {
+            body {
+                overflow-y: auto;
+                justify-content: flex-start;
+            }
+
+            .container {
+                flex-direction: column;
+                max-width: 100%;
+            }
+
+            .main-content {
+                order: 1;
+                width: 100%;
+            }
+
+            .sidebar {
+                order: 2;
+                flex: 1;
+                position: static;
+                width: 100%;
+            }
+
+            .market-cap-section {
+                margin-top: 20px;
+            }
         }
 
         @media (max-width: 767px) {
+            body {
+                padding: 12px;
+            }
+
+            .container {
+                gap: 16px;
+            }
+
             .title-image {
                 max-width: 50%;
                 width: 50%;
@@ -341,73 +399,78 @@
             .banner {
                 max-width: 400px;
             }
+
+            .market-cap-content {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+
+            .market-cap-section {
+                margin-top: 20px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <video src="title.mp4" class="title-image" autoplay loop muted playsinline></video>
-        <p class="subtitle">FULL SITE BEING BULKED UP</p>
-        
-        <video src="bulk.mp4" class="banner" id="banner-video" autoplay loop muted playsinline></video>
-        
-        <div class="contract-section">
-            <div class="contract-label">CONTRACT ADDRESS</div>
-            <div class="contract-display">
-                <code class="contract-address" id="contract-address">F4TJfiMVi7zFGRJj4FVC1Zuj7fdCo6skKa4SnAU4pump</code>
-                <button class="copy-btn" onclick="copyContract()" title="Copy to clipboard">
+        <div class="main-content">
+            <video src="title.mp4" class="title-image" autoplay loop muted playsinline></video>
+            <p class="subtitle">FULL SITE BEING BULKED UP</p>
+            
+            <video src="bulk.mp4" class="banner" id="banner-video" autoplay loop muted playsinline></video>
+            
+            <div class="contract-section">
+                <div class="contract-label">CONTRACT ADDRESS</div>
+                <div class="contract-display">
+                    <code class="contract-address" id="contract-address">F4TJfiMVi7zFGRJj4FVC1Zuj7fdCo6skKa4SnAU4pump</code>
+                    <button class="copy-btn" onclick="copyContract()" title="Copy to clipboard">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="links-section">
+                <a href="https://dexscreener.com/solana/ee3m75v7qmc59fum5uyamrj72hsbz8zqzsx2fro5kuw6" target="_blank" rel="noopener noreferrer" class="link-btn dexscreener-btn">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 17"></polyline>
+                        <polyline points="17 6 23 6 23 12"></polyline>
                     </svg>
-                </button>
+                    DEXSCREENER
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="external-icon">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                        <polyline points="15 3 21 3 21 9"></polyline>
+                        <line x1="10" y1="14" x2="21" y2="3"></line>
+                    </svg>
+                </a>
+                <span class="link-separator">|</span>
+                <a href="https://x.com/bulkedsol" target="_blank" rel="noopener noreferrer" class="link-btn x-btn">
+                    <span style="font-size: 16px;">𝕏</span>
+                    TWITTER / X
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="external-icon">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                        <polyline points="15 3 21 3 21 9"></polyline>
+                        <line x1="10" y1="14" x2="21" y2="3"></line>
+                    </svg>
+                </a>
+                <span class="link-separator">|</span>
+                <a href="https://x.com/i/communities/1993091379786895690" target="_blank" rel="noopener noreferrer" class="link-btn x-community-btn">
+                    <span style="font-size: 16px;">👥</span>
+                    X COMMUNITY
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="external-icon">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                        <polyline points="15 3 21 3 21 9"></polyline>
+                        <line x1="10" y1="14" x2="21" y2="3"></line>
+                    </svg>
+                </a>
             </div>
         </div>
 
-        <div class="links-section">
-            <a href="https://dexscreener.com/solana/ee3m75v7qmc59fum5uyamrj72hsbz8zqzsx2fro5kuw6" target="_blank" rel="noopener noreferrer" class="link-btn dexscreener-btn">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 17"></polyline>
-                    <polyline points="17 6 23 6 23 12"></polyline>
-                </svg>
-                DEXSCREENER
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="external-icon">
-                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                    <polyline points="15 3 21 3 21 9"></polyline>
-                    <line x1="10" y1="14" x2="21" y2="3"></line>
-                </svg>
-            </a>
-            <span class="link-separator">|</span>
-            <a href="https://x.com/bulkedsol" target="_blank" rel="noopener noreferrer" class="link-btn x-btn">
-                <span style="font-size: 16px;">𝕏</span>
-                TWITTER / X
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="external-icon">
-                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                    <polyline points="15 3 21 3 21 9"></polyline>
-                    <line x1="10" y1="14" x2="21" y2="3"></line>
-                </svg>
-            </a>
-            <span class="link-separator">|</span>
-            <a href="https://x.com/i/communities/1993091379786895690" target="_blank" rel="noopener noreferrer" class="link-btn x-community-btn">
-                <span style="font-size: 16px;">👥</span>
-                X COMMUNITY
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="external-icon">
-                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                    <polyline points="15 3 21 3 21 9"></polyline>
-                    <line x1="10" y1="14" x2="21" y2="3"></line>
-                </svg>
-            </a>
-        </div>
-
-        <button class="sound-toggle-btn" onclick="toggleSound()" title="Toggle sound">
-            <svg id="sound-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
-                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-            </svg>
-            <span id="sound-text">SOUND ON</span>
-        </button>
-
-        <div class="market-cap-section" id="market-cap-section">
+        <div class="sidebar">
+            <div class="market-cap-section" id="market-cap-section">
             <div class="market-cap-header">
                 <div class="market-cap-label">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;">
@@ -429,7 +492,16 @@
                 <div class="market-cap-loading">Loading...</div>
             </div>
         </div>
+        </div>
     </div>
+
+    <button class="sound-toggle-btn" onclick="toggleSound()" title="Toggle sound">
+        <svg id="sound-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+        </svg>
+        <span id="sound-text">SOUND ON</span>
+    </button>
 
     <script>
         const CONTRACT_ADDRESS = "F4TJfiMVi7zFGRJj4FVC1Zuj7fdCo6skKa4SnAU4pump";
