@@ -1,0 +1,1320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Amazing Bulk - gRape Schmeg powered token | $BULK on Solana</title>
+    <meta name="description" content="The Amazing Bulk - A purple gamma-powered memecoin on Solana. Fair launch, community driven, no utility. Just pure BULK energy!">
+    <meta property="og:title" content="The Amazing Bulk - gRape Schmeg powered token">
+    <meta property="og:description" content="Time to get BULKED! The Amazing Bulk is a purple gamma-powered memecoin on Solana.">
+    <meta property="og:image" content="https://i.imgur.com/ynAj4P7.png">
+    <meta property="og:url" content="https://theamazingbulk.com">
+    <style>
+        @font-face {
+            font-family: 'Hulk Display';
+            src: url('hulk.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+            display: swap;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1A0B2E 0%, #2D1B4E 50%, #1A0B2E 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            color: #ffffff;
+            min-height: 100vh;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -400% center; }
+            100% { background-position: 400% center; }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        @keyframes bounce-icon {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        @keyframes intro-pop {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes gamma-particle {
+            0% { bottom: -10px; opacity: 1; }
+            100% { bottom: 100vh; opacity: 0; }
+        }
+
+        @keyframes glitch {
+            0%, 100% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+        }
+
+        @keyframes color-shift {
+            0% { filter: hue-rotate(0deg); }
+            25% { filter: hue-rotate(90deg); }
+            50% { filter: hue-rotate(180deg); }
+            75% { filter: hue-rotate(270deg); }
+            100% { filter: hue-rotate(360deg); }
+        }
+
+        @keyframes random-jitter {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            10% { transform: translate(-3px, 2px) rotate(-1deg); }
+            20% { transform: translate(2px, -3px) rotate(1deg); }
+            30% { transform: translate(-2px, 3px) rotate(-0.5deg); }
+            40% { transform: translate(3px, -2px) rotate(0.5deg); }
+            50% { transform: translate(-1px, -1px) rotate(-1deg); }
+            60% { transform: translate(1px, 1px) rotate(1deg); }
+            70% { transform: translate(-2px, -2px) rotate(-0.5deg); }
+            80% { transform: translate(2px, 2px) rotate(0.5deg); }
+            90% { transform: translate(-1px, 2px) rotate(-1deg); }
+        }
+
+        @keyframes text-flicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        @keyframes random-scale {
+            0%, 100% { transform: scale(1); }
+            25% { transform: scale(1.05); }
+            50% { transform: scale(0.95); }
+            75% { transform: scale(1.02); }
+        }
+
+        @keyframes chaos-rotate {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(2deg); }
+            50% { transform: rotate(-2deg); }
+            75% { transform: rotate(1deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        @keyframes random-blur {
+            0%, 100% { filter: blur(0px); }
+            50% { filter: blur(2px); }
+        }
+
+        @keyframes scanline {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(100vh); }
+        }
+
+        @keyframes border-flash {
+            0%, 100% { border-color: rgba(57,255,20,0.6); }
+            25% { border-color: rgba(155,77,202,0.8); }
+            50% { border-color: rgba(255,215,0,0.8); }
+            75% { border-color: rgba(57,255,20,0.8); }
+        }
+
+        @keyframes distort {
+            0%, 100% { transform: scale(1) skew(0deg); }
+            25% { transform: scale(1.02) skew(1deg, 0deg); }
+            50% { transform: scale(0.98) skew(-1deg, 0deg); }
+            75% { transform: scale(1.01) skew(0.5deg, 0deg); }
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .spinning-bg {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('spin.png');
+            background-size: 200%;
+            background-position: center;
+            background-repeat: no-repeat;
+            animation: spin 15s linear infinite;
+            opacity: 0.15;
+            pointer-events: none;
+            z-index: 1;
+            mix-blend-mode: overlay;
+        }
+
+        @media (min-width: 768px) {
+            .spinning-bg {
+                background-size: 300%;
+            }
+        }
+
+        .gamma-particle {
+            position: absolute;
+            width: 2px;
+            height: 100px;
+            background: linear-gradient(to top, rgba(57,255,20,0.8), transparent);
+            filter: drop-shadow(0 0 5px #39FF14);
+            animation: gamma-particle linear infinite;
+        }
+
+        .glitch-text {
+            animation: glitch 0.3s infinite;
+        }
+
+        .chaos-element {
+            animation: random-jitter 0.5s infinite;
+        }
+
+        .flicker {
+            animation: text-flicker 0.1s infinite;
+        }
+
+        .random-scale {
+            animation: random-scale 2s infinite;
+        }
+
+        .chaos-rotate {
+            animation: chaos-rotate 3s infinite;
+        }
+
+        .shimmer {
+            animation: shimmer 3s infinite;
+        }
+
+        .float {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .bounce-icon {
+            animation: bounce-icon 1s ease-in-out infinite;
+        }
+
+        .intro-pop {
+            animation: intro-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #39FF14 0%, #FFD700 50%, #39FF14 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        #root {
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        button {
+            font-family: inherit;
+            cursor: pointer;
+            border: none;
+            background: none;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        h1 {
+            font-family: 'Hulk Display', 'Orbitron', sans-serif;
+            font-weight: bold;
+        }
+
+        h2, h3 {
+            font-family: 'Hulk Display', 'Orbitron', sans-serif;
+        }
+
+        /* Mobile responsive styles */
+        @media (max-width: 767px) {
+            h1 {
+                font-size: 32px !important;
+            }
+            
+            main {
+                padding: 8px !important;
+            }
+            
+            .spinning-bg {
+                background-size: 200%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <!-- React & ReactDOM from CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
+    <script>
+        const { useState, useEffect, useCallback, useRef } = React;
+        const e = React.createElement;
+
+        // Constants
+        const CONTRACT_ADDRESS = "F4TJfiMVi7zFGRJj4FVC1Zuj7fdCo6skKa4SnAU4pump";
+        const DEXSCREENER_URL = "https://dexscreener.com/solana/ee3m75v7qmc59fum5uyamrj72hsbz8zqzsx2fro5kuw6";
+        const X_ACCOUNT_URL = "https://x.com/bulkedsol";
+        const X_COMMUNITY_URL = "https://x.com/i/communities/1993091379786895690";
+        const BANNER_IMAGE = "https://i.imgur.com/ynAj4P7.png";
+        const DEXSCREENER_API = `https://api.dexscreener.com/latest/dex/tokens/${CONTRACT_ADDRESS}`;
+
+        // Utility functions
+        function formatNumber(num) {
+            if (num === null || num === undefined) return "---";
+            if (num >= 1_000_000_000) return `$${(num / 1_000_000_000).toFixed(2)}B`;
+            if (num >= 1_000_000) return `$${(num / 1_000_000).toFixed(2)}M`;
+            if (num >= 1_000) return `$${(num / 1_000).toFixed(2)}K`;
+            return `$${num.toFixed(2)}`;
+        }
+
+        function formatPrice(price) {
+            if (!price) return "---";
+            const num = parseFloat(price);
+            if (num < 0.000001) return `$${num.toExponential(2)}`;
+            if (num < 0.01) return `$${num.toFixed(8)}`;
+            if (num < 1) return `$${num.toFixed(6)}`;
+            return `$${num.toFixed(4)}`;
+        }
+
+        // SVG Icons (simple implementations)
+        function ZapIcon() {
+            return e('svg', { width: '1em', height: '1em', viewBox: '0 0 24 24', fill: 'currentColor' },
+                e('polygon', { points: '13 2 3 14 12 14 11 22 21 10 12 10 13 2' })
+            );
+        }
+
+        function CopyIcon() {
+            return e('svg', { width: '1em', height: '1em', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 },
+                e('rect', { x: 9, y: 9, width: 13, height: 13, rx: 2, ry: 2 }),
+                e('path', { d: 'M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1' })
+            );
+        }
+
+        function CheckIcon() {
+            return e('svg', { width: '1em', height: '1em', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 },
+                e('polyline', { points: '20 6 9 17 4 12' })
+            );
+        }
+
+        function ExternalLinkIcon() {
+            return e('svg', { width: '1em', height: '1em', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 },
+                e('path', { d: 'M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6' }),
+                e('polyline', { points: '15 3 21 3 21 9' }),
+                e('line', { x1: 10, y1: 14, x2: 21, y2: 3 })
+            );
+        }
+
+        function TrendingUpIcon() {
+            return e('svg', { width: '1em', height: '1em', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 },
+                e('polyline', { points: '23 6 13.5 15.5 8.5 10.5 1 17' }),
+                e('polyline', { points: '17 6 23 6 23 12' })
+            );
+        }
+
+        function RefreshIcon() {
+            return e('svg', { width: '1em', height: '1em', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 },
+                e('polyline', { points: '23 4 23 10 17 10' }),
+                e('polyline', { points: '1 20 1 14 7 14' }),
+                e('path', { d: 'M3.51 9a9 9 0 0 1 14.85-3.36M20.49 15a9 9 0 0 1-14.85 3.36' })
+            );
+        }
+
+        function XIcon() {
+            return e('svg', { width: '1em', height: '1em', viewBox: '0 0 24 24', fill: 'currentColor' },
+                e('path', { d: 'M18 6L6 18M6 6l12 12' })
+            );
+        }
+
+        function BarChartIcon() {
+            return e('svg', { width: '1em', height: '1em', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 },
+                e('line', { x1: 12, y1: 2, x2: 12, y2: 22 }),
+                e('rect', { x: 4, y: 4, width: 6, height: 16 }),
+                e('rect', { x: 14, y: 8, width: 6, height: 12 })
+            );
+        }
+
+        function DollarIcon() {
+            return e('svg', { width: '1em', height: '1em', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2 },
+                e('line', { x1: 12, y1: 1, x2: 12, y2: 23 }),
+                e('path', { d: 'M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6' })
+            );
+        }
+
+        // Market Cap Display Component
+        function MarketCapDisplay() {
+            const [marketData, setMarketData] = useState(null);
+            const [loading, setLoading] = useState(true);
+            const [isRefreshing, setIsRefreshing] = useState(false);
+
+            const fetchMarketData = useCallback(async (showRefresh = false) => {
+                if (showRefresh) setIsRefreshing(true);
+                try {
+                    const response = await fetch(DEXSCREENER_API);
+                    const data = await response.json();
+                    if (data.pairs && data.pairs.length > 0) {
+                        const pair = data.pairs[0];
+                        setMarketData({
+                            priceUsd: pair.priceUsd,
+                            marketCap: pair.marketCap || pair.fdv,
+                            volume24h: pair.volume?.h24,
+                            priceChange24h: pair.priceChange?.h24,
+                        });
+                    }
+                } catch (err) {
+                    console.error('Error fetching market data:', err);
+                }
+                setLoading(false);
+                setIsRefreshing(false);
+            }, []);
+
+            useEffect(() => {
+                fetchMarketData();
+                const interval = setInterval(() => fetchMarketData(), 30000);
+                return () => clearInterval(interval);
+            }, [fetchMarketData]);
+
+            const priceChange = marketData?.priceChange24h ?? 0;
+            const isPositive = priceChange >= 0;
+
+            return e('div', { style: { position: 'relative', width: '100%', maxWidth: '500px', margin: '0 auto' } },
+                e('div', {
+                    style: {
+                        position: 'relative',
+                        overflow: 'visible',
+                        padding: '12px',
+                        borderRadius: '8px',
+                        background: 'linear-gradient(to bottom right, rgba(45,27,78,0.95), rgba(26,11,46,0.98))',
+                        backdropFilter: 'blur(4px)',
+                        border: '2px solid rgba(57,255,20,0.6)',
+                        boxShadow: '0 0 25px rgba(57,255,20,0.4), 0 0 50px rgba(107,45,158,0.3), inset 0 0 20px rgba(57,255,20,0.1)'
+                    }
+                },
+                    // Header
+                    e('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' } },
+                        e('div', { style: { display: 'flex', alignItems: 'center', gap: '4px', color: '#39FF14' } },
+                            e(BarChartIcon, null),
+                            e('span', { style: { fontSize: '12px', fontWeight: 'bold', letterSpacing: '0.05em', textShadow: '0 0 8px rgba(57,255,20,0.6)' } }, 'LIVE MARKET DATA')
+                        ),
+                        e('button', {
+                            onClick: () => fetchMarketData(true),
+                            style: {
+                                padding: '6px',
+                                borderRadius: '50%',
+                                background: 'transparent',
+                                cursor: 'pointer',
+                                border: 'none',
+                                color: '#39FF14',
+                                opacity: 0.7,
+                                animation: isRefreshing ? 'spin 1s linear infinite' : 'none'
+                            }
+                        }, e(RefreshIcon, null))
+                    ),
+                    // Stats
+                    loading ? e('div', { style: { display: 'flex', justifyContent: 'center', padding: '24px' } }, 'Loading...') : (
+                        e('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' } },
+                            e('div', { style: { background: 'rgba(0,0,0,0.5)', borderRadius: '8px', padding: '12px', border: '1px solid rgba(57,255,20,0.3)' } },
+                                e('div', { style: { fontSize: '11px', color: 'rgba(255,215,0,0.7)', marginBottom: '4px' } }, '💰 MARKET CAP'),
+                                e('div', { style: { color: 'white', fontSize: '18px', fontWeight: 'bold' } }, formatNumber(marketData?.marketCap ?? null))
+                            ),
+                            e('div', { style: { background: 'rgba(0,0,0,0.5)', borderRadius: '8px', padding: '12px', border: '1px solid rgba(155,77,202,0.3)' } },
+                                e('div', { style: { fontSize: '11px', color: 'rgba(155,77,202,0.7)', marginBottom: '4px' } }, '⚡ PRICE'),
+                                e('div', { style: { color: 'white', fontSize: '14px', fontFamily: 'monospace' } }, formatPrice(marketData?.priceUsd ?? null))
+                            ),
+                            e('div', { style: { background: 'rgba(0,0,0,0.5)', borderRadius: '8px', padding: '12px', border: '1px solid rgba(255,215,0,0.3)' } },
+                                e('div', { style: { fontSize: '11px', color: 'rgba(255,215,0,0.7)', marginBottom: '4px' } }, '📈 24H CHANGE'),
+                                e('div', { style: { color: isPositive ? '#39FF14' : '#f87171', fontSize: '18px', fontWeight: 'bold' } }, priceChange !== null ? `${isPositive ? '+' : ''}${priceChange.toFixed(2)}%` : '---')
+                            ),
+                            e('div', { style: { background: 'rgba(0,0,0,0.5)', borderRadius: '8px', padding: '12px', border: '1px solid rgba(57,255,20,0.3)' } },
+                                e('div', { style: { fontSize: '11px', color: 'rgba(57,255,20,0.7)', marginBottom: '4px' } }, '📊 24H VOLUME'),
+                                e('div', { style: { color: 'white', fontSize: '18px', fontWeight: 'bold' } }, formatNumber(marketData?.volume24h ?? null))
+                            )
+                        )
+                    )
+                )
+            );
+        }
+
+        // Random floating chaos elements
+        function ChaosOverlay() {
+            const [chaosElements, setChaosElements] = useState([]);
+            const [randomTexts, setRandomTexts] = useState([]);
+
+            useEffect(() => {
+                const elements = [];
+                const messages = ['Schmeg', 'Purple', 'Inject Schmeg', 'gRape Schmeg', 'Purple Schmeg', 'Get Bulked'];
+                
+                for (let i = 0; i < 5; i++) {
+                    elements.push({
+                        id: i,
+                        text: messages[Math.floor(Math.random() * messages.length)],
+                        x: Math.random() * 100,
+                        y: Math.random() * 100,
+                        delay: Math.random() * 2,
+                        duration: 3 + Math.random() * 2,
+                        size: (12 + Math.random() * 20) * 1.5,
+                        color: Math.random() > 0.5 ? '#39FF14' : '#9B4DCA'
+                    });
+                }
+                setChaosElements(elements);
+
+                const interval = setInterval(() => {
+                    setChaosElements(prev => prev.map(el => ({
+                        ...el,
+                        x: Math.random() * 100,
+                        y: Math.random() * 100,
+                        text: messages[Math.floor(Math.random() * messages.length)],
+                        delay: Math.random() * 2
+                    })));
+                }, 5000);
+
+                // Random text overlays
+                const textInterval = setInterval(() => {
+                    if (Math.random() < 0.4) {
+                        const newText = {
+                            id: Date.now(),
+                            text: messages[Math.floor(Math.random() * messages.length)],
+                            x: Math.random() * 80 + 10,
+                            y: Math.random() * 80 + 10,
+                            size: (20 + Math.random() * 30) * 1.5,
+                            color: Math.random() > 0.5 ? '#39FF14' : '#9B4DCA',
+                            rotation: (Math.random() - 0.5) * 20
+                        };
+                        setRandomTexts(prev => [...prev, newText]);
+                        setTimeout(() => {
+                            setRandomTexts(prev => prev.filter(t => t.id !== newText.id));
+                        }, 1000);
+                    }
+                }, 1400);
+
+                return () => {
+                    clearInterval(interval);
+                    clearInterval(textInterval);
+                };
+            }, []);
+
+            return e('div', { style: { position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 9996, overflow: 'hidden' } },
+                // Scanline effect
+                e('div', {
+                    style: {
+                        position: 'absolute',
+                        inset: 0,
+                        background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(57,255,20,0.03) 2px, rgba(57,255,20,0.03) 4px)',
+                        pointerEvents: 'none',
+                        animation: 'scanline 8s linear infinite'
+                    }
+                }),
+                // Floating elements
+                ...chaosElements.map(el => 
+                    e('div', {
+                        key: el.id,
+                        style: {
+                            position: 'absolute',
+                            left: `${el.x}%`,
+                            top: `${el.y}%`,
+                            fontSize: `${el.size}px`,
+                            fontFamily: "'Hulk Display', 'Orbitron', sans-serif",
+                            color: el.color,
+                            fontWeight: 'bold',
+                            textShadow: `0 0 10px ${el.color}`,
+                            opacity: 0.4,
+                            transform: 'translate(-50%, -50%)',
+                            animation: `float ${el.duration}s ease-in-out infinite`,
+                            animationDelay: `${el.delay}s`,
+                            filter: 'blur(0.5px)',
+                            userSelect: 'none'
+                        }
+                    }, el.text)
+                ),
+                // Random text overlays
+                ...randomTexts.map(text => 
+                    e('div', {
+                        key: text.id,
+                        className: 'glitch-text',
+                        style: {
+                            position: 'absolute',
+                            left: `${text.x}%`,
+                            top: `${text.y}%`,
+                            fontSize: `${text.size}px`,
+                            fontFamily: "'Hulk Display', 'Orbitron', sans-serif",
+                            color: text.color,
+                            fontWeight: 'bold',
+                            textShadow: `0 0 15px ${text.color}, 2px 2px 0px rgba(0,0,0,0.8)`,
+                            transform: `translate(-50%, -50%) rotate(${text.rotation}deg)`,
+                            opacity: 0.7,
+                            userSelect: 'none',
+                            animation: 'fade-out 1s forwards'
+                        }
+                    }, text.text)
+                )
+            );
+        }
+
+        // Global state for chaos intensity
+        let chaosIntensity = 'toned'; // 'toned' or 'intense'
+
+        // Main App Component
+        function App() {
+            const [showIntro, setShowIntro] = useState(true);
+            const [infoOpen, setInfoOpen] = useState(false);
+            const [glitchActive, setGlitchActive] = useState(false);
+            const [subtitleText, setSubtitleText] = useState('gRape Schmeg powered token');
+            const [subtitleCorrupted, setSubtitleCorrupted] = useState(false);
+            const [getBulked, setGetBulked] = useState(false);
+
+            useEffect(() => {
+                const glitchInterval = setInterval(() => {
+                    if (Math.random() < 0.3) {
+                        setGlitchActive(true);
+                        setTimeout(() => setGlitchActive(false), 200);
+                    }
+                }, 1000);
+                return () => clearInterval(glitchInterval);
+            }, []);
+
+            // Alternate subtitle text 3 times per second
+            useEffect(() => {
+                const subtitleInterval = setInterval(() => {
+                    setSubtitleText(prev => prev === 'gRape Schmeg powered token' 
+                        ? 'Purple Schmeg powered token' 
+                        : 'gRape Schmeg powered token');
+                }, 333); // ~3 times per second
+                return () => clearInterval(subtitleInterval);
+            }, []);
+
+            // Rapid corruption for subtitle
+            useEffect(() => {
+                const corruptInterval = setInterval(() => {
+                    const subtitleEl = document.getElementById('subtitle-text');
+                    if (subtitleEl) {
+                        const originalText = subtitleText;
+                        const chars = '!@#$%^&*()_+-=[]{}|;:,.<>?~`';
+                        let corrupted = '';
+                        for (let i = 0; i < originalText.length; i++) {
+                            if (Math.random() < 0.5 && originalText[i] !== ' ') {
+                                corrupted += chars[Math.floor(Math.random() * chars.length)];
+                            } else {
+                                corrupted += originalText[i];
+                            }
+                        }
+                        subtitleEl.textContent = corrupted;
+                        setSubtitleCorrupted(true);
+                        setTimeout(() => {
+                            if (subtitleEl) {
+                                subtitleEl.textContent = originalText;
+                                setSubtitleCorrupted(false);
+                            }
+                        }, 30);
+                    }
+                }, 50); // Very rapid corruption
+                return () => clearInterval(corruptInterval);
+            }, [subtitleText]);
+
+            return e('div', { 
+                style: { 
+                    minHeight: '100vh', 
+                    background: 'linear-gradient(to bottom right, #1A0B2E, #2D1B4E, #1A0B2E)', 
+                    position: 'relative', 
+                    overflow: 'hidden',
+                    filter: glitchActive ? 'contrast(1.2) brightness(1.1)' : 'none',
+                    transition: 'filter 0.1s'
+                } 
+            },
+                e(ChaosOverlay, null),
+                // Spinning background
+                e('div', { 
+                    className: 'spinning-bg',
+                    style: {
+                        position: 'fixed',
+                        inset: 0,
+                        width: '100%',
+                        height: '100%',
+                        backgroundImage: 'url("spin.png")',
+                        backgroundPosition: 'center',
+                        backgroundRepeat: 'no-repeat',
+                        animation: 'spin 15s linear infinite',
+                        opacity: 0.2,
+                        pointerEvents: 'none',
+                        zIndex: 1,
+                        mixBlendMode: 'overlay'
+                    }
+                }),
+                // Background effects
+                e('div', { style: { position: 'fixed', inset: 0, background: 'radial-gradient(ellipse at center, rgba(107,45,158,0.5) 0%, transparent 55%)', pointerEvents: 'none', zIndex: 2 } }),
+                e('div', { style: { position: 'fixed', inset: 0, background: 'radial-gradient(circle at 50% 15%, rgba(57,255,20,0.12) 0%, transparent 35%)', pointerEvents: 'none', zIndex: 2 } }),
+                e('div', { style: { position: 'fixed', inset: 0, background: 'linear-gradient(to top, #1A0B2E, transparent, #1A0B2E 60%)', pointerEvents: 'none', zIndex: 2 } }),
+
+                // Intro overlay
+                showIntro && e('div', {
+                    onClick: () => setShowIntro(false),
+                    style: {
+                        position: 'fixed',
+                        inset: 0,
+                        background: 'linear-gradient(to bottom right, #1A0B2E, #2D1B4E, #1A0B2E)',
+                        zIndex: 9999,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        cursor: 'pointer'
+                    }
+                }, e('div', { style: { textAlign: 'center', animation: 'intro-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)' } },
+                    e('div', { style: { fontSize: '64px', animation: 'bounce-icon 1s ease-in-out infinite', marginBottom: '16px' } }, '⚡'),
+                    e('h1', { style: { fontSize: '32px', color: '#39FF14', fontWeight: 'bold', marginBottom: '8px', textShadow: '0 0 30px #39FF14' } }, 'TIME TO GET BULKED!'),
+                    e('p', { style: { fontSize: '18px', color: '#FFD700', letterSpacing: '0.05em', textShadow: '0 0 15px rgba(255,215,0,0.8)' } }, 'gRape Schmeg powered')
+                )),
+
+                // Main content
+                e('main', { style: { position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: '100vh', padding: '12px', textAlign: 'center' } },
+                    e('div', { style: { maxWidth: '500px', margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column', gap: '16px' } },
+                        // Title
+                        e('div', { className: 'chaos-element', style: { position: 'relative' } },
+                            e('h1', { 
+                                className: 'glitch-text random-scale',
+                                style: { 
+                                    fontSize: '48px', 
+                                    fontWeight: 'bold',
+                                    fontFamily: "'Hulk Display', 'Orbitron', sans-serif",
+                                    marginBottom: '4px', 
+                                    background: 'linear-gradient(135deg, #39FF14 0%, #FFD700 50%, #39FF14 100%)', 
+                                    WebkitBackgroundClip: 'text', 
+                                    WebkitTextFillColor: 'transparent', 
+                                    backgroundClip: 'text',
+                                    textShadow: '2px 2px 0px rgba(57,255,20,0.5), -2px -2px 0px rgba(155,77,202,0.5)',
+                                    filter: 'drop-shadow(0 0 10px rgba(57,255,20,0.8))'
+                                } 
+                            }, 'THE AMAZING BULK'),
+                            e('p', { 
+                                id: 'subtitle-text',
+                                className: 'flicker',
+                                style: { 
+                                    fontSize: '14px', 
+                                    color: '#FFD700', 
+                                    letterSpacing: '0.05em', 
+                                    textShadow: '0 0 12px rgba(255,215,0,0.7)' 
+                                } 
+                            }, subtitleText)
+                        ),
+
+                        // Banner
+                        e('img', {
+                            src: BANNER_IMAGE,
+                            className: 'chaos-rotate random-scale',
+                            style: { 
+                                maxWidth: '200px', 
+                                margin: '0 auto', 
+                                borderRadius: '8px', 
+                                filter: 'drop-shadow(0 0 25px rgba(57,255,20,0.7)) hue-rotate(0deg)', 
+                                animation: 'float 3s ease-in-out infinite, color-shift 5s infinite',
+                                transform: 'perspective(1000px) rotateY(0deg)'
+                            }
+                        }),
+
+                        // Market Cap Display
+                        e(MarketCapDisplay, null),
+
+                        // Contract Address
+                        e('div', { style: { position: 'relative', background: 'linear-gradient(to bottom right, rgba(45,27,78,0.95), rgba(26,11,46,0.98))', border: '2px solid rgba(155,77,202,0.6)', borderRadius: '8px', padding: '12px', boxShadow: '0 0 20px rgba(155,77,202,0.4)' } },
+                            e('div', { style: { fontSize: '11px', color: '#9B4DCA', marginBottom: '8px', fontWeight: 'bold' } }, 'CONTRACT ADDRESS'),
+                            e('div', { style: { display: 'flex', gap: '8px', background: 'rgba(0,0,0,0.7)', borderRadius: '6px', padding: '8px', border: '1px solid rgba(155,77,202,0.5)' } },
+                                e('code', { style: { flex: 1, fontSize: '11px', color: 'white', fontFamily: 'monospace', wordBreak: 'break-all' } }, CONTRACT_ADDRESS),
+                                e('button', {
+                                    onClick: async () => {
+                                        try {
+                                            if (navigator.clipboard) {
+                                                await navigator.clipboard.writeText(CONTRACT_ADDRESS);
+                                                alert('Copied to clipboard!');
+                                            }
+                                        } catch (err) {
+                                            alert('Click to select, then Ctrl+C to copy');
+                                        }
+                                    },
+                                    style: { background: 'transparent', border: 'none', cursor: 'pointer', color: 'white', padding: '4px' }
+                                }, e(CopyIcon, null))
+                            )
+                        ),
+
+                        // Menu buttons
+                        e('div', { style: { display: 'flex', flexDirection: 'column', gap: '12px' } },
+                            e('button', {
+                                onClick: () => {
+                                    const newState = !getBulked;
+                                    setGetBulked(newState);
+                                    chaosIntensity = newState ? 'intense' : 'toned';
+                                    // Effects will automatically use new intensity on next check
+                                },
+                                className: 'chaos-element',
+                                style: {
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '12px',
+                                    padding: '12px',
+                                    borderRadius: '8px',
+                                    background: getBulked 
+                                        ? 'linear-gradient(to right, #39FF14, #2E7D32)' 
+                                        : 'linear-gradient(to right, #6B2D9E, #4A1D6E)',
+                                    border: `2px solid ${getBulked ? '#39FF14' : '#9B4DCA'}`,
+                                    color: 'white',
+                                    fontWeight: 'bold',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.3s',
+                                    boxShadow: getBulked 
+                                        ? '0 0 30px rgba(57,255,20,0.6)' 
+                                        : '0 0 20px rgba(155,77,202,0.35)',
+                                    animation: 'border-flash 3s infinite, distort 4s infinite'
+                                }
+                            }, e(ZapIcon, null), getBulked ? 'GET BULKED (ON)' : 'GET BULKED (OFF)'),
+                            e('a', {
+                                href: DEXSCREENER_URL,
+                                target: '_blank',
+                                rel: 'noopener noreferrer',
+                                className: 'chaos-element',
+                                style: {
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '12px',
+                                    padding: '12px',
+                                    borderRadius: '8px',
+                                    background: 'linear-gradient(to right, #2E7D32, #1B5E20)',
+                                    border: '2px solid #39FF14',
+                                    color: 'white',
+                                    fontWeight: 'bold',
+                                    textDecoration: 'none',
+                                    transition: 'all 0.3s',
+                                    boxShadow: '0 0 20px rgba(57,255,20,0.35)',
+                                    animation: 'border-flash 3s infinite, distort 4s infinite'
+                                }
+                            }, e(TrendingUpIcon, null), 'DEXSCREENER', e(ExternalLinkIcon, null)),
+                            e('a', {
+                                href: X_ACCOUNT_URL,
+                                target: '_blank',
+                                rel: 'noopener noreferrer',
+                                className: 'chaos-element',
+                                style: {
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '12px',
+                                    padding: '12px',
+                                    borderRadius: '8px',
+                                    background: 'linear-gradient(to right, #6B2D9E, #4A1D6E)',
+                                    border: '2px solid #9B4DCA',
+                                    color: 'white',
+                                    fontWeight: 'bold',
+                                    textDecoration: 'none',
+                                    transition: 'all 0.3s',
+                                    boxShadow: '0 0 20px rgba(155,77,202,0.35)',
+                                    animation: 'border-flash 3s infinite, distort 5s infinite'
+                                }
+                            }, e('span', { style: { fontSize: '16px' } }, '𝕏'), 'TWITTER / X', e(ExternalLinkIcon, null)),
+                            e('a', {
+                                href: X_COMMUNITY_URL,
+                                target: '_blank',
+                                rel: 'noopener noreferrer',
+                                className: 'chaos-element',
+                                style: {
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '12px',
+                                    padding: '12px',
+                                    borderRadius: '8px',
+                                    background: 'linear-gradient(to right, #6B2D9E, #4A1D6E)',
+                                    border: '2px solid #9B4DCA',
+                                    color: 'white',
+                                    fontWeight: 'bold',
+                                    textDecoration: 'none',
+                                    transition: 'all 0.3s',
+                                    boxShadow: '0 0 20px rgba(155,77,202,0.35)',
+                                    animation: 'border-flash 3s infinite, distort 4.5s infinite'
+                                }
+                            }, e('span', { style: { fontSize: '16px' } }, '👥'), 'X COMMUNITY', e(ExternalLinkIcon, null)),
+                            e('button', {
+                                onClick: () => setInfoOpen(true),
+                                className: 'chaos-element',
+                                style: {
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '12px',
+                                    padding: '12px',
+                                    borderRadius: '8px',
+                                    background: 'linear-gradient(to right, #6B2D9E, #4A1D6E)',
+                                    border: '2px solid #9B4DCA',
+                                    color: 'white',
+                                    fontWeight: 'bold',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.3s',
+                                    boxShadow: '0 0 20px rgba(155,77,202,0.35)',
+                                    animation: 'border-flash 3s infinite, distort 5.5s infinite'
+                                }
+                            }, e(ZapIcon, null), 'ABOUT $BULK')
+                        ),
+
+                        // Footer
+                        e('footer', { style: { marginTop: '24px', textAlign: 'center' } },
+                            e('p', { style: { color: 'rgba(255,215,0,0.6)', fontSize: '12px', letterSpacing: '0.05em' } }, '$BULK - THE AMAZING BULK'),
+                            e('p', { style: { marginTop: '4px', color: 'rgba(255,255,255,0.3)', fontSize: '10px' } }, 'Not financial advice. DYOR. Just a meme.')
+                        )
+                    )
+                ),
+
+                // Info Modal
+                infoOpen && e('div', {
+                    onClick: () => setInfoOpen(false),
+                    style: {
+                        position: 'fixed',
+                        inset: 0,
+                        background: 'rgba(0,0,0,0.92)',
+                        zIndex: 100,
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        padding: '16px'
+                    }
+                }, e('div', {
+                    onClick: (e) => e.stopPropagation(),
+                    style: {
+                        background: 'linear-gradient(to bottom right, #2D1B4E, #1A0B2E)',
+                        borderRadius: '16px',
+                        padding: '32px',
+                        maxWidth: '600px',
+                        border: '2px solid #9B4DCA',
+                        boxShadow: '0 0 60px rgba(155,77,202,0.4)',
+                        maxHeight: '80vh',
+                        overflowY: 'auto'
+                    }
+                },
+                    e('button', {
+                        onClick: () => setInfoOpen(false),
+                        style: {
+                            position: 'absolute',
+                            top: '16px',
+                            right: '16px',
+                            background: '#dc2626',
+                            color: 'white',
+                            border: 'none',
+                            width: '40px',
+                            height: '40px',
+                            borderRadius: '50%',
+                            cursor: 'pointer',
+                            fontSize: '20px',
+                            fontWeight: 'bold'
+                        }
+                    }, '×'),
+                    e('h2', { style: { fontSize: '36px', fontWeight: 'bold', textAlign: 'center', marginBottom: '24px', background: 'linear-gradient(135deg, #39FF14 0%, #FFD700 50%, #39FF14 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } }, 'THE LEGEND OF BULK'),
+                    e('div', { style: { display: 'flex', flexDirection: 'column', gap: '16px', color: 'rgba(255,255,255,0.9)', maxHeight: '70vh', overflowY: 'auto', paddingRight: '8px' } },
+                        e('div', { style: { background: 'rgba(0,0,0,0.5)', padding: '16px', borderRadius: '8px', border: '1px solid rgba(57,255,20,0.4)' } },
+                            e('p', { style: { fontSize: '14px', lineHeight: '1.8', marginBottom: '12px' } }, 'Long before the Bulk rampaged across green screens, there existed the Realm of Renderia, a dimension made entirely from unfinished CGI assets and royalty-free sound effects.'),
+                            e('p', { style: { fontSize: '14px', lineHeight: '1.8', marginBottom: '12px' } }, 'In Renderia, every being was born from a corrupted .ZIP file. But one day, a glitch so powerful occurred that it birthed a creature of destiny: The Bulk, Son of Pixel and Prophet of Low Resolution.')
+                        ),
+                        e('div', { style: { background: 'rgba(0,0,0,0.5)', padding: '16px', borderRadius: '8px', border: '1px solid rgba(155,77,202,0.4)' } },
+                            e('p', { style: { fontSize: '14px', lineHeight: '1.8', marginBottom: '12px' } }, 'The elders whispered that his arrival was foretold in the Book of Untextured Models, which stated:'),
+                            e('p', { style: { fontSize: '14px', lineHeight: '1.8', marginBottom: '12px', fontStyle: 'italic', color: '#9B4DCA', paddingLeft: '16px', borderLeft: '3px solid #9B4DCA' } }, '"One shall rise wearing the cursed color #A020F0 (Purple-ish), and he shall lag the world into chaos."')
+                        ),
+                        e('div', { style: { background: 'rgba(0,0,0,0.5)', padding: '16px', borderRadius: '8px', border: '1px solid rgba(57,255,20,0.4)' } },
+                            e('p', { style: { fontSize: '14px', lineHeight: '1.8', marginBottom: '12px' } }, 'As a baby, Bulk cried in WAV format. As a toddler, he accidentally destroyed his village by bumping into it, since it only had two polygons.')
+                        ),
+                        e('div', { style: { background: 'rgba(0,0,0,0.5)', padding: '16px', borderRadius: '8px', border: '1px solid rgba(255,215,0,0.4)' } },
+                            e('p', { style: { fontSize: '14px', lineHeight: '1.8', marginBottom: '12px' } }, 'When he reached adulthood, Bulk was approached by The Rendering Oracle, a floating pair of eyes that said: "You are destined to unite the Stock Photo Kingdoms." Bulk responded: "RRRRGH." The Oracle considered that good enough.')
+                        ),
+                        e('div', { style: { background: 'rgba(0,0,0,0.5)', padding: '16px', borderRadius: '8px', border: '1px solid rgba(57,255,20,0.4)' } },
+                            e('p', { style: { fontSize: '14px', lineHeight: '1.8', marginBottom: '8px' } }, 'To prepare him, the Oracle trained Bulk in ancient arts:'),
+                            e('ul', { style: { fontSize: '14px', listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '6px', paddingLeft: '16px' } },
+                                e('li', null, '• The Blur Punch'),
+                                e('li', null, '• The Frame-Skip Dash'),
+                                e('li', null, '• The JPEG Slam, capable of lowering image quality across continents')
+                            )
+                        ),
+                        e('div', { style: { background: 'rgba(0,0,0,0.5)', padding: '16px', borderRadius: '8px', border: '1px solid rgba(155,77,202,0.4)' } },
+                            e('p', { style: { fontSize: '14px', lineHeight: '1.8', marginBottom: '12px' } }, 'But a great evil rose: Dr. Cantafford, the Mad Scientist King, who sought to plunge Renderia into Ultra-HD, a forbidden resolution.')
+                        ),
+                        e('div', { style: { background: 'rgba(0,0,0,0.5)', padding: '16px', borderRadius: '8px', border: '1px solid rgba(57,255,20,0.4)' } },
+                            e('p', { style: { fontSize: '14px', lineHeight: '1.8', marginBottom: '12px' } }, 'Dr. Cantafford forged the Crystal of Copyright, an artifact allowing him to create assets NOT from public domain websites. This threatened the balance of the universe.')
+                        ),
+                        e('div', { style: { background: 'rgba(0,0,0,0.5)', padding: '16px', borderRadius: '8px', border: '1px solid rgba(255,215,0,0.4)' } },
+                            e('p', { style: { fontSize: '14px', lineHeight: '1.8', marginBottom: '12px' } }, 'Only Bulk, whose DNA was 97% purple compression artifacts, could resist the Crystal\'s power. He set out on his hero\'s journey, sliding through backgrounds like a PowerPoint transition sent by fate.')
+                        ),
+                        e('div', { style: { background: 'rgba(0,0,0,0.5)', padding: '16px', borderRadius: '8px', border: '1px solid rgba(57,255,20,0.4)' } },
+                            e('p', { style: { fontSize: '14px', lineHeight: '1.8', marginBottom: '8px' } }, 'Along the way, Bulk bonded with legendary allies:'),
+                            e('ul', { style: { fontSize: '14px', listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '6px', paddingLeft: '16px' } },
+                                e('li', null, '• Lady PNG, who could remove backgrounds with a single breath'),
+                                e('li', null, '• The Mighty Stock-Horse, whose gallop was a looping GIF'),
+                                e('li', null, '• Captain Greenscreen, master of appearing anywhere yet belonging nowhere')
+                            )
+                        ),
+                        e('div', { style: { background: 'rgba(0,0,0,0.5)', padding: '16px', borderRadius: '8px', border: '1px solid rgba(155,77,202,0.4)' } },
+                            e('p', { style: { fontSize: '14px', lineHeight: '1.8', marginBottom: '12px' } }, 'In the final battle, Bulk faced Dr. Cantafford in the Valley of Unpaid Interns. Each punch caused a different default Windows sound effect. The prophecy was fulfilled.')
+                        ),
+                        e('div', { style: { background: 'rgba(0,0,0,0.5)', padding: '16px', borderRadius: '8px', border: '1px solid rgba(57,255,20,0.4)' } },
+                            e('p', { style: { fontSize: '14px', lineHeight: '1.8', marginBottom: '12px', fontWeight: 'bold', color: '#39FF14' } }, 'Bulk unleashed his ultimate attack: THE POLYGONAL ROAR, shaking the world so violently that every texture failed to load at once. Cantafford\'s Ultra-HD ambition crumbled into 144p dust.')
+                        ),
+                        e('div', { style: { background: 'rgba(0,0,0,0.5)', padding: '16px', borderRadius: '8px', border: '1px solid rgba(255,215,0,0.4)' } },
+                            e('p', { style: { fontSize: '14px', lineHeight: '1.8', marginBottom: '12px' } }, 'Peace returned to Renderia. The sky flickered between stock sunsets once more. And Bulk? He wandered into legend… destined to appear whenever someone\'s rendering software crashes.')
+                        )
+                    )
+                ))
+            );
+        }
+
+        // Schizophrenic effects system
+        function initChaosEffects() {
+            // Clear any existing interval
+            if (window.chaosInterval) {
+                clearInterval(window.chaosInterval);
+                window.chaosInterval = null;
+            }
+            
+            // Helper to check intensity dynamically
+            const isIntense = () => chaosIntensity === 'intense';
+            
+            // Random glitch overlays
+            function createGlitchOverlay() {
+                const opacity = isIntense() ? 0.1 : 0.03;
+                const overlay = document.createElement('div');
+                overlay.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    pointer-events: none;
+                    z-index: 9998;
+                    opacity: 0;
+                    background: linear-gradient(
+                        90deg,
+                        transparent 0%,
+                        rgba(57,255,20,${opacity}) 25%,
+                        transparent 50%,
+                        rgba(155,77,202,${opacity}) 75%,
+                        transparent 100%
+                    );
+                    animation: glitch-flash 0.1s;
+                `;
+                document.body.appendChild(overlay);
+                setTimeout(() => overlay.remove(), 100);
+            }
+
+            // Add CSS for glitch flash
+            const style = document.createElement('style');
+            const flashOpacity = isIntense() ? 0.3 : 0.1;
+            const flashTransform = isIntense() ? '-5px' : '-2px';
+            style.textContent += `
+                @keyframes glitch-flash {
+                    0%, 100% { opacity: 0; transform: translateX(0); }
+                    50% { opacity: ${flashOpacity}; transform: translateX(${flashTransform}); }
+                }
+            `;
+            document.head.appendChild(style);
+
+            // Random text corruption
+            function corruptText() {
+                const elements = document.querySelectorAll('h1, h2, h3, p, span, code');
+                const corruptChance = isIntense() ? 0.5 : 0.15;
+                const charChance = isIntense() ? 0.4 : 0.15;
+                const recoveryTime = isIntense() ? 50 : 150;
+                elements.forEach(el => {
+                    // Skip subtitle as it has its own corruption
+                    if (el.id === 'subtitle-text') return;
+                    if (Math.random() < corruptChance) {
+                        const originalText = el.textContent;
+                        const chars = '!@#$%^&*()_+-=[]{}|;:,.<>?~`';
+                        let corrupted = '';
+                        for (let i = 0; i < originalText.length; i++) {
+                            if (Math.random() < charChance && originalText[i] !== ' ') {
+                                corrupted += chars[Math.floor(Math.random() * chars.length)];
+                            } else {
+                                corrupted += originalText[i];
+                            }
+                        }
+                        el.textContent = corrupted;
+                        setTimeout(() => {
+                            el.textContent = originalText;
+                        }, recoveryTime);
+                    }
+                });
+            }
+
+            // Screen shake effect
+            function screenShake() {
+                const shakeChance = isIntense() ? 0.3 : 0.11;
+                const shakeDuration = isIntense() ? 0.3 : 0.2;
+                if (Math.random() < shakeChance) {
+                    document.body.style.animation = `shake ${shakeDuration}s`;
+                    setTimeout(() => {
+                        document.body.style.animation = '';
+                    }, shakeDuration * 1000);
+                }
+            }
+
+            // Random element inversion
+            function randomInvert() {
+                const invertChance = isIntense() ? 0.1 : 0.03;
+                const elements = document.querySelectorAll('div, button, a, img, h1, h2');
+                elements.forEach(el => {
+                    if (Math.random() < invertChance) {
+                        el.style.filter = 'invert(1)';
+                        setTimeout(() => {
+                            el.style.filter = '';
+                        }, isIntense() ? 100 : 150);
+                    }
+                });
+            }
+
+            // Random element mirroring
+            function randomMirror() {
+                const mirrorChance = isIntense() ? 0.08 : 0.03;
+                const elements = document.querySelectorAll('img, button, a');
+                elements.forEach(el => {
+                    if (Math.random() < mirrorChance) {
+                        el.style.transform = 'scaleX(-1)';
+                        setTimeout(() => {
+                            el.style.transform = '';
+                        }, 200);
+                    }
+                });
+            }
+
+            // Random brightness flashes
+            function randomBrightness() {
+                if (isIntense() && Math.random() < 0.4) {
+                    document.body.style.filter = 'brightness(1.5) contrast(1.3)';
+                    setTimeout(() => {
+                        document.body.style.filter = '';
+                    }, 50);
+                }
+            }
+
+            // Random element jitter
+            function applyRandomJitter() {
+                const jitterChance = isIntense() ? 0.15 : 0.0575;
+                const jitterAmount = isIntense() ? 20 : 8;
+                const rotAmount = isIntense() ? 10 : 3;
+                const elements = document.querySelectorAll('div, button, a, img');
+                elements.forEach(el => {
+                    if (Math.random() < jitterChance && !el.classList.contains('no-jitter')) {
+                        const x = (Math.random() - 0.5) * jitterAmount;
+                        const y = (Math.random() - 0.5) * jitterAmount;
+                        const rot = (Math.random() - 0.5) * rotAmount;
+                        el.style.transform = `translate(${x}px, ${y}px) rotate(${rot}deg)`;
+                        setTimeout(() => {
+                            el.style.transform = '';
+                        }, isIntense() ? 80 : 150);
+                    }
+                });
+            }
+
+            // Random color shifts
+            function randomColorShift() {
+                const shiftChance = isIntense() ? 0.15 : 0.08;
+                const hueRange = isIntense() ? 360 : 30;
+                const elements = document.querySelectorAll('h1, h2, button, a, img');
+                elements.forEach(el => {
+                    if (Math.random() < shiftChance) {
+                        const hue = isIntense() ? Math.random() * 360 : (Math.random() - 0.5) * 30;
+                        const saturate = isIntense() ? ' saturate(2)' : '';
+                        el.style.filter = `hue-rotate(${hue}deg)${saturate}`;
+                        setTimeout(() => {
+                            el.style.filter = '';
+                        }, isIntense() ? 200 : 300);
+                    }
+                });
+            }
+
+            // Random element visibility flicker
+            function randomFlicker() {
+                const flickerChance = isIntense() ? 0.1 : 0.03;
+                const elements = document.querySelectorAll('div, button, a, img, h1, h2');
+                elements.forEach(el => {
+                    if (Math.random() < flickerChance) {
+                        el.style.opacity = isIntense() ? (Math.random() > 0.5 ? '0.1' : '0.8') : '0.7';
+                        setTimeout(() => {
+                            el.style.opacity = '';
+                        }, isIntense() ? 30 : 100);
+                    }
+                });
+            }
+
+            // Random background color flashes
+            function randomBgFlash() {
+                const flashChance = isIntense() ? 0.15 : 0.05;
+                if (Math.random() < flashChance) {
+                    let r, g, b, opacity;
+                    if (isIntense()) {
+                        // Intense mode: can use any colors including bright
+                        r = Math.floor(Math.random() * 255);
+                        g = Math.floor(Math.random() * 255);
+                        b = Math.floor(Math.random() * 255);
+                        opacity = 0.3 + Math.random() * 0.3;
+                    } else {
+                        // Toned: only dark colors, avoid white/bright
+                        r = Math.floor(Math.random() * 100);
+                        g = Math.floor(Math.random() * 100);
+                        b = Math.floor(Math.random() * 150);
+                        opacity = 0.1 + Math.random() * 0.1;
+                    }
+                    const flash = document.createElement('div');
+                    flash.style.cssText = `
+                        position: fixed;
+                        inset: 0;
+                        background: rgba(${r}, ${g}, ${b}, ${opacity});
+                        pointer-events: none;
+                        z-index: 9997;
+                        animation: fade-out ${isIntense() ? 0.2 : 0.3}s;
+                    `;
+                    document.body.appendChild(flash);
+                    setTimeout(() => flash.remove(), isIntense() ? 200 : 300);
+                }
+            }
+
+            // Random text size changes
+            function randomTextSize() {
+                const sizeChance = isIntense() ? 0.2 : 0.08;
+                const elements = document.querySelectorAll('h1, h2, h3, p');
+                elements.forEach(el => {
+                    if (Math.random() < sizeChance) {
+                        const scale = isIntense() ? (0.5 + Math.random() * 1.0) : (0.9 + Math.random() * 0.2);
+                        el.style.transform = `scale(${scale})`;
+                        setTimeout(() => {
+                            el.style.transform = '';
+                        }, isIntense() ? 150 : 200);
+                    }
+                });
+            }
+
+            // Random rotation on elements
+            function randomRotation() {
+                const rotChance = isIntense() ? 0.12 : 0.05;
+                const rotAmount = isIntense() ? 20 : 5;
+                const elements = document.querySelectorAll('img, button, a, div');
+                elements.forEach(el => {
+                    if (Math.random() < rotChance) {
+                        const rot = (Math.random() - 0.5) * rotAmount;
+                        el.style.transform = `rotate(${rot}deg)`;
+                        setTimeout(() => {
+                            el.style.transform = '';
+                        }, isIntense() ? 100 : 200);
+                    }
+                });
+            }
+
+            // Add CSS for fade-out and shake
+            const fadeStyle = document.createElement('style');
+            fadeStyle.textContent += `
+                @keyframes fade-out {
+                    from { opacity: 1; }
+                    to { opacity: 0; }
+                }
+                @keyframes shake {
+                    0%, 100% { transform: translate(0, 0); }
+                    10% { transform: translate(-5px, -5px) rotate(-1deg); }
+                    20% { transform: translate(5px, 5px) rotate(1deg); }
+                    30% { transform: translate(-5px, 5px) rotate(-1deg); }
+                    40% { transform: translate(5px, -5px) rotate(1deg); }
+                    50% { transform: translate(-5px, -5px) rotate(-1deg); }
+                    60% { transform: translate(5px, 5px) rotate(1deg); }
+                    70% { transform: translate(-5px, 5px) rotate(-1deg); }
+                    80% { transform: translate(5px, -5px) rotate(1deg); }
+                    90% { transform: translate(-5px, -5px) rotate(-1deg); }
+                }
+            `;
+            document.head.appendChild(fadeStyle);
+
+            // Run chaos effects at random intervals
+            window.chaosInterval = setInterval(() => {
+                const intervalTime = isIntense() ? 100 : 300;
+                const glitchChance = isIntense() ? 0.6 : 0.2;
+                const corruptChance = isIntense() ? 0.9 : 0.3;
+                const jitterChance = isIntense() ? 0.8 : 0.2875;
+                const colorChance = isIntense() ? 0.6 : 0.2;
+                const flickerChance = isIntense() ? 0.7 : 0.2;
+                const bgFlashChance = isIntense() ? 0.5 : 0.1;
+                const textSizeChance = isIntense() ? 0.6 : 0.15;
+                const rotChance = isIntense() ? 0.6 : 0.15;
+                const shakeChance = isIntense() ? 0.4 : 0.11;
+                const invertChance = isIntense() ? 0.5 : 0.1;
+                const mirrorChance = isIntense() ? 0.4 : 0.1;
+                const brightnessChance = isIntense() ? 0.5 : 0;
+                
+                if (Math.random() < glitchChance) createGlitchOverlay();
+                if (Math.random() < corruptChance) corruptText();
+                if (Math.random() < jitterChance) applyRandomJitter();
+                if (Math.random() < colorChance) randomColorShift();
+                if (Math.random() < flickerChance) randomFlicker();
+                if (Math.random() < bgFlashChance) randomBgFlash();
+                if (Math.random() < textSizeChance) randomTextSize();
+                if (Math.random() < rotChance) randomRotation();
+                if (Math.random() < shakeChance) screenShake();
+                if (Math.random() < invertChance) randomInvert();
+                if (Math.random() < mirrorChance) randomMirror();
+                if (Math.random() < brightnessChance) randomBrightness();
+            }, 100); // Check every 100ms, but probabilities control frequency
+
+            // Chaos on mouse movement
+            let mouseMoveCount = 0;
+            document.addEventListener('mousemove', () => {
+                mouseMoveCount++;
+                const mouseMoveThreshold = isIntense() ? 5 : 15;
+                if (mouseMoveCount % mouseMoveThreshold === 0) {
+                    const mouseGlitchChance = isIntense() ? 0.7 : 0.3;
+                    const mouseJitterChance = isIntense() ? 0.6 : 0.2;
+                    if (Math.random() < mouseGlitchChance) createGlitchOverlay();
+                    if (Math.random() < mouseJitterChance) applyRandomJitter();
+                    if (isIntense() && Math.random() < 0.4) randomColorShift();
+                    if (isIntense() && Math.random() < 0.3) screenShake();
+                }
+            });
+
+            // Chaos on click
+            document.addEventListener('click', () => {
+                if (isIntense()) {
+                    createGlitchOverlay();
+                    corruptText();
+                    randomBgFlash();
+                    screenShake();
+                    randomBrightness();
+                    if (Math.random() < 0.5) randomInvert();
+                    if (Math.random() < 0.5) randomMirror();
+                } else {
+                    if (Math.random() < 0.5) createGlitchOverlay();
+                    if (Math.random() < 0.3) corruptText();
+                }
+            });
+        }
+
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(React.createElement(App));
+        
+        // Initialize chaos effects after a short delay
+        setTimeout(initChaosEffects, 1000);
+    </script>
+</body>
+</html>
