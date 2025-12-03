@@ -510,7 +510,7 @@
                             setRandomTexts(prev => prev.filter(t => t.id !== newText.id));
                         }, 1000);
                     }
-                }, 2000);
+                }, 1400);
 
                 return () => {
                     clearInterval(interval);
@@ -1014,9 +1014,9 @@
                 });
             }
 
-            // Screen shake effect (toned down)
+            // Screen shake effect (10% more shakes)
             function screenShake() {
-                if (Math.random() < 0.1) {
+                if (Math.random() < 0.11) {
                     document.body.style.animation = 'shake 0.2s';
                     setTimeout(() => {
                         document.body.style.animation = '';
@@ -1055,11 +1055,11 @@
                 // Disabled to avoid white flashes
             }
 
-            // Random element jitter (toned down)
+            // Random element jitter (15% more shakes)
             function applyRandomJitter() {
                 const elements = document.querySelectorAll('div, button, a, img');
                 elements.forEach(el => {
-                    if (Math.random() < 0.05 && !el.classList.contains('no-jitter')) {
+                    if (Math.random() < 0.0575 && !el.classList.contains('no-jitter')) {
                         const x = (Math.random() - 0.5) * 8;
                         const y = (Math.random() - 0.5) * 8;
                         const rot = (Math.random() - 0.5) * 3;
@@ -1173,13 +1173,13 @@
             setInterval(() => {
                 if (Math.random() < 0.2) createGlitchOverlay();
                 if (Math.random() < 0.3) corruptText();
-                if (Math.random() < 0.25) applyRandomJitter();
+                if (Math.random() < 0.2875) applyRandomJitter();
                 if (Math.random() < 0.2) randomColorShift();
                 if (Math.random() < 0.2) randomFlicker();
                 if (Math.random() < 0.1) randomBgFlash();
                 if (Math.random() < 0.15) randomTextSize();
                 if (Math.random() < 0.15) randomRotation();
-                if (Math.random() < 0.1) screenShake();
+                if (Math.random() < 0.11) screenShake();
                 if (Math.random() < 0.1) randomInvert();
                 if (Math.random() < 0.1) randomMirror();
                 // randomBrightness disabled
