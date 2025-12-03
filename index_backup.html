@@ -1,0 +1,222 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Amazing Bulk - Coming Soon | $BULK on Solana</title>
+    <meta name="description" content="The Amazing Bulk - Full site being bulked up! Coming soon.">
+    <style>
+        @font-face {
+            font-family: 'Hulk Display';
+            src: url('hulk.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+            display: swap;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1A0B2E 0%, #2D1B4E 50%, #1A0B2E 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Background effects */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse at center, rgba(107,45,158,0.5) 0%, transparent 55%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at 50% 15%, rgba(57,255,20,0.12) 0%, transparent 35%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -400% center; }
+            100% { background-position: 400% center; }
+        }
+
+        .container {
+            position: relative;
+            z-index: 10;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            font-family: 'Hulk Display', 'Orbitron', sans-serif;
+            font-size: 64px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #39FF14 0%, #FFD700 50%, #39FF14 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 2px 2px 0px rgba(57,255,20,0.5), -2px -2px 0px rgba(155,77,202,0.5);
+            filter: drop-shadow(0 0 10px rgba(57,255,20,0.8));
+        }
+
+        .subtitle {
+            font-size: 24px;
+            color: #FFD700;
+            letter-spacing: 0.1em;
+            text-shadow: 0 0 15px rgba(255,215,0,0.7);
+            margin-bottom: 40px;
+        }
+
+        .banner {
+            max-width: 300px;
+            width: 100%;
+            margin: 0 auto 40px;
+            border-radius: 12px;
+            filter: drop-shadow(0 0 25px rgba(57,255,20,0.7));
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .contract-section {
+            background: linear-gradient(to bottom right, rgba(45,27,78,0.95), rgba(26,11,46,0.98));
+            border: 2px solid rgba(155,77,202,0.6);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(155,77,202,0.4);
+            margin-top: 40px;
+        }
+
+        .contract-label {
+            font-size: 12px;
+            color: #9B4DCA;
+            margin-bottom: 12px;
+            font-weight: bold;
+            letter-spacing: 0.05em;
+        }
+
+        .contract-display {
+            display: flex;
+            gap: 8px;
+            background: rgba(0,0,0,0.7);
+            border-radius: 8px;
+            padding: 12px;
+            border: 1px solid rgba(155,77,202,0.5);
+        }
+
+        .contract-address {
+            flex: 1;
+            font-size: 12px;
+            color: white;
+            font-family: monospace;
+            word-break: break-all;
+        }
+
+        .copy-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: rgba(155,77,202,0.3);
+        }
+
+        .copy-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        @media (max-width: 767px) {
+            h1 {
+                font-size: 42px;
+            }
+            
+            .subtitle {
+                font-size: 18px;
+            }
+            
+            .banner {
+                max-width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>THE AMAZING BULK</h1>
+        <p class="subtitle">FULL SITE BEING BULKED UP</p>
+        
+        <img src="https://i.imgur.com/ynAj4P7.png" alt="The Amazing Bulk" class="banner" id="banner-image">
+        
+        <div class="contract-section">
+            <div class="contract-label">CONTRACT ADDRESS</div>
+            <div class="contract-display">
+                <code class="contract-address" id="contract-address">F4TJfiMVi7zFGRJj4FVC1Zuj7fdCo6skKa4SnAU4pump</code>
+                <button class="copy-btn" onclick="copyContract()" title="Copy to clipboard">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CONTRACT_ADDRESS = "F4TJfiMVi7zFGRJj4FVC1Zuj7fdCo6skKa4SnAU4pump";
+
+        function copyContract() {
+            navigator.clipboard.writeText(CONTRACT_ADDRESS).then(() => {
+                const btn = event.target.closest('.copy-btn');
+                const originalHTML = btn.innerHTML;
+                btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+                btn.style.color = '#39FF14';
+                setTimeout(() => {
+                    btn.innerHTML = originalHTML;
+                    btn.style.color = '';
+                }, 2000);
+            }).catch(() => {
+                alert('Click to select, then Ctrl+C to copy');
+            });
+        }
+
+        // Allow replacing banner with GIF later
+        // Just change the src of #banner-image to your GIF file
+    </script>
+</body>
+</html>
+
