@@ -144,6 +144,41 @@
             font-size: 11px;
         }
 
+        .market-cap-container {
+            position: fixed;
+            bottom: 20px;
+            left: 150px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: linear-gradient(to right, rgba(45,27,78,0.95), rgba(26,11,46,0.98));
+            border: 2px solid rgba(155,77,202,0.6);
+            border-radius: 8px;
+            color: white;
+            font-size: 12px;
+            z-index: 1000;
+            box-shadow: 0 0 15px rgba(155,77,202,0.4);
+            white-space: nowrap;
+        }
+
+        .market-cap-label {
+            color: rgba(255,255,255,0.7);
+            font-size: 10px;
+            margin-right: 4px;
+        }
+
+        .market-cap-value {
+            font-weight: bold;
+            font-family: monospace;
+        }
+
+        @media (max-width: 767px) {
+            .market-cap-container {
+                display: none;
+            }
+        }
+
         .links-section {
             display: flex;
             flex-direction: row;
@@ -279,8 +314,39 @@
         <span id="sound-text">SOUND ON</span>
     </button>
 
+    <div class="market-cap-container" id="market-cap-container">
+        <span class="market-cap-label">MARKET CAP:</span>
+        <span class="market-cap-value" id="market-cap-value">---</span>
+    </div>
+
     <script>
         const CONTRACT_ADDRESS = "F4TJfiMVi7zFGRJj4FVC1Zuj7fdCo6skKa4SnAU4pump";
+        const DEXSCREENER_API = `https://api.dexscreener.com/latest/dex/tokens/${CONTRACT_ADDRESS}`;
+
+        function formatNumber(num) {
+            if (num === null || num === undefined) return "---";
+            if (num >= 1_000_000_000) return `$${(num / 1_000_000_000).toFixed(2)}B`;
+            if (num >= 1_000_000) return `$${(num / 1_000_000).toFixed(2)}M`;
+            if (num >= 1_000) return `$${(num / 1_000).toFixed(2)}K`;
+            return `$${num.toFixed(2)}`;
+        }
+
+        async function updateMarketCap() {
+            try {
+                const response = await fetch(DEXSCREENER_API);
+                const data = await response.json();
+                if (data.pairs && data.pairs.length > 0) {
+                    const pair = data.pairs[0];
+                    const marketCap = pair.marketCap || pair.fdv;
+                    const marketCapElement = document.getElementById('market-cap-value');
+                    if (marketCapElement) {
+                        marketCapElement.textContent = formatNumber(marketCap);
+                    }
+                }
+            } catch (err) {
+                console.error('Error fetching market data:', err);
+            }
+        }
 
         function copyContract(event) {
             const addressElement = document.getElementById('contract-address');
@@ -359,6 +425,10 @@
                 text.textContent = 'SOUND OFF';
                 icon.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4V5z"></path><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line>';
             });
+
+            // Initialize market cap
+            updateMarketCap();
+            setInterval(updateMarketCap, 30000); // Update every 30 seconds
         });
 
         // Allow replacing banner with GIF later
