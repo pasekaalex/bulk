@@ -882,16 +882,16 @@
                             bulk.userData.model = model;
                             bulk.userData.isGLB = true;
                             
-                            // Position bulk so feet are on the ground (y=0) or slightly above
+                            // Position bulk so waist/body is well above the ground
                             // Calculate bottom of model after scaling
                             const bottomY = box.min.y * scale;
-                            // Position so the bottom of the model is at ground level (0) plus a small clearance
-                            const groundLevel = 0;
-                            const clearance = 0.2; // Small clearance above ground
-                            const baseY = groundLevel - bottomY + clearance;
+                            const centerY = box.getCenter(new THREE.Vector3()).y * scale;
+                            // Position so the waist (center) is at a good height above ground
+                            const waistHeight = 1.5; // Waist should be at this height
+                            const baseY = waistHeight - centerY;
                             bulk.position.y = baseY;
                             bulk.userData.baseY = baseY; // Store for animation updates
-                            console.log('Positioned bulk at Y:', baseY, '(model bottom at:', bottomY, ', feet will be at:', baseY + bottomY + ')');
+                            console.log('Positioned bulk at Y:', baseY, '(waist at:', waistHeight, ', model bottom at:', bottomY, ', feet will be at:', baseY + bottomY + ')');
                             
                             // Make sure model is visible
                             model.visible = true;
