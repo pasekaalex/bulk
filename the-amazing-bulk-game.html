@@ -544,17 +544,51 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        // Load GLTFLoader dynamically
+        // Load GLTFLoader - try multiple CDNs for reliability
         (function() {
-            const script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
-            script.onload = function() {
-                console.log('GLTFLoader loaded successfully');
-            };
-            script.onerror = function() {
-                console.warn('Failed to load GLTFLoader from CDN, will use fallback');
-            };
-            document.head.appendChild(script);
+            function loadGLTFLoader() {
+                const scripts = [
+                    'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js',
+                    'https://threejs.org/examples/js/loaders/GLTFLoader.js'
+                ];
+                
+                let currentIndex = 0;
+                
+                function tryLoad() {
+                    if (typeof THREE !== 'undefined' && THREE.GLTFLoader) {
+                        console.log('GLTFLoader already loaded');
+                        window.GLTFLoaderReady = true;
+                        return;
+                    }
+                    
+                    if (currentIndex >= scripts.length) {
+                        console.error('Failed to load GLTFLoader from all sources');
+                        return;
+                    }
+                    
+                    const script = document.createElement('script');
+                    script.src = scripts[currentIndex];
+                    script.onload = function() {
+                        console.log('GLTFLoader loaded from:', scripts[currentIndex]);
+                        window.GLTFLoaderReady = true;
+                    };
+                    script.onerror = function() {
+                        console.warn('Failed to load from:', scripts[currentIndex]);
+                        currentIndex++;
+                        tryLoad();
+                    };
+                    document.head.appendChild(script);
+                }
+                
+                tryLoad();
+            }
+            
+            // Wait for Three.js to load first
+            if (typeof THREE !== 'undefined') {
+                loadGLTFLoader();
+            } else {
+                window.addEventListener('load', loadGLTFLoader);
+            }
         })();
     </script>
     <script>
@@ -681,7 +715,6 @@
         }
         
         function createGround() {
-            // Main ground with texture variation
             const ground = new THREE.Mesh(
                 new THREE.PlaneGeometry(600, 600),
                 new THREE.MeshStandardMaterial({ color: 0x3a3a3a, roughness: 0.9 })
@@ -690,63 +723,18 @@
             ground.receiveShadow = true;
             scene.add(ground);
             
-            // Add sidewalk texture
-            const sidewalkMat = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.8 });
-            
-            // Roads with better detail
-            const roadMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.5 });
-            const roadLineMat = new THREE.MeshStandardMaterial({ color: 0xffff00 });
-            
+            // Roads
+            const roadMat = new THREE.MeshStandardMaterial({ color: 0x222222 });
             for (let i = -250; i <= 250; i += 50) {
-                // Horizontal roads
                 const roadH = new THREE.Mesh(new THREE.PlaneGeometry(600, 12), roadMat);
                 roadH.rotation.x = -Math.PI / 2;
                 roadH.position.set(0, 0.01, i);
                 scene.add(roadH);
                 
-                // Road lines
-                for (let j = -280; j <= 280; j += 20) {
-                    const line = new THREE.Mesh(new THREE.PlaneGeometry(1, 0.2), roadLineMat);
-                    line.rotation.x = -Math.PI / 2;
-                    line.position.set(j, 0.02, i);
-                    scene.add(line);
-                }
-                
-                // Sidewalks
-                const sidewalkH1 = new THREE.Mesh(new THREE.PlaneGeometry(600, 2), sidewalkMat);
-                sidewalkH1.rotation.x = -Math.PI / 2;
-                sidewalkH1.position.set(0, 0.015, i + 7);
-                scene.add(sidewalkH1);
-                
-                const sidewalkH2 = new THREE.Mesh(new THREE.PlaneGeometry(600, 2), sidewalkMat);
-                sidewalkH2.rotation.x = -Math.PI / 2;
-                sidewalkH2.position.set(0, 0.015, i - 7);
-                scene.add(sidewalkH2);
-                
-                // Vertical roads
                 const roadV = new THREE.Mesh(new THREE.PlaneGeometry(12, 600), roadMat);
                 roadV.rotation.x = -Math.PI / 2;
                 roadV.position.set(i, 0.01, 0);
                 scene.add(roadV);
-                
-                // Road lines for vertical roads
-                for (let j = -280; j <= 280; j += 20) {
-                    const line = new THREE.Mesh(new THREE.PlaneGeometry(0.2, 1), roadLineMat);
-                    line.rotation.x = -Math.PI / 2;
-                    line.position.set(i, 0.02, j);
-                    scene.add(line);
-                }
-                
-                // Sidewalks for vertical roads
-                const sidewalkV1 = new THREE.Mesh(new THREE.PlaneGeometry(2, 600), sidewalkMat);
-                sidewalkV1.rotation.x = -Math.PI / 2;
-                sidewalkV1.position.set(i + 7, 0.015, 0);
-                scene.add(sidewalkV1);
-                
-                const sidewalkV2 = new THREE.Mesh(new THREE.PlaneGeometry(2, 600), sidewalkMat);
-                sidewalkV2.rotation.x = -Math.PI / 2;
-                sidewalkV2.position.set(i - 7, 0.015, 0);
-                scene.add(sidewalkV2);
             }
         }
         
@@ -754,8 +742,26 @@
             bulk = new THREE.Group();
             bulk.position.set(0, 0, 0);
             
-            // Try to load GLB model, fallback to primitive if it fails
-            if (typeof THREE !== 'undefined' && THREE.GLTFLoader) {
+            // Function to try loading GLB
+            function tryLoadGLB(attempts = 0) {
+                if (typeof THREE === 'undefined') {
+                    console.error('Three.js not loaded');
+                    createBulkFallback();
+                    return;
+                }
+                
+                if (!THREE.GLTFLoader) {
+                    if (attempts < 20) {
+                        console.log('Waiting for GLTFLoader... attempt', attempts + 1);
+                        setTimeout(() => tryLoadGLB(attempts + 1), 100);
+                        return;
+                    } else {
+                        console.warn('GLTFLoader not available after waiting, using fallback');
+                        createBulkFallback();
+                        return;
+                    }
+                }
+                
                 try {
                     const loader = new THREE.GLTFLoader();
                     console.log('Attempting to load bulk.glb...');
@@ -772,16 +778,21 @@
                                 return;
                             }
                             
+                            console.log('Model found, calculating scale...');
+                            
                             // Calculate bounding box to determine proper scale
                             const box = new THREE.Box3().setFromObject(model);
                             const size = box.getSize(new THREE.Vector3());
                             const maxDim = Math.max(size.x, size.y, size.z);
+                            
+                            console.log('Model size:', size, 'Max dimension:', maxDim);
                             
                             // Scale to approximately match the original Bulk size (about 8-10 units tall)
                             // Then make it 25% bigger
                             const targetHeight = 8;
                             const baseScale = maxDim > 0 ? targetHeight / maxDim : 0.1;
                             const scale = baseScale * 1.25; // 25% bigger
+                            console.log('Calculated scale:', scale, '(25% bigger than', baseScale + ')');
                             
                             model.scale.set(scale, scale, scale);
                             
@@ -791,12 +802,15 @@
                             model.rotation.set(0, 0, 0);
                             
                             // Enable shadows on all meshes
+                            let meshCount = 0;
                             model.traverse((child) => {
                                 if (child.isMesh) {
                                     child.castShadow = true;
                                     child.receiveShadow = true;
+                                    meshCount++;
                                 }
                             });
+                            console.log('Found', meshCount, 'meshes in model');
                             
                             bulk.add(model);
                             
@@ -804,14 +818,18 @@
                             model.traverse((child) => {
                                 if (child.name && (child.name.toLowerCase().includes('head') || child.name.toLowerCase().includes('Head'))) {
                                     bulkParts.head = child;
+                                    console.log('Found head:', child.name);
                                 }
                             });
                             if (!bulkParts.head) {
                                 bulkParts.head = model; // Fallback to whole model
+                                console.log('Using whole model as head reference');
                             }
                             
                             // Setup animation mixer if animations exist
                             if (gltf.animations && gltf.animations.length > 0) {
+                                console.log('Found', gltf.animations.length, 'animations in GLB');
+                                console.log('Animation names:', gltf.animations.map(a => a.name));
                                 bulkMixer = new THREE.AnimationMixer(model);
                                 
                                 // Try to find attack animation
@@ -823,6 +841,7 @@
                                 );
                                 
                                 if (attackAnim) {
+                                    console.log('Found attack animation:', attackAnim.name);
                                     attackAction = bulkMixer.clipAction(attackAnim);
                                     attackAction.setLoop(THREE.LoopOnce);
                                     attackAction.clampWhenFinished = true;
@@ -849,54 +868,74 @@
                                     idleAction.setLoop(THREE.LoopRepeat);
                                     idleAction.play();
                                 }
+                            } else {
+                                console.log('No animations found in GLB file - creating programmatic idle animation to fix T-pose');
+                                // Create a simple idle animation to fix T-pose
+                                createIdleAnimationForModel(model);
                             }
+                            
+                            // T-pose fix disabled - can cause twisting if model has different bone structure
+                            // If model is in T-pose, it should be fixed in the 3D modeling software
+                            // fixTPose(model);
                             
                             // Store the model for animation
                             bulk.userData.model = model;
                             bulk.userData.isGLB = true;
                             
                             // Position bulk well above the ground
+                            // Calculate bottom of model after scaling
                             const bottomY = box.min.y * scale;
+                            // Position so the bottom of the model is well above ground
                             const groundLevel = 0;
-                            const clearance = 4.0;
+                            const clearance = 4.0; // Large clearance - model bottom will be 4 units above ground
                             const baseY = groundLevel - bottomY + clearance;
                             bulk.position.y = baseY;
-                            bulk.userData.baseY = baseY;
+                            bulk.userData.baseY = baseY; // Store for animation updates
+                            console.log('Positioned bulk at Y:', baseY, '(model bottom at:', bottomY, ', feet will be at:', baseY + bottomY, 'which is', (baseY + bottomY), 'units above ground)');
                             
                             // Make sure model is visible
                             model.visible = true;
                             bulk.visible = true;
                             
-                            console.log('GLB model loaded successfully');
+                            // Log model info for debugging
+                            console.log('GLB model loaded and configured successfully!');
+                            console.log('Bulk position:', bulk.position);
+                            console.log('Model position:', model.position);
+                            console.log('Model scale:', model.scale);
+                            console.log('Model visible:', model.visible);
+                            console.log('Bulk visible:', bulk.visible);
+                            
+                            // Force a render update
+                            if (renderer) {
+                                renderer.render(scene, camera);
+                            }
                         },
                         (progress) => {
                             if (progress.lengthComputable) {
                                 const percent = (progress.loaded / progress.total * 100).toFixed(0);
                                 console.log('Loading GLB:', percent + '%');
+                            } else {
+                                console.log('Loading GLB...', progress);
                             }
                         },
                         (error) => {
                             console.error('Error loading GLB:', error);
+                            console.error('Error details:', error.message || error);
+                            console.log('Falling back to primitive model');
                             createBulkFallback();
                         }
                     );
                 } catch (e) {
                     console.error('Exception loading GLB:', e);
+                    console.error('Stack:', e.stack);
                     createBulkFallback();
                 }
-            } else {
-                console.warn('GLTFLoader not available, using fallback');
-                createBulkFallback();
             }
             
-            // Always add bulk to scene immediately
+            // Start loading
+            tryLoadGLB();
+            
             scene.add(bulk);
-            
-            // If GLTFLoader isn't available, use fallback immediately
-            if (typeof THREE === 'undefined' || !THREE.GLTFLoader) {
-                console.warn('GLTFLoader not available, using fallback immediately');
-                createBulkFallback();
-            }
         }
         
         function playAttackAnimation() {
@@ -1252,12 +1291,7 @@
             bulk.position.y = baseY;
             bulk.userData.baseY = baseY; // Store for animation updates
             bulk.userData.isFBX = false;
-            bulk.visible = true;
-            
-            // Only add to scene if not already added
-            if (bulk.parent !== scene) {
-                scene.add(bulk);
-            }
+            scene.add(bulk);
         }
         
         function createCity() {
@@ -1299,175 +1333,10 @@
             }
         }
         
-        function createStreetlights() {
-            const lightPole = new THREE.CylinderGeometry(0.1, 0.1, 4, 8);
-            const lightMat = new THREE.MeshStandardMaterial({ color: 0x333333 });
-            const lightBulb = new THREE.SphereGeometry(0.3, 8, 8);
-            const bulbMat = new THREE.MeshStandardMaterial({ 
-                color: 0xffffaa, 
-                emissive: 0xffffaa, 
-                emissiveIntensity: 0.8 
-            });
-            
-            // Place streetlights along roads
-            for (let i = -250; i <= 250; i += 50) {
-                // Horizontal road lights
-                for (let j = -250; j <= 250; j += 30) {
-                    if (Math.abs(j) < 50) continue;
-                    const pole = new THREE.Mesh(lightPole, lightMat);
-                    pole.position.set(i, 2, j);
-                    pole.castShadow = true;
-                    scene.add(pole);
-                    
-                    const bulb = new THREE.Mesh(lightBulb, bulbMat);
-                    bulb.position.set(i, 4.3, j);
-                    scene.add(bulb);
-                    
-                    // Add point light for illumination
-                    const pointLight = new THREE.PointLight(0xffffaa, 0.5, 20);
-                    pointLight.position.set(i, 4.3, j);
-                    scene.add(pointLight);
-                }
-                
-                // Vertical road lights
-                for (let j = -250; j <= 250; j += 30) {
-                    if (Math.abs(j) < 50) continue;
-                    const pole = new THREE.Mesh(lightPole, lightMat);
-                    pole.position.set(j, 2, i);
-                    pole.castShadow = true;
-                    scene.add(pole);
-                    
-                    const bulb = new THREE.Mesh(lightBulb, bulbMat);
-                    bulb.position.set(j, 4.3, i);
-                    scene.add(bulb);
-                    
-                    // Add point light for illumination
-                    const pointLight = new THREE.PointLight(0xffffaa, 0.5, 20);
-                    pointLight.position.set(j, 4.3, i);
-                    scene.add(pointLight);
-                }
-            }
-        }
-        
-        function createCityProps() {
-            // Add benches
-            for (let i = 0; i < 20; i++) {
-                const bench = new THREE.Group();
-                const seat = new THREE.Mesh(
-                    new THREE.BoxGeometry(2, 0.2, 0.6),
-                    new THREE.MeshStandardMaterial({ color: 0x8b4513 })
-                );
-                seat.position.y = 0.5;
-                bench.add(seat);
-                
-                const back = new THREE.Mesh(
-                    new THREE.BoxGeometry(2, 0.8, 0.1),
-                    new THREE.MeshStandardMaterial({ color: 0x8b4513 })
-                );
-                back.position.set(0, 0.9, -0.25);
-                bench.add(back);
-                
-                const angle = Math.random() * Math.PI * 2;
-                const dist = 60 + Math.random() * 120;
-                bench.position.set(
-                    Math.cos(angle) * dist,
-                    0,
-                    Math.sin(angle) * dist
-                );
-                bench.rotation.y = Math.random() * Math.PI * 2;
-                bench.castShadow = true;
-                scene.add(bench);
-            }
-            
-            // Add trash cans
-            for (let i = 0; i < 25; i++) {
-                const trash = new THREE.Group();
-                const can = new THREE.Mesh(
-                    new THREE.CylinderGeometry(0.4, 0.4, 1, 8),
-                    new THREE.MeshStandardMaterial({ color: 0x333333 })
-                );
-                can.position.y = 0.5;
-                trash.add(can);
-                
-                const lid = new THREE.Mesh(
-                    new THREE.CylinderGeometry(0.45, 0.45, 0.1, 8),
-                    new THREE.MeshStandardMaterial({ color: 0x222222 })
-                );
-                lid.position.y = 1.05;
-                trash.add(lid);
-                
-                const angle = Math.random() * Math.PI * 2;
-                const dist = 50 + Math.random() * 150;
-                trash.position.set(
-                    Math.cos(angle) * dist,
-                    0,
-                    Math.sin(angle) * dist
-                );
-                trash.castShadow = true;
-                scene.add(trash);
-            }
-            
-            // Add trees
-            for (let i = 0; i < 40; i++) {
-                const tree = new THREE.Group();
-                const trunk = new THREE.Mesh(
-                    new THREE.CylinderGeometry(0.3, 0.4, 3, 8),
-                    new THREE.MeshStandardMaterial({ color: 0x654321 })
-                );
-                trunk.position.y = 1.5;
-                tree.add(trunk);
-                
-                const leaves = new THREE.Mesh(
-                    new THREE.ConeGeometry(1.5, 3, 8),
-                    new THREE.MeshStandardMaterial({ color: 0x228b22 })
-                );
-                leaves.position.y = 3.5;
-                tree.add(leaves);
-                
-                const angle = Math.random() * Math.PI * 2;
-                const dist = 70 + Math.random() * 150;
-                tree.position.set(
-                    Math.cos(angle) * dist,
-                    0,
-                    Math.sin(angle) * dist
-                );
-                tree.castShadow = true;
-                scene.add(tree);
-            }
-            
-            // Add fire hydrants
-            for (let i = 0; i < 15; i++) {
-                const hydrant = new THREE.Group();
-                const body = new THREE.Mesh(
-                    new THREE.CylinderGeometry(0.2, 0.25, 0.8, 8),
-                    new THREE.MeshStandardMaterial({ color: 0xff0000 })
-                );
-                body.position.y = 0.4;
-                hydrant.add(body);
-                
-                const cap = new THREE.Mesh(
-                    new THREE.CylinderGeometry(0.25, 0.25, 0.1, 8),
-                    new THREE.MeshStandardMaterial({ color: 0xffff00 })
-                );
-                cap.position.y = 0.85;
-                hydrant.add(cap);
-                
-                const angle = Math.random() * Math.PI * 2;
-                const dist = 55 + Math.random() * 130;
-                hydrant.position.set(
-                    Math.cos(angle) * dist,
-                    0,
-                    Math.sin(angle) * dist
-                );
-                scene.add(hydrant);
-            }
-        }
-        
         function spawnCars() {
-            const carColors = [0xff0000, 0x0000ff, 0xffff00, 0x00ff00, 0xffffff, 0x000000, 0xff6600, 0xff00ff, 0x00ffff, 0x888888];
+            const carColors = [0xff0000, 0x0000ff, 0xffff00, 0x00ff00, 0xffffff, 0x000000, 0xff6600];
             
-            // Spawn more cars for a busier city
-            for (let i = 0; i < 80; i++) {
+            for (let i = 0; i < 50; i++) {
                 const carGroup = new THREE.Group();
                 const color = carColors[Math.floor(Math.random() * carColors.length)];
                 
