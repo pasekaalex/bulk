@@ -543,7 +543,54 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://threejs.org/examples/js/loaders/GLTFLoader.js"></script>
+    <script>
+        // Load GLTFLoader - try multiple CDNs for reliability
+        (function() {
+            function loadGLTFLoader() {
+                const scripts = [
+                    'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js',
+                    'https://threejs.org/examples/js/loaders/GLTFLoader.js'
+                ];
+                
+                let currentIndex = 0;
+                
+                function tryLoad() {
+                    if (typeof THREE !== 'undefined' && THREE.GLTFLoader) {
+                        console.log('GLTFLoader already loaded');
+                        window.GLTFLoaderReady = true;
+                        return;
+                    }
+                    
+                    if (currentIndex >= scripts.length) {
+                        console.error('Failed to load GLTFLoader from all sources');
+                        return;
+                    }
+                    
+                    const script = document.createElement('script');
+                    script.src = scripts[currentIndex];
+                    script.onload = function() {
+                        console.log('GLTFLoader loaded from:', scripts[currentIndex]);
+                        window.GLTFLoaderReady = true;
+                    };
+                    script.onerror = function() {
+                        console.warn('Failed to load from:', scripts[currentIndex]);
+                        currentIndex++;
+                        tryLoad();
+                    };
+                    document.head.appendChild(script);
+                }
+                
+                tryLoad();
+            }
+            
+            // Wait for Three.js to load first
+            if (typeof THREE !== 'undefined') {
+                loadGLTFLoader();
+            } else {
+                window.addEventListener('load', loadGLTFLoader);
+            }
+        })();
+    </script>
     <script>
         // Game State
         let scene, camera, renderer;
@@ -643,10 +690,8 @@
             
             createGround();
             
-            // GLTFLoader should be available immediately, but wait a tiny bit just in case
-            setTimeout(() => {
-                createBulk();
-            }, 50);
+            // Create bulk - it will wait for GLTFLoader internally
+            createBulk();
             
             createCity();
             spawnCars();
@@ -697,8 +742,26 @@
             bulk = new THREE.Group();
             bulk.position.set(0, 0, 0);
             
-            // Try to load GLB model, fallback to primitive if it fails
-            if (typeof THREE !== 'undefined' && THREE.GLTFLoader) {
+            // Function to try loading GLB
+            function tryLoadGLB(attempts = 0) {
+                if (typeof THREE === 'undefined') {
+                    console.error('Three.js not loaded');
+                    createBulkFallback();
+                    return;
+                }
+                
+                if (!THREE.GLTFLoader) {
+                    if (attempts < 20) {
+                        console.log('Waiting for GLTFLoader... attempt', attempts + 1);
+                        setTimeout(() => tryLoadGLB(attempts + 1), 100);
+                        return;
+                    } else {
+                        console.warn('GLTFLoader not available after waiting, using fallback');
+                        createBulkFallback();
+                        return;
+                    }
+                }
+                
                 try {
                     const loader = new THREE.GLTFLoader();
                     console.log('Attempting to load bulk.glb...');
@@ -708,21 +771,27 @@
                         (gltf) => {
                             console.log('GLB loaded successfully!', gltf);
                             
-                            const model = gltf.scene || gltf.scenes[0];
+                            const model = gltf.scene || (gltf.scenes && gltf.scenes[0]);
                             if (!model) {
-                                console.error('No scene found in GLB file');
+                                console.error('No scene found in GLB file. Available keys:', Object.keys(gltf));
                                 createBulkFallback();
                                 return;
                             }
+                            
+                            console.log('Model found, calculating scale...');
                             
                             // Calculate bounding box to determine proper scale
                             const box = new THREE.Box3().setFromObject(model);
                             const size = box.getSize(new THREE.Vector3());
                             const maxDim = Math.max(size.x, size.y, size.z);
                             
+                            console.log('Model size:', size, 'Max dimension:', maxDim);
+                            
                             // Scale to approximately match the original Bulk size (about 8-10 units tall)
                             const targetHeight = 8;
                             const scale = maxDim > 0 ? targetHeight / maxDim : 0.1;
+                            console.log('Calculated scale:', scale);
+                            
                             model.scale.set(scale, scale, scale);
                             
                             // Center the model
@@ -731,12 +800,15 @@
                             model.rotation.set(0, 0, 0);
                             
                             // Enable shadows on all meshes
+                            let meshCount = 0;
                             model.traverse((child) => {
                                 if (child.isMesh) {
                                     child.castShadow = true;
                                     child.receiveShadow = true;
+                                    meshCount++;
                                 }
                             });
+                            console.log('Found', meshCount, 'meshes in model');
                             
                             bulk.add(model);
                             
@@ -744,15 +816,18 @@
                             model.traverse((child) => {
                                 if (child.name && (child.name.toLowerCase().includes('head') || child.name.toLowerCase().includes('Head'))) {
                                     bulkParts.head = child;
+                                    console.log('Found head:', child.name);
                                 }
                             });
                             if (!bulkParts.head) {
                                 bulkParts.head = model; // Fallback to whole model
+                                console.log('Using whole model as head reference');
                             }
                             
                             // Setup animation mixer if animations exist
                             if (gltf.animations && gltf.animations.length > 0) {
                                 console.log('Found', gltf.animations.length, 'animations in GLB');
+                                console.log('Animation names:', gltf.animations.map(a => a.name));
                                 bulkMixer = new THREE.AnimationMixer(model);
                                 
                                 // Try to find attack animation
@@ -791,6 +866,8 @@
                                     idleAction.setLoop(THREE.LoopRepeat);
                                     idleAction.play();
                                 }
+                            } else {
+                                console.log('No animations found in GLB file');
                             }
                             
                             // Store the model for animation
@@ -800,30 +877,47 @@
                             // Position bulk at ground level
                             bulk.position.y = 1.5;
                             
-                            console.log('GLB model loaded and configured successfully');
+                            // Make sure model is visible
+                            model.visible = true;
+                            bulk.visible = true;
+                            
+                            // Log model info for debugging
+                            console.log('GLB model loaded and configured successfully!');
+                            console.log('Bulk position:', bulk.position);
+                            console.log('Model position:', model.position);
+                            console.log('Model scale:', model.scale);
+                            console.log('Model visible:', model.visible);
+                            console.log('Bulk visible:', bulk.visible);
+                            
+                            // Force a render update
+                            if (renderer) {
+                                renderer.render(scene, camera);
+                            }
                         },
                         (progress) => {
                             if (progress.lengthComputable) {
                                 const percent = (progress.loaded / progress.total * 100).toFixed(0);
                                 console.log('Loading GLB:', percent + '%');
                             } else {
-                                console.log('Loading GLB...');
+                                console.log('Loading GLB...', progress);
                             }
                         },
                         (error) => {
                             console.error('Error loading GLB:', error);
+                            console.error('Error details:', error.message || error);
                             console.log('Falling back to primitive model');
                             createBulkFallback();
                         }
                     );
                 } catch (e) {
                     console.error('Exception loading GLB:', e);
+                    console.error('Stack:', e.stack);
                     createBulkFallback();
                 }
-            } else {
-                console.warn('GLTFLoader not available, using fallback');
-                createBulkFallback();
             }
+            
+            // Start loading
+            tryLoadGLB();
             
             scene.add(bulk);
         }
