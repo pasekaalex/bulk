@@ -1060,9 +1060,8 @@
                 model.rotation.x = originalRotation.x;
                 model.rotation.z = originalRotation.z;
                 
-                // Slight vertical movement (tornado lift) - only upward, never below original
-                const liftAmount = Math.abs(Math.sin(progress * Math.PI * 2)) * 0.3; // Only positive values (0 to 0.3)
-                model.position.y = originalPosition.y + liftAmount;
+                // Keep Y position locked to spawn (no vertical movement)
+                model.position.y = originalPosition.y;
                 
                 // Scale pulsing for tornado effect
                 const scalePulse = 1 + Math.sin(progress * Math.PI * 6) * 0.1;
@@ -1110,9 +1109,8 @@
                 bulk.rotation.x = originalRotationX;
                 bulk.rotation.z = originalRotationZ;
                 
-                // Vertical lift effect - only upward, never below original
-                const liftAmount = Math.abs(Math.sin(progress * Math.PI * 2)) * 0.3; // Only positive values (0 to 0.3)
-                bulk.position.y = originalBulkY + liftAmount;
+                // Keep Y position locked to spawn (no vertical movement)
+                bulk.position.y = originalBulkY;
                 
                 // Make arms spin out (T-pose tornado effect)
                 if (bulkParts.leftArm && bulkParts.rightArm) {
