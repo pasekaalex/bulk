@@ -1042,7 +1042,7 @@
             const originalPosition = model.position.clone();
             const originalScale = model.scale.clone();
             
-            // TORNADO SPIN ATTACK!
+            // TORNADO SPIN ATTACK! - Only horizontal (Y-axis) rotation
             const spinDuration = 0.8; // Spin for 0.8 seconds
             const totalRotations = 3; // Spin 3 full rotations
             let elapsed = 0;
@@ -1052,14 +1052,13 @@
                 elapsed = (Date.now() - startTime) / 1000;
                 const progress = Math.min(elapsed / spinDuration, 1);
                 
-                // Spin around Y axis (vertical)
+                // Only spin around Y axis (horizontal rotation) - no tilt
                 const rotationY = progress * totalRotations * Math.PI * 2;
                 model.rotation.y = originalRotation.y + rotationY;
                 
-                // Also add some tilt for tornado effect
-                const tiltAmount = Math.sin(progress * Math.PI * 4) * 0.3; // Oscillating tilt
-                model.rotation.x = originalRotation.x + tiltAmount;
-                model.rotation.z = originalRotation.z + tiltAmount;
+                // Keep X and Z rotations at original (no tilt)
+                model.rotation.x = originalRotation.x;
+                model.rotation.z = originalRotation.z;
                 
                 // Slight vertical movement (tornado lift)
                 const liftAmount = Math.sin(progress * Math.PI * 2) * 0.3;
@@ -1087,10 +1086,12 @@
         }
         
         function animatePrimitiveAttack() {
-            // TORNADO SPIN ATTACK for primitive model!
+            // TORNADO SPIN ATTACK for primitive model! - Only horizontal (Y-axis) rotation
             const originalBulkY = bulk.position.y;
             const originalBulkZ = bulk.position.z;
             const originalRotationY = bulk.rotation.y;
+            const originalRotationX = bulk.rotation.x;
+            const originalRotationZ = bulk.rotation.z;
             
             const spinDuration = 0.8; // Spin for 0.8 seconds
             const totalRotations = 3; // Spin 3 full rotations
@@ -1101,14 +1102,13 @@
                 elapsed = (Date.now() - startTime) / 1000;
                 const progress = Math.min(elapsed / spinDuration, 1);
                 
-                // Spin the entire bulk around Y axis
+                // Only spin around Y axis (horizontal rotation) - no tilt
                 const rotationY = progress * totalRotations * Math.PI * 2;
                 bulk.rotation.y = originalRotationY + rotationY;
                 
-                // Tilt for tornado effect
-                const tiltAmount = Math.sin(progress * Math.PI * 4) * 0.3;
-                bulk.rotation.x = tiltAmount;
-                bulk.rotation.z = tiltAmount;
+                // Keep X and Z rotations at original (no tilt)
+                bulk.rotation.x = originalRotationX;
+                bulk.rotation.z = originalRotationZ;
                 
                 // Vertical lift effect
                 const liftAmount = Math.sin(progress * Math.PI * 2) * 0.3;
@@ -1120,10 +1120,9 @@
                     bulkParts.leftArm.rotation.y = armSpin;
                     bulkParts.rightArm.rotation.y = -armSpin;
                     
-                    // Arms spread out more during spin
-                    const spreadAmount = Math.sin(progress * Math.PI) * 0.5;
-                    bulkParts.leftArm.rotation.z = -Math.PI / 2 - spreadAmount;
-                    bulkParts.rightArm.rotation.z = Math.PI / 2 + spreadAmount;
+                    // Keep arms in T-pose (no additional spread)
+                    bulkParts.leftArm.rotation.z = -Math.PI / 2;
+                    bulkParts.rightArm.rotation.z = Math.PI / 2;
                 }
                 
                 // Scale pulsing
@@ -1137,8 +1136,8 @@
                     bulk.position.y = originalBulkY;
                     bulk.position.z = originalBulkZ;
                     bulk.rotation.y = originalRotationY;
-                    bulk.rotation.x = 0;
-                    bulk.rotation.z = 0;
+                    bulk.rotation.x = originalRotationX;
+                    bulk.rotation.z = originalRotationZ;
                     bulk.scale.set(1, 1, 1);
                     if (bulkParts.leftArm) {
                         bulkParts.leftArm.rotation.y = 0;
