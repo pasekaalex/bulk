@@ -543,54 +543,7 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script>
-        // Load GLTFLoader - try multiple CDNs for reliability
-        (function() {
-            function loadGLTFLoader() {
-                const scripts = [
-                    'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js',
-                    'https://threejs.org/examples/js/loaders/GLTFLoader.js'
-                ];
-                
-                let currentIndex = 0;
-                
-                function tryLoad() {
-                    if (typeof THREE !== 'undefined' && THREE.GLTFLoader) {
-                        console.log('GLTFLoader already loaded');
-                        window.GLTFLoaderReady = true;
-                        return;
-                    }
-                    
-                    if (currentIndex >= scripts.length) {
-                        console.error('Failed to load GLTFLoader from all sources');
-                        return;
-                    }
-                    
-                    const script = document.createElement('script');
-                    script.src = scripts[currentIndex];
-                    script.onload = function() {
-                        console.log('GLTFLoader loaded from:', scripts[currentIndex]);
-                        window.GLTFLoaderReady = true;
-                    };
-                    script.onerror = function() {
-                        console.warn('Failed to load from:', scripts[currentIndex]);
-                        currentIndex++;
-                        tryLoad();
-                    };
-                    document.head.appendChild(script);
-                }
-                
-                tryLoad();
-            }
-            
-            // Wait for Three.js to load first
-            if (typeof THREE !== 'undefined') {
-                loadGLTFLoader();
-            } else {
-                window.addEventListener('load', loadGLTFLoader);
-            }
-        })();
-    </script>
+    <script src="https://threejs.org/examples/js/loaders/GLTFLoader.js"></script>
     <script>
         // Game State
         let scene, camera, renderer;
@@ -788,26 +741,8 @@
             bulk = new THREE.Group();
             bulk.position.set(0, 0, 0);
             
-            // Function to try loading GLB
-            function tryLoadGLB(attempts = 0) {
-                if (typeof THREE === 'undefined') {
-                    console.error('Three.js not loaded');
-                    createBulkFallback();
-                    return;
-                }
-                
-                if (!THREE.GLTFLoader) {
-                    if (attempts < 20) {
-                        console.log('Waiting for GLTFLoader... attempt', attempts + 1);
-                        setTimeout(() => tryLoadGLB(attempts + 1), 100);
-                        return;
-                    } else {
-                        console.warn('GLTFLoader not available after waiting, using fallback');
-                        createBulkFallback();
-                        return;
-                    }
-                }
-                
+            // Try to load GLB model, fallback to primitive if it fails
+            if (typeof THREE !== 'undefined' && THREE.GLTFLoader) {
                 try {
                     const loader = new THREE.GLTFLoader();
                     console.log('Attempting to load bulk.glb...');
@@ -824,21 +759,16 @@
                                 return;
                             }
                             
-                            console.log('Model found, calculating scale...');
-                            
                             // Calculate bounding box to determine proper scale
                             const box = new THREE.Box3().setFromObject(model);
                             const size = box.getSize(new THREE.Vector3());
                             const maxDim = Math.max(size.x, size.y, size.z);
-                            
-                            console.log('Model size:', size, 'Max dimension:', maxDim);
                             
                             // Scale to approximately match the original Bulk size (about 8-10 units tall)
                             // Then make it 25% bigger
                             const targetHeight = 8;
                             const baseScale = maxDim > 0 ? targetHeight / maxDim : 0.1;
                             const scale = baseScale * 1.25; // 25% bigger
-                            console.log('Calculated scale:', scale, '(25% bigger than', baseScale + ')');
                             
                             model.scale.set(scale, scale, scale);
                             
@@ -848,15 +778,12 @@
                             model.rotation.set(0, 0, 0);
                             
                             // Enable shadows on all meshes
-                            let meshCount = 0;
                             model.traverse((child) => {
                                 if (child.isMesh) {
                                     child.castShadow = true;
                                     child.receiveShadow = true;
-                                    meshCount++;
                                 }
                             });
-                            console.log('Found', meshCount, 'meshes in model');
                             
                             bulk.add(model);
                             
@@ -864,18 +791,14 @@
                             model.traverse((child) => {
                                 if (child.name && (child.name.toLowerCase().includes('head') || child.name.toLowerCase().includes('Head'))) {
                                     bulkParts.head = child;
-                                    console.log('Found head:', child.name);
                                 }
                             });
                             if (!bulkParts.head) {
                                 bulkParts.head = model; // Fallback to whole model
-                                console.log('Using whole model as head reference');
                             }
                             
                             // Setup animation mixer if animations exist
                             if (gltf.animations && gltf.animations.length > 0) {
-                                console.log('Found', gltf.animations.length, 'animations in GLB');
-                                console.log('Animation names:', gltf.animations.map(a => a.name));
                                 bulkMixer = new THREE.AnimationMixer(model);
                                 
                                 // Try to find attack animation
@@ -887,7 +810,6 @@
                                 );
                                 
                                 if (attackAnim) {
-                                    console.log('Found attack animation:', attackAnim.name);
                                     attackAction = bulkMixer.clipAction(attackAnim);
                                     attackAction.setLoop(THREE.LoopOnce);
                                     attackAction.clampWhenFinished = true;
@@ -914,73 +836,47 @@
                                     idleAction.setLoop(THREE.LoopRepeat);
                                     idleAction.play();
                                 }
-                            } else {
-                                console.log('No animations found in GLB file - creating programmatic idle animation to fix T-pose');
-                                // Create a simple idle animation to fix T-pose
-                                createIdleAnimationForModel(model);
                             }
-                            
-                            // T-pose fix disabled - can cause twisting if model has different bone structure
-                            // If model is in T-pose, it should be fixed in the 3D modeling software
-                            // fixTPose(model);
                             
                             // Store the model for animation
                             bulk.userData.model = model;
                             bulk.userData.isGLB = true;
                             
                             // Position bulk well above the ground
-                            // Calculate bottom of model after scaling
                             const bottomY = box.min.y * scale;
-                            // Position so the bottom of the model is well above ground
                             const groundLevel = 0;
-                            const clearance = 4.0; // Large clearance - model bottom will be 4 units above ground
+                            const clearance = 4.0;
                             const baseY = groundLevel - bottomY + clearance;
                             bulk.position.y = baseY;
-                            bulk.userData.baseY = baseY; // Store for animation updates
-                            console.log('Positioned bulk at Y:', baseY, '(model bottom at:', bottomY, ', feet will be at:', baseY + bottomY, 'which is', (baseY + bottomY), 'units above ground)');
+                            bulk.userData.baseY = baseY;
                             
                             // Make sure model is visible
                             model.visible = true;
                             bulk.visible = true;
                             
-                            // Log model info for debugging
-                            console.log('GLB model loaded and configured successfully!');
-                            console.log('Bulk position:', bulk.position);
-                            console.log('Model position:', model.position);
-                            console.log('Model scale:', model.scale);
-                            console.log('Model visible:', model.visible);
-                            console.log('Bulk visible:', bulk.visible);
-                            
-                            // Force a render update
-                            if (renderer) {
-                                renderer.render(scene, camera);
-                            }
+                            console.log('GLB model loaded successfully');
                         },
                         (progress) => {
                             if (progress.lengthComputable) {
                                 const percent = (progress.loaded / progress.total * 100).toFixed(0);
                                 console.log('Loading GLB:', percent + '%');
-                            } else {
-                                console.log('Loading GLB...', progress);
                             }
                         },
                         (error) => {
                             console.error('Error loading GLB:', error);
-                            console.error('Error details:', error.message || error);
-                            console.log('Falling back to primitive model');
                             createBulkFallback();
                         }
                     );
                 } catch (e) {
                     console.error('Exception loading GLB:', e);
-                    console.error('Stack:', e.stack);
                     createBulkFallback();
                 }
+            } else {
+                console.warn('GLTFLoader not available, using fallback');
+                createBulkFallback();
             }
             
-            // Start loading
-            tryLoadGLB();
-            
+            // Always add bulk to scene (even if empty, it will be populated by fallback or GLB load)
             scene.add(bulk);
         }
         
@@ -1337,94 +1233,24 @@
             bulk.position.y = baseY;
             bulk.userData.baseY = baseY; // Store for animation updates
             bulk.userData.isFBX = false;
-            scene.add(bulk);
-        }
-        
-        function isOnRoad(x, z, buildingWidth, buildingDepth) {
-            // Roads are placed every 50 units at -250, -200, -150, ..., 250
-            // Each road is 12 units wide (6 units on each side of center)
-            const roadWidth = 12;
-            const roadHalfWidth = roadWidth / 2;
-            const roadSpacing = 50;
+            bulk.visible = true;
             
-            // Check horizontal roads (affect z position)
-            for (let roadZ = -250; roadZ <= 250; roadZ += roadSpacing) {
-                const buildingZMin = z - buildingDepth / 2;
-                const buildingZMax = z + buildingDepth / 2;
-                const roadZMin = roadZ - roadHalfWidth;
-                const roadZMax = roadZ + roadHalfWidth;
-                
-                if (buildingZMin < roadZMax && buildingZMax > roadZMin) {
-                    return true; // Building overlaps with horizontal road
-                }
+            // Only add to scene if not already added
+            if (bulk.parent !== scene) {
+                scene.add(bulk);
             }
-            
-            // Check vertical roads (affect x position)
-            for (let roadX = -250; roadX <= 250; roadX += roadSpacing) {
-                const buildingXMin = x - buildingWidth / 2;
-                const buildingXMax = x + buildingWidth / 2;
-                const roadXMin = roadX - roadHalfWidth;
-                const roadXMax = roadX + roadHalfWidth;
-                
-                if (buildingXMin < roadXMax && buildingXMax > roadXMin) {
-                    return true; // Building overlaps with vertical road
-                }
-            }
-            
-            return false;
         }
         
         function createCity() {
-            const colors = [0x666666, 0x888888, 0x555555, 0x777777, 0x996633, 0x446688, 0xaa6666, 0x6688aa];
-            const buildingTypes = ['normal', 'tall', 'wide', 'skyscraper', 'short'];
+            const colors = [0x666666, 0x888888, 0x555555, 0x777777, 0x996633, 0x446688];
             
-            // Create more varied city layout with larger area
-            for (let x = -250; x <= 250; x += 25) {
-                for (let z = -250; z <= 250; z += 25) {
-                    if (Math.abs(x) < 50 && Math.abs(z) < 50) continue;
+            for (let x = -200; x <= 200; x += 30) {
+                for (let z = -200; z <= 200; z += 30) {
+                    if (Math.abs(x) < 40 && Math.abs(z) < 40) continue;
                     
-                    // Create city blocks with some open spaces (parks, plazas)
-                    if (Math.random() < 0.12) continue; // 12% chance of open space
-                    
-                    // Determine building size first to check road collision
-                    const buildingType = buildingTypes[Math.floor(Math.random() * buildingTypes.length)];
-                    let height, width, depth;
-                    
-                    switch(buildingType) {
-                        case 'skyscraper':
-                            height = 40 + Math.random() * 50;
-                            width = 8 + Math.random() * 6;
-                            depth = 8 + Math.random() * 6;
-                            break;
-                        case 'tall':
-                            height = 25 + Math.random() * 20;
-                            width = 7 + Math.random() * 5;
-                            depth = 7 + Math.random() * 5;
-                            break;
-                        case 'wide':
-                            height = 12 + Math.random() * 15;
-                            width = 12 + Math.random() * 8;
-                            depth = 12 + Math.random() * 8;
-                            break;
-                        case 'short':
-                            height = 5 + Math.random() * 8;
-                            width = 6 + Math.random() * 6;
-                            depth = 6 + Math.random() * 6;
-                            break;
-                        default:
-                            height = 10 + Math.random() * 20;
-                            width = 6 + Math.random() * 8;
-                            depth = 6 + Math.random() * 8;
-                    }
-                    
-                    // Calculate final building position with random offset
-                    const finalX = x + (Math.random() - 0.5) * 10;
-                    const finalZ = z + (Math.random() - 0.5) * 10;
-                    
-                    // Skip if building would be on a road
-                    if (isOnRoad(finalX, finalZ, width, depth)) {
-                        continue; // Skip this building placement
-                    }
+                    const height = 8 + Math.random() * 30;
+                    const width = 6 + Math.random() * 10;
+                    const depth = 6 + Math.random() * 10;
                     
                     const building = new THREE.Mesh(
                         new THREE.BoxGeometry(width, height, depth),
