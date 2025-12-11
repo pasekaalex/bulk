@@ -543,7 +543,20 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://threejs.org/examples/js/loaders/GLTFLoader.js"></script>
+    <script>
+        // Load GLTFLoader dynamically
+        (function() {
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
+            script.onload = function() {
+                console.log('GLTFLoader loaded successfully');
+            };
+            script.onerror = function() {
+                console.warn('Failed to load GLTFLoader from CDN, will use fallback');
+            };
+            document.head.appendChild(script);
+        })();
+    </script>
     <script>
         // Game State
         let scene, camera, renderer;
@@ -876,8 +889,14 @@
                 createBulkFallback();
             }
             
-            // Always add bulk to scene (even if empty, it will be populated by fallback or GLB load)
+            // Always add bulk to scene immediately
             scene.add(bulk);
+            
+            // If GLTFLoader isn't available, use fallback immediately
+            if (typeof THREE === 'undefined' || !THREE.GLTFLoader) {
+                console.warn('GLTFLoader not available, using fallback immediately');
+                createBulkFallback();
+            }
         }
         
         function playAttackAnimation() {
@@ -1254,56 +1273,30 @@
                     
                     const building = new THREE.Mesh(
                         new THREE.BoxGeometry(width, height, depth),
-                        new THREE.MeshStandardMaterial({ 
-                            color: colors[Math.floor(Math.random() * colors.length)], 
-                            roughness: 0.7,
-                            metalness: buildingType === 'skyscraper' ? 0.3 : 0
-                        })
+                        new THREE.MeshStandardMaterial({ color: colors[Math.floor(Math.random() * colors.length)], roughness: 0.7 })
                     );
-                    building.position.set(finalX, height / 2, finalZ);
+                    building.position.set(x + (Math.random() - 0.5) * 15, height / 2, z + (Math.random() - 0.5) * 15);
                     building.castShadow = true;
                     building.receiveShadow = true;
-                    building.userData = { isBuilding: true, health: height * 15, maxHealth: height * 15, destroyed: false, height, type: buildingType };
-                    buildings.push(building);
-                    scene.add(building);
-                    totalBuildings++;
                     
-                    // Enhanced windows with lit/unlit variety
+                    // Windows
                     const winMat = new THREE.MeshBasicMaterial({ color: 0xffff88 });
-                    const winMatDark = new THREE.MeshBasicMaterial({ color: 0x333333 });
-                    const windowSpacing = buildingType === 'skyscraper' ? 1.5 : 2;
-                    
                     for (let wy = -height/2 + 2; wy < height/2 - 1; wy += 2.5) {
-                        for (let wx = -width/2 + 1; wx < width/2 - 0.5; wx += windowSpacing) {
-                            if (Math.random() > 0.25) {
-                                const isLit = Math.random() > 0.4;
-                                const win = new THREE.Mesh(
-                                    new THREE.PlaneGeometry(0.6, 0.9), 
-                                    isLit ? winMat : winMatDark
-                                );
+                        for (let wx = -width/2 + 1; wx < width/2 - 0.5; wx += 2) {
+                            if (Math.random() > 0.3) {
+                                const win = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.9), winMat);
                                 win.position.set(wx, wy, depth/2 + 0.01);
                                 building.add(win);
                             }
                         }
                     }
                     
-                    // Add rooftop details for taller buildings
-                    if (height > 20 && Math.random() > 0.7) {
-                        const roof = new THREE.Mesh(
-                            new THREE.BoxGeometry(width * 0.8, 1, depth * 0.8),
-                            new THREE.MeshStandardMaterial({ color: 0x333333 })
-                        );
-                        roof.position.set(0, height/2 + 0.5, 0);
-                        building.add(roof);
-                    }
+                    building.userData = { isBuilding: true, health: height * 15, maxHealth: height * 15, destroyed: false, height };
+                    buildings.push(building);
+                    scene.add(building);
+                    totalBuildings++;
                 }
             }
-            
-            // Add streetlights along roads
-            createStreetlights();
-            
-            // Add more city props
-            createCityProps();
         }
         
         function createStreetlights() {
