@@ -179,6 +179,55 @@
             }
         }
 
+        .game-btn-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+            margin-bottom: 20px;
+        }
+
+        .game-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 16px 32px;
+            background: linear-gradient(to right, #9B4DCA, #6B2D9E);
+            border: 3px solid #FFD700;
+            border-radius: 12px;
+            color: white;
+            font-weight: bold;
+            text-decoration: none;
+            font-size: 18px;
+            font-family: 'Hulk Display', 'Orbitron', sans-serif;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            box-shadow: 0 0 30px rgba(155,77,202,0.6), 0 0 60px rgba(255,215,0,0.3);
+            transition: all 0.3s;
+            animation: gameBtnPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes gameBtnPulse {
+            0%, 100% { 
+                transform: scale(1);
+                box-shadow: 0 0 30px rgba(155,77,202,0.6), 0 0 60px rgba(255,215,0,0.3);
+            }
+            50% { 
+                transform: scale(1.05);
+                box-shadow: 0 0 40px rgba(155,77,202,0.8), 0 0 80px rgba(255,215,0,0.5);
+            }
+        }
+
+        .game-btn:hover {
+            background: linear-gradient(to right, #BF5FFF, #9B4DCA);
+            transform: scale(1.1);
+            box-shadow: 0 0 50px rgba(155,77,202,0.9), 0 0 100px rgba(255,215,0,0.6);
+        }
+
+        .game-btn svg {
+            width: 24px;
+            height: 24px;
+        }
+
         .links-section {
             display: flex;
             flex-direction: row;
@@ -269,6 +318,17 @@
             <video src="bulk.mp4" class="banner" id="banner-video" autoplay loop playsinline></video>
             
             <code class="contract-address" id="contract-address" onclick="copyContract(event)" title="Click to copy">F4TJfiMVi7zFGRJj4FVC1Zuj7fdCo6skKa4SnAU4pump</code>
+
+            <div class="game-btn-container">
+                <a href="the-amazing-bulk-game.html" class="game-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                        <path d="M2 17l10 5 10-5"></path>
+                        <path d="M2 12l10 5 10-5"></path>
+                    </svg>
+                    BULK RAMPAGE
+                </a>
+            </div>
 
             <div class="links-section">
                 <a href="https://dexscreener.com/solana/4fiwnawmxpctyqgljp5niyid9sbrznz8dgtqqtibbmhc" target="_blank" rel="noopener noreferrer" class="link-btn dexscreener-btn">
