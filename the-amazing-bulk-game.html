@@ -1063,13 +1063,8 @@
                 // Keep Y position locked to spawn (no vertical movement)
                 model.position.y = originalPosition.y;
                 
-                // Scale pulsing for tornado effect
-                const scalePulse = 1 + Math.sin(progress * Math.PI * 6) * 0.1;
-                model.scale.set(
-                    originalScale.x * scalePulse,
-                    originalScale.y * scalePulse,
-                    originalScale.z * scalePulse
-                );
+                // Keep scale locked to spawn (no size changes)
+                model.scale.copy(originalScale);
                 
                 if (progress < 1) {
                     requestAnimationFrame(animate);
@@ -1091,6 +1086,7 @@
             const originalRotationY = bulk.rotation.y;
             const originalRotationX = bulk.rotation.x;
             const originalRotationZ = bulk.rotation.z;
+            const originalScale = bulk.scale.clone();
             
             const spinDuration = 0.8; // Spin for 0.8 seconds
             const totalRotations = 3; // Spin 3 full rotations
@@ -1123,9 +1119,8 @@
                     bulkParts.rightArm.rotation.z = Math.PI / 2;
                 }
                 
-                // Scale pulsing
-                const scalePulse = 1 + Math.sin(progress * Math.PI * 6) * 0.1;
-                bulk.scale.set(scalePulse, scalePulse, scalePulse);
+                // Keep scale locked to spawn (no size changes)
+                bulk.scale.copy(originalScale);
                 
                 if (progress < 1) {
                     requestAnimationFrame(animate);
@@ -1136,7 +1131,7 @@
                     bulk.rotation.y = originalRotationY;
                     bulk.rotation.x = originalRotationX;
                     bulk.rotation.z = originalRotationZ;
-                    bulk.scale.set(1, 1, 1);
+                    bulk.scale.copy(originalScale);
                     if (bulkParts.leftArm) {
                         bulkParts.leftArm.rotation.y = 0;
                         bulkParts.leftArm.rotation.z = 0.3;
