@@ -788,9 +788,11 @@
                             console.log('Model size:', size, 'Max dimension:', maxDim);
                             
                             // Scale to approximately match the original Bulk size (about 8-10 units tall)
+                            // Then make it 25% bigger
                             const targetHeight = 8;
-                            const scale = maxDim > 0 ? targetHeight / maxDim : 0.1;
-                            console.log('Calculated scale:', scale);
+                            const baseScale = maxDim > 0 ? targetHeight / maxDim : 0.1;
+                            const scale = baseScale * 1.25; // 25% bigger
+                            console.log('Calculated scale:', scale, '(25% bigger than', baseScale + ')');
                             
                             model.scale.set(scale, scale, scale);
                             
@@ -867,15 +869,25 @@
                                     idleAction.play();
                                 }
                             } else {
-                                console.log('No animations found in GLB file');
+                                console.log('No animations found in GLB file - creating programmatic idle animation to fix T-pose');
+                                // Create a simple idle animation to fix T-pose
+                                createIdleAnimationForModel(model);
                             }
+                            
+                            // Also try to fix T-pose by finding arm bones and rotating them down
+                            fixTPose(model);
                             
                             // Store the model for animation
                             bulk.userData.model = model;
                             bulk.userData.isGLB = true;
                             
-                            // Position bulk at ground level
-                            bulk.position.y = 1.5;
+                            // Position bulk higher so feet aren't stuck in ground
+                            // Calculate bottom of model to position it correctly
+                            const bottomY = box.min.y * scale;
+                            const baseY = 1.5 - bottomY + 0.5; // Raise by 0.5 units plus offset for bottom
+                            bulk.position.y = baseY;
+                            bulk.userData.baseY = baseY; // Store for animation updates
+                            console.log('Positioned bulk at Y:', baseY, '(bottom was at:', bottomY + ')');
                             
                             // Make sure model is visible
                             model.visible = true;
@@ -949,6 +961,87 @@
             } else if (bulk && bulkParts) {
                 // Programmatic attack animation for primitive model
                 animatePrimitiveAttack();
+            }
+        }
+        
+        function fixTPose(model) {
+            // Try to find arm bones and rotate them down from T-pose
+            const armKeywords = ['arm', 'shoulder', 'upperarm', 'upper_arm', 'l_arm', 'r_arm', 'leftarm', 'rightarm'];
+            const foundBones = [];
+            
+            model.traverse((child) => {
+                if (child.isBone || (child.name && armKeywords.some(keyword => child.name.toLowerCase().includes(keyword)))) {
+                    foundBones.push(child);
+                }
+            });
+            
+            console.log('Found', foundBones.length, 'potential arm bones');
+            
+            // Try to rotate arms down from T-pose
+            foundBones.forEach((bone, index) => {
+                const name = bone.name ? bone.name.toLowerCase() : '';
+                // Rotate arms down (around X axis)
+                if (name.includes('left') || name.includes('l_') || index % 2 === 0) {
+                    // Left arm - rotate down and forward
+                    bone.rotation.x = -Math.PI / 3; // 60 degrees down
+                    bone.rotation.z = Math.PI / 12; // Slight forward
+                } else if (name.includes('right') || name.includes('r_') || index % 2 === 1) {
+                    // Right arm - rotate down and forward
+                    bone.rotation.x = -Math.PI / 3; // 60 degrees down
+                    bone.rotation.z = -Math.PI / 12; // Slight forward
+                }
+            });
+        }
+        
+        function createIdleAnimationForModel(model) {
+            // Create a simple idle animation that slightly moves arms
+            const tracks = [];
+            const duration = 2; // 2 second loop
+            
+            // Find bones for animation
+            const bones = [];
+            model.traverse((child) => {
+                if (child.isBone) {
+                    bones.push(child);
+                }
+            });
+            
+            if (bones.length > 0) {
+                console.log('Creating idle animation for', bones.length, 'bones');
+                bulkMixer = new THREE.AnimationMixer(model);
+                
+                // Create a simple breathing/idle animation
+                bones.forEach((bone, index) => {
+                    const name = bone.name || 'bone_' + index;
+                    const times = [0, duration / 2, duration];
+                    const values = [];
+                    
+                    // Slight breathing motion
+                    if (name.toLowerCase().includes('spine') || name.toLowerCase().includes('chest')) {
+                        values.push(0, 0, 0, 0, 0.05, 0, 0, 0, 0); // Slight up/down
+                    } else if (name.toLowerCase().includes('arm') || name.toLowerCase().includes('shoulder')) {
+                        // Arms slightly sway
+                        const sway = 0.1;
+                        values.push(0, 0, 0, sway, 0, 0, 0, 0, 0);
+                    }
+                    
+                    if (values.length > 0) {
+                        const track = new THREE.VectorKeyframeTrack(
+                            '.bones[' + name + '].position',
+                            times,
+                            values
+                        );
+                        tracks.push(track);
+                    }
+                });
+                
+                if (tracks.length > 0) {
+                    const clip = new THREE.AnimationClip('idle', duration, tracks);
+                    idleAction = bulkMixer.clipAction(clip);
+                    idleAction.setLoop(THREE.LoopRepeat);
+                    idleAction.play();
+                    console.log('Created programmatic idle animation');
+                }
             }
         }
         
@@ -1248,7 +1341,9 @@
             bulkGroup.add(traps);
             
             bulk = bulkGroup;
-            bulk.position.y = 1.5;
+            const baseY = 1.5;
+            bulk.position.y = baseY;
+            bulk.userData.baseY = baseY; // Store for animation updates
             bulk.userData.isFBX = false;
             scene.add(bulk);
         }
@@ -2097,9 +2192,13 @@
                 if (bulkParts.rightArm) bulkParts.rightArm.rotation.x = -swing;
                 if (bulkParts.leftThigh) bulkParts.leftThigh.rotation.x = swing * 0.5;
                 if (bulkParts.rightThigh) bulkParts.rightThigh.rotation.x = -swing * 0.5;
-                bulk.position.y = 1.5 + Math.abs(Math.sin(walkCycle * 2)) * 0.2;
+                // Use stored Y position or default
+                const baseY = bulk.userData.baseY || 1.5;
+                bulk.position.y = baseY + Math.abs(Math.sin(walkCycle * 2)) * 0.2;
             } else {
-                bulk.position.y = 1.5 + Math.sin(Date.now() * 0.002) * 0.1;
+                // Use stored Y position or default
+                const baseY = bulk.userData.baseY || 2.0;
+                bulk.position.y = baseY + Math.sin(Date.now() * 0.002) * 0.1;
             }
             
             // Rotation
