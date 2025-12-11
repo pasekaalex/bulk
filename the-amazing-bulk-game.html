@@ -887,7 +887,7 @@
                             const bottomY = box.min.y * scale;
                             // Position so the bottom of the model is well above ground
                             const groundLevel = 0;
-                            const clearance = 1.0; // Large clearance - model bottom will be 1 unit above ground
+                            const clearance = 2.5; // Large clearance - model bottom will be 2.5 units above ground
                             const baseY = groundLevel - bottomY + clearance;
                             bulk.position.y = baseY;
                             bulk.userData.baseY = baseY; // Store for animation updates
