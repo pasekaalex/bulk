@@ -543,7 +543,20 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FBXLoader.js"></script>
+    <script>
+        // Load FBXLoader dynamically
+        (function() {
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FBXLoader.js';
+            script.onload = function() {
+                console.log('FBXLoader loaded');
+            };
+            script.onerror = function() {
+                console.warn('FBXLoader failed to load, will use fallback');
+            };
+            document.head.appendChild(script);
+        })();
+    </script>
     <script>
         // Game State
         let scene, camera, renderer;
@@ -577,6 +590,14 @@
         let keys = {}, mouseX = 0, mouseY = 0;
         let bulkVelocity = { x: 0, z: 0 };
         let smashCooldown = 0, walkCycle = 0;
+        
+        // Animation system
+        let bulkMixer = null;
+        let attackAction = null;
+        let walkAction = null;
+        let idleAction = null;
+        let currentAnimation = 'idle';
+        let clock = new THREE.Clock();
         
         // Enemy types
         const ENEMY_TYPES = [
@@ -680,77 +701,251 @@
             }
         }
         
-        function createBulk() {
+        function createBulk(retry = false) {
             bulk = new THREE.Group();
             bulk.position.set(0, 0, 0);
             
             // Try to load FBX model, fallback to primitive if it fails
-            const loader = new THREE.FBXLoader();
-            loader.load(
-                'bulk.fbx',
-                (fbx) => {
-                    // Calculate bounding box to determine proper scale
-                    const box = new THREE.Box3().setFromObject(fbx);
-                    const size = box.getSize(new THREE.Vector3());
-                    const maxDim = Math.max(size.x, size.y, size.z);
-                    
-                    // Scale to approximately match the original Bulk size (about 8-10 units tall)
-                    const targetHeight = 8;
-                    const scale = targetHeight / maxDim;
-                    fbx.scale.set(scale, scale, scale);
-                    
-                    // Center the model
-                    const center = box.getCenter(new THREE.Vector3());
-                    fbx.position.set(-center.x * scale, -center.y * scale, -center.z * scale);
-                    fbx.rotation.set(0, 0, 0);
-                    
-                    // Enable shadows on all meshes
-                    fbx.traverse((child) => {
-                        if (child.isMesh) {
-                            child.castShadow = true;
-                            child.receiveShadow = true;
-                            // Optionally apply purple material to match game theme
-                            // Commented out to preserve original model colors
-                            // if (child.material) {
-                            //     child.material = new THREE.MeshStandardMaterial({ 
-                            //         color: 0x9b30ff, 
-                            //         roughness: 0.5, 
-                            //         emissive: 0x4a0080, 
-                            //         emissiveIntensity: 0.2 
-                            //     });
-                            // }
+            // Wait a bit for FBXLoader to load if it's still loading
+            if (typeof THREE.FBXLoader !== 'undefined') {
+                const loader = new THREE.FBXLoader();
+                loader.load(
+                    'bulk.fbx',
+                    (fbx) => {
+                        // Calculate bounding box to determine proper scale
+                        const box = new THREE.Box3().setFromObject(fbx);
+                        const size = box.getSize(new THREE.Vector3());
+                        const maxDim = Math.max(size.x, size.y, size.z);
+                        
+                        // Scale to approximately match the original Bulk size (about 8-10 units tall)
+                        const targetHeight = 8;
+                        const scale = targetHeight / maxDim;
+                        fbx.scale.set(scale, scale, scale);
+                        
+                        // Center the model
+                        const center = box.getCenter(new THREE.Vector3());
+                        fbx.position.set(-center.x * scale, -center.y * scale, -center.z * scale);
+                        fbx.rotation.set(0, 0, 0);
+                        
+                        // Enable shadows on all meshes
+                        fbx.traverse((child) => {
+                            if (child.isMesh) {
+                                child.castShadow = true;
+                                child.receiveShadow = true;
+                            }
+                        });
+                        
+                        bulk.add(fbx);
+                        
+                        // Try to find head bone/mesh for reference
+                        fbx.traverse((child) => {
+                            if (child.name && (child.name.toLowerCase().includes('head') || child.name.toLowerCase().includes('Head'))) {
+                                bulkParts.head = child;
+                            }
+                        });
+                        if (!bulkParts.head) {
+                            bulkParts.head = fbx; // Fallback to whole model
                         }
-                    });
-                    
-                    bulk.add(fbx);
-                    
-                    // Try to find head bone/mesh for reference
-                    fbx.traverse((child) => {
-                        if (child.name && (child.name.toLowerCase().includes('head') || child.name.toLowerCase().includes('Head'))) {
-                            bulkParts.head = child;
+                        
+                        // Setup animation mixer if animations exist
+                        if (fbx.animations && fbx.animations.length > 0) {
+                            bulkMixer = new THREE.AnimationMixer(fbx);
+                            
+                            // Try to find attack animation
+                            const attackAnim = fbx.animations.find(anim => 
+                                anim.name.toLowerCase().includes('attack') || 
+                                anim.name.toLowerCase().includes('punch') ||
+                                anim.name.toLowerCase().includes('smash')
+                            );
+                            
+                            if (attackAnim) {
+                                attackAction = bulkMixer.clipAction(attackAnim);
+                                attackAction.setLoop(THREE.LoopOnce);
+                                attackAction.clampWhenFinished = true;
+                            }
+                            
+                            // Try to find walk animation
+                            const walkAnim = fbx.animations.find(anim => 
+                                anim.name.toLowerCase().includes('walk') || 
+                                anim.name.toLowerCase().includes('run')
+                            );
+                            
+                            if (walkAnim) {
+                                walkAction = bulkMixer.clipAction(walkAnim);
+                                walkAction.setLoop(THREE.LoopRepeat);
+                            }
+                            
+                            // Try to find idle animation
+                            const idleAnim = fbx.animations.find(anim => 
+                                anim.name.toLowerCase().includes('idle')
+                            );
+                            
+                            if (idleAnim) {
+                                idleAction = bulkMixer.clipAction(idleAnim);
+                                idleAction.setLoop(THREE.LoopRepeat);
+                                idleAction.play();
+                            }
                         }
-                    });
-                    if (!bulkParts.head) {
-                        bulkParts.head = fbx; // Fallback to whole model
+                        
+                        // Store the model for animation
+                        bulk.userData.model = fbx;
+                        bulk.userData.isFBX = true;
+                        
+                        // Position bulk at ground level
+                        bulk.position.y = 1.5;
+                        
+                        console.log('FBX model loaded successfully');
+                    },
+                    (progress) => {
+                        if (progress.lengthComputable) {
+                            console.log('Loading FBX:', (progress.loaded / progress.total * 100).toFixed(0) + '%');
+                        }
+                    },
+                    (error) => {
+                        console.error('Error loading FBX, using fallback:', error);
+                        createBulkFallback();
                     }
-                    
-                    // Store the model for animation
-                    bulk.userData.model = fbx;
-                    bulk.userData.isFBX = true;
-                    
-                    // Position bulk at ground level
-                    bulk.position.y = 1.5;
-                },
-                (progress) => {
-                    console.log('Loading FBX:', (progress.loaded / progress.total * 100) + '%');
-                },
-                (error) => {
-                    console.error('Error loading FBX, using fallback:', error);
-                    createBulkFallback();
-                }
-            );
+                );
+            } else if (!retry) {
+                // Wait a moment for FBXLoader to load, then try again or fallback
+                setTimeout(() => {
+                    if (typeof THREE.FBXLoader !== 'undefined') {
+                        createBulk(true);
+                    } else {
+                        console.warn('FBXLoader not available, using fallback');
+                        createBulkFallback();
+                    }
+                }, 500);
+            } else {
+                // Already retried, use fallback
+                console.warn('FBXLoader not available after retry, using fallback');
+                createBulkFallback();
+            }
             
             scene.add(bulk);
+        }
+        
+        function playAttackAnimation() {
+            if (bulkMixer && attackAction) {
+                // Play FBX attack animation
+                if (walkAction) walkAction.stop();
+                if (idleAction) idleAction.stop();
+                attackAction.reset().play();
+                currentAnimation = 'attack';
+                
+                // Return to idle after attack
+                const duration = attackAction.getClip().duration || 1;
+                setTimeout(() => {
+                    if (attackAction && !attackAction.isRunning()) {
+                        if (idleAction) {
+                            idleAction.play();
+                            currentAnimation = 'idle';
+                        } else if (walkAction) {
+                            walkAction.play();
+                            currentAnimation = 'walk';
+                        }
+                    }
+                }, duration * 1000);
+            } else if (bulk && bulk.userData && bulk.userData.isFBX && bulk.userData.model) {
+                // Programmatic attack animation for FBX without animations
+                animateFBXAttack();
+            } else if (bulk && bulkParts) {
+                // Programmatic attack animation for primitive model
+                animatePrimitiveAttack();
+            }
+        }
+        
+        function animateFBXAttack() {
+            const model = bulk.userData.model;
+            const originalRotation = model.rotation.clone();
+            const originalScale = model.scale.clone();
+            
+            // Punch forward animation
+            const punchDuration = 0.3;
+            const punchBack = 0.15;
+            let elapsed = 0;
+            
+            function animate() {
+                elapsed += 0.016; // ~60fps
+                const progress = Math.min(elapsed / punchDuration, 1);
+                
+                if (progress < 0.5) {
+                    // Punch forward
+                    const t = progress * 2;
+                    model.position.z += 0.5 * (1 - t);
+                    model.rotation.x = -Math.PI / 6 * t;
+                    if (bulkParts.leftArm) {
+                        bulkParts.leftArm.rotation.z = 0.3 + Math.PI / 2 * t;
+                    }
+                } else {
+                    // Pull back
+                    const t = (progress - 0.5) * 2;
+                    model.position.z -= 0.5 * t;
+                    model.rotation.x = -Math.PI / 6 * (1 - t);
+                    if (bulkParts.leftArm) {
+                        bulkParts.leftArm.rotation.z = 0.3 + Math.PI / 2 * (1 - t);
+                    }
+                }
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    // Reset
+                    model.position.z = 0;
+                    model.rotation.copy(originalRotation);
+                    if (bulkParts.leftArm) {
+                        bulkParts.leftArm.rotation.z = 0.3;
+                    }
+                }
+            }
+            
+            animate();
+        }
+        
+        function animatePrimitiveAttack() {
+            if (!bulkParts.leftArm || !bulkParts.rightArm) return;
+            
+            const originalLeftZ = bulkParts.leftArm.rotation.z;
+            const originalRightZ = bulkParts.rightArm.rotation.z;
+            const originalLeftX = bulkParts.leftArm.rotation.x;
+            const originalRightX = bulkParts.rightArm.rotation.x;
+            
+            // Punch animation
+            const punchDuration = 0.3;
+            let elapsed = 0;
+            
+            function animate() {
+                elapsed += 0.016;
+                const progress = Math.min(elapsed / punchDuration, 1);
+                
+                if (progress < 0.5) {
+                    // Punch forward
+                    const t = progress * 2;
+                    bulkParts.leftArm.rotation.z = originalLeftZ + Math.PI / 2 * t;
+                    bulkParts.leftArm.rotation.x = originalLeftX - Math.PI / 4 * t;
+                    bulkParts.rightArm.rotation.z = originalRightZ - Math.PI / 2 * t;
+                    bulkParts.rightArm.rotation.x = originalRightX - Math.PI / 4 * t;
+                } else {
+                    // Pull back
+                    const t = (progress - 0.5) * 2;
+                    bulkParts.leftArm.rotation.z = originalLeftZ + Math.PI / 2 * (1 - t);
+                    bulkParts.leftArm.rotation.x = originalLeftX - Math.PI / 4 * (1 - t);
+                    bulkParts.rightArm.rotation.z = originalRightZ - Math.PI / 2 * (1 - t);
+                    bulkParts.rightArm.rotation.x = originalRightX - Math.PI / 4 * (1 - t);
+                }
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    // Reset
+                    bulkParts.leftArm.rotation.z = originalLeftZ;
+                    bulkParts.leftArm.rotation.x = originalLeftX;
+                    bulkParts.rightArm.rotation.z = originalRightZ;
+                    bulkParts.rightArm.rotation.x = originalRightX;
+                }
+            }
+            
+            animate();
         }
         
         function createBulkFallback() {
@@ -1376,6 +1571,9 @@
             
             const smashRange = powerupStates.schmeg.active ? 20 : (rageMode ? 15 : 12);
             const smashDamage = powerupStates.schmeg.active ? 200 : (rageMode ? 120 : 60);
+            
+            // Play attack animation
+            playAttackAnimation();
             
             const texts = ['BULK SMASH!', 'GRAAAH!', 'PURPLE RAGE!', 'BULK ANGRY!'];
             showFloatingText(bulk.position, texts[Math.floor(Math.random() * texts.length)], 'combo-text');
@@ -2172,6 +2370,33 @@
         }
         
         function animate() {
+            const delta = clock.getDelta();
+            
+            // Update animation mixer if it exists
+            if (bulkMixer) {
+                bulkMixer.update(delta);
+            }
+            
+            // Update walk animation based on movement
+            if (gameStarted && !gameOver && bulk) {
+                const isMoving = Math.abs(bulkVelocity.x) > 0.01 || Math.abs(bulkVelocity.z) > 0.01;
+                const attackPlaying = attackAction && attackAction.isRunning();
+                
+                if (isMoving && currentAnimation !== 'walk' && walkAction && !attackPlaying) {
+                    if (idleAction) idleAction.stop();
+                    if (walkAction) {
+                        walkAction.play();
+                        currentAnimation = 'walk';
+                    }
+                } else if (!isMoving && currentAnimation === 'walk' && idleAction && !attackPlaying) {
+                    if (walkAction) walkAction.stop();
+                    if (idleAction) {
+                        idleAction.play();
+                        currentAnimation = 'idle';
+                    }
+                }
+            }
+            
             requestAnimationFrame(animate);
             
             if (gameStarted && !gameOver) {
