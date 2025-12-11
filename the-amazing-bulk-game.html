@@ -715,6 +715,7 @@
         }
         
         function createGround() {
+            // Main ground with texture variation
             const ground = new THREE.Mesh(
                 new THREE.PlaneGeometry(600, 600),
                 new THREE.MeshStandardMaterial({ color: 0x3a3a3a, roughness: 0.9 })
@@ -723,18 +724,63 @@
             ground.receiveShadow = true;
             scene.add(ground);
             
-            // Roads
-            const roadMat = new THREE.MeshStandardMaterial({ color: 0x222222 });
+            // Add sidewalk texture
+            const sidewalkMat = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.8 });
+            
+            // Roads with better detail
+            const roadMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.5 });
+            const roadLineMat = new THREE.MeshStandardMaterial({ color: 0xffff00 });
+            
             for (let i = -250; i <= 250; i += 50) {
+                // Horizontal roads
                 const roadH = new THREE.Mesh(new THREE.PlaneGeometry(600, 12), roadMat);
                 roadH.rotation.x = -Math.PI / 2;
                 roadH.position.set(0, 0.01, i);
                 scene.add(roadH);
                 
+                // Road lines
+                for (let j = -280; j <= 280; j += 20) {
+                    const line = new THREE.Mesh(new THREE.PlaneGeometry(1, 0.2), roadLineMat);
+                    line.rotation.x = -Math.PI / 2;
+                    line.position.set(j, 0.02, i);
+                    scene.add(line);
+                }
+                
+                // Sidewalks
+                const sidewalkH1 = new THREE.Mesh(new THREE.PlaneGeometry(600, 2), sidewalkMat);
+                sidewalkH1.rotation.x = -Math.PI / 2;
+                sidewalkH1.position.set(0, 0.015, i + 7);
+                scene.add(sidewalkH1);
+                
+                const sidewalkH2 = new THREE.Mesh(new THREE.PlaneGeometry(600, 2), sidewalkMat);
+                sidewalkH2.rotation.x = -Math.PI / 2;
+                sidewalkH2.position.set(0, 0.015, i - 7);
+                scene.add(sidewalkH2);
+                
+                // Vertical roads
                 const roadV = new THREE.Mesh(new THREE.PlaneGeometry(12, 600), roadMat);
                 roadV.rotation.x = -Math.PI / 2;
                 roadV.position.set(i, 0.01, 0);
                 scene.add(roadV);
+                
+                // Road lines for vertical roads
+                for (let j = -280; j <= 280; j += 20) {
+                    const line = new THREE.Mesh(new THREE.PlaneGeometry(0.2, 1), roadLineMat);
+                    line.rotation.x = -Math.PI / 2;
+                    line.position.set(i, 0.02, j);
+                    scene.add(line);
+                }
+                
+                // Sidewalks for vertical roads
+                const sidewalkV1 = new THREE.Mesh(new THREE.PlaneGeometry(2, 600), sidewalkMat);
+                sidewalkV1.rotation.x = -Math.PI / 2;
+                sidewalkV1.position.set(i + 7, 0.015, 0);
+                scene.add(sidewalkV1);
+                
+                const sidewalkV2 = new THREE.Mesh(new THREE.PlaneGeometry(2, 600), sidewalkMat);
+                sidewalkV2.rotation.x = -Math.PI / 2;
+                sidewalkV2.position.set(i - 7, 0.015, 0);
+                scene.add(sidewalkV2);
             }
         }
         
@@ -1295,48 +1341,270 @@
         }
         
         function createCity() {
-            const colors = [0x666666, 0x888888, 0x555555, 0x777777, 0x996633, 0x446688];
+            const colors = [0x666666, 0x888888, 0x555555, 0x777777, 0x996633, 0x446688, 0xaa6666, 0x6688aa];
+            const buildingTypes = ['normal', 'tall', 'wide', 'skyscraper', 'short'];
             
-            for (let x = -200; x <= 200; x += 30) {
-                for (let z = -200; z <= 200; z += 30) {
-                    if (Math.abs(x) < 40 && Math.abs(z) < 40) continue;
+            // Create more varied city layout with larger area
+            for (let x = -250; x <= 250; x += 25) {
+                for (let z = -250; z <= 250; z += 25) {
+                    if (Math.abs(x) < 50 && Math.abs(z) < 50) continue;
                     
-                    const height = 8 + Math.random() * 30;
-                    const width = 6 + Math.random() * 10;
-                    const depth = 6 + Math.random() * 10;
+                    // Create city blocks with some open spaces (parks, plazas)
+                    if (Math.random() < 0.12) continue; // 12% chance of open space
+                    
+                    const buildingType = buildingTypes[Math.floor(Math.random() * buildingTypes.length)];
+                    let height, width, depth;
+                    
+                    switch(buildingType) {
+                        case 'skyscraper':
+                            height = 40 + Math.random() * 50;
+                            width = 8 + Math.random() * 6;
+                            depth = 8 + Math.random() * 6;
+                            break;
+                        case 'tall':
+                            height = 25 + Math.random() * 20;
+                            width = 7 + Math.random() * 5;
+                            depth = 7 + Math.random() * 5;
+                            break;
+                        case 'wide':
+                            height = 12 + Math.random() * 15;
+                            width = 12 + Math.random() * 8;
+                            depth = 12 + Math.random() * 8;
+                            break;
+                        case 'short':
+                            height = 5 + Math.random() * 8;
+                            width = 6 + Math.random() * 6;
+                            depth = 6 + Math.random() * 6;
+                            break;
+                        default:
+                            height = 10 + Math.random() * 20;
+                            width = 6 + Math.random() * 8;
+                            depth = 6 + Math.random() * 8;
+                    }
                     
                     const building = new THREE.Mesh(
                         new THREE.BoxGeometry(width, height, depth),
-                        new THREE.MeshStandardMaterial({ color: colors[Math.floor(Math.random() * colors.length)], roughness: 0.7 })
+                        new THREE.MeshStandardMaterial({ 
+                            color: colors[Math.floor(Math.random() * colors.length)], 
+                            roughness: 0.7,
+                            metalness: buildingType === 'skyscraper' ? 0.3 : 0
+                        })
                     );
-                    building.position.set(x + (Math.random() - 0.5) * 15, height / 2, z + (Math.random() - 0.5) * 15);
+                    building.position.set(x + (Math.random() - 0.5) * 10, height / 2, z + (Math.random() - 0.5) * 10);
                     building.castShadow = true;
                     building.receiveShadow = true;
+                    building.userData = { isBuilding: true, health: height * 15, maxHealth: height * 15, destroyed: false, height, type: buildingType };
+                    buildings.push(building);
+                    scene.add(building);
+                    totalBuildings++;
                     
-                    // Windows
+                    // Enhanced windows with lit/unlit variety
                     const winMat = new THREE.MeshBasicMaterial({ color: 0xffff88 });
+                    const winMatDark = new THREE.MeshBasicMaterial({ color: 0x333333 });
+                    const windowSpacing = buildingType === 'skyscraper' ? 1.5 : 2;
+                    
                     for (let wy = -height/2 + 2; wy < height/2 - 1; wy += 2.5) {
-                        for (let wx = -width/2 + 1; wx < width/2 - 0.5; wx += 2) {
-                            if (Math.random() > 0.3) {
-                                const win = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.9), winMat);
+                        for (let wx = -width/2 + 1; wx < width/2 - 0.5; wx += windowSpacing) {
+                            if (Math.random() > 0.25) {
+                                const isLit = Math.random() > 0.4;
+                                const win = new THREE.Mesh(
+                                    new THREE.PlaneGeometry(0.6, 0.9), 
+                                    isLit ? winMat : winMatDark
+                                );
                                 win.position.set(wx, wy, depth/2 + 0.01);
                                 building.add(win);
                             }
                         }
                     }
                     
-                    building.userData = { isBuilding: true, health: height * 15, maxHealth: height * 15, destroyed: false, height };
-                    buildings.push(building);
-                    scene.add(building);
-                    totalBuildings++;
+                    // Add rooftop details for taller buildings
+                    if (height > 20 && Math.random() > 0.7) {
+                        const roof = new THREE.Mesh(
+                            new THREE.BoxGeometry(width * 0.8, 1, depth * 0.8),
+                            new THREE.MeshStandardMaterial({ color: 0x333333 })
+                        );
+                        roof.position.set(0, height/2 + 0.5, 0);
+                        building.add(roof);
+                    }
+                }
+            }
+            
+            // Add streetlights along roads
+            createStreetlights();
+            
+            // Add more city props
+            createCityProps();
+        }
+        
+        function createStreetlights() {
+            const lightPole = new THREE.CylinderGeometry(0.1, 0.1, 4, 8);
+            const lightMat = new THREE.MeshStandardMaterial({ color: 0x333333 });
+            const lightBulb = new THREE.SphereGeometry(0.3, 8, 8);
+            const bulbMat = new THREE.MeshStandardMaterial({ 
+                color: 0xffffaa, 
+                emissive: 0xffffaa, 
+                emissiveIntensity: 0.8 
+            });
+            
+            // Place streetlights along roads
+            for (let i = -250; i <= 250; i += 50) {
+                // Horizontal road lights
+                for (let j = -250; j <= 250; j += 30) {
+                    if (Math.abs(j) < 50) continue;
+                    const pole = new THREE.Mesh(lightPole, lightMat);
+                    pole.position.set(i, 2, j);
+                    pole.castShadow = true;
+                    scene.add(pole);
+                    
+                    const bulb = new THREE.Mesh(lightBulb, bulbMat);
+                    bulb.position.set(i, 4.3, j);
+                    scene.add(bulb);
+                    
+                    // Add point light for illumination
+                    const pointLight = new THREE.PointLight(0xffffaa, 0.5, 20);
+                    pointLight.position.set(i, 4.3, j);
+                    scene.add(pointLight);
+                }
+                
+                // Vertical road lights
+                for (let j = -250; j <= 250; j += 30) {
+                    if (Math.abs(j) < 50) continue;
+                    const pole = new THREE.Mesh(lightPole, lightMat);
+                    pole.position.set(j, 2, i);
+                    pole.castShadow = true;
+                    scene.add(pole);
+                    
+                    const bulb = new THREE.Mesh(lightBulb, bulbMat);
+                    bulb.position.set(j, 4.3, i);
+                    scene.add(bulb);
+                    
+                    // Add point light for illumination
+                    const pointLight = new THREE.PointLight(0xffffaa, 0.5, 20);
+                    pointLight.position.set(j, 4.3, i);
+                    scene.add(pointLight);
                 }
             }
         }
         
-        function spawnCars() {
-            const carColors = [0xff0000, 0x0000ff, 0xffff00, 0x00ff00, 0xffffff, 0x000000, 0xff6600];
+        function createCityProps() {
+            // Add benches
+            for (let i = 0; i < 20; i++) {
+                const bench = new THREE.Group();
+                const seat = new THREE.Mesh(
+                    new THREE.BoxGeometry(2, 0.2, 0.6),
+                    new THREE.MeshStandardMaterial({ color: 0x8b4513 })
+                );
+                seat.position.y = 0.5;
+                bench.add(seat);
+                
+                const back = new THREE.Mesh(
+                    new THREE.BoxGeometry(2, 0.8, 0.1),
+                    new THREE.MeshStandardMaterial({ color: 0x8b4513 })
+                );
+                back.position.set(0, 0.9, -0.25);
+                bench.add(back);
+                
+                const angle = Math.random() * Math.PI * 2;
+                const dist = 60 + Math.random() * 120;
+                bench.position.set(
+                    Math.cos(angle) * dist,
+                    0,
+                    Math.sin(angle) * dist
+                );
+                bench.rotation.y = Math.random() * Math.PI * 2;
+                bench.castShadow = true;
+                scene.add(bench);
+            }
             
-            for (let i = 0; i < 50; i++) {
+            // Add trash cans
+            for (let i = 0; i < 25; i++) {
+                const trash = new THREE.Group();
+                const can = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.4, 0.4, 1, 8),
+                    new THREE.MeshStandardMaterial({ color: 0x333333 })
+                );
+                can.position.y = 0.5;
+                trash.add(can);
+                
+                const lid = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.45, 0.45, 0.1, 8),
+                    new THREE.MeshStandardMaterial({ color: 0x222222 })
+                );
+                lid.position.y = 1.05;
+                trash.add(lid);
+                
+                const angle = Math.random() * Math.PI * 2;
+                const dist = 50 + Math.random() * 150;
+                trash.position.set(
+                    Math.cos(angle) * dist,
+                    0,
+                    Math.sin(angle) * dist
+                );
+                trash.castShadow = true;
+                scene.add(trash);
+            }
+            
+            // Add trees
+            for (let i = 0; i < 40; i++) {
+                const tree = new THREE.Group();
+                const trunk = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.3, 0.4, 3, 8),
+                    new THREE.MeshStandardMaterial({ color: 0x654321 })
+                );
+                trunk.position.y = 1.5;
+                tree.add(trunk);
+                
+                const leaves = new THREE.Mesh(
+                    new THREE.ConeGeometry(1.5, 3, 8),
+                    new THREE.MeshStandardMaterial({ color: 0x228b22 })
+                );
+                leaves.position.y = 3.5;
+                tree.add(leaves);
+                
+                const angle = Math.random() * Math.PI * 2;
+                const dist = 70 + Math.random() * 150;
+                tree.position.set(
+                    Math.cos(angle) * dist,
+                    0,
+                    Math.sin(angle) * dist
+                );
+                tree.castShadow = true;
+                scene.add(tree);
+            }
+            
+            // Add fire hydrants
+            for (let i = 0; i < 15; i++) {
+                const hydrant = new THREE.Group();
+                const body = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.2, 0.25, 0.8, 8),
+                    new THREE.MeshStandardMaterial({ color: 0xff0000 })
+                );
+                body.position.y = 0.4;
+                hydrant.add(body);
+                
+                const cap = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.25, 0.25, 0.1, 8),
+                    new THREE.MeshStandardMaterial({ color: 0xffff00 })
+                );
+                cap.position.y = 0.85;
+                hydrant.add(cap);
+                
+                const angle = Math.random() * Math.PI * 2;
+                const dist = 55 + Math.random() * 130;
+                hydrant.position.set(
+                    Math.cos(angle) * dist,
+                    0,
+                    Math.sin(angle) * dist
+                );
+                scene.add(hydrant);
+            }
+        }
+        
+        function spawnCars() {
+            const carColors = [0xff0000, 0x0000ff, 0xffff00, 0x00ff00, 0xffffff, 0x000000, 0xff6600, 0xff00ff, 0x00ffff, 0x888888];
+            
+            // Spawn more cars for a busier city
+            for (let i = 0; i < 80; i++) {
                 const carGroup = new THREE.Group();
                 const color = carColors[Math.floor(Math.random() * carColors.length)];
                 
