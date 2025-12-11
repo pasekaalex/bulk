@@ -1340,6 +1340,40 @@
             scene.add(bulk);
         }
         
+        function isOnRoad(x, z, buildingWidth, buildingDepth) {
+            // Roads are placed every 50 units at -250, -200, -150, ..., 250
+            // Each road is 12 units wide (6 units on each side of center)
+            const roadWidth = 12;
+            const roadHalfWidth = roadWidth / 2;
+            const roadSpacing = 50;
+            
+            // Check horizontal roads (affect z position)
+            for (let roadZ = -250; roadZ <= 250; roadZ += roadSpacing) {
+                const buildingZMin = z - buildingDepth / 2;
+                const buildingZMax = z + buildingDepth / 2;
+                const roadZMin = roadZ - roadHalfWidth;
+                const roadZMax = roadZ + roadHalfWidth;
+                
+                if (buildingZMin < roadZMax && buildingZMax > roadZMin) {
+                    return true; // Building overlaps with horizontal road
+                }
+            }
+            
+            // Check vertical roads (affect x position)
+            for (let roadX = -250; roadX <= 250; roadX += roadSpacing) {
+                const buildingXMin = x - buildingWidth / 2;
+                const buildingXMax = x + buildingWidth / 2;
+                const roadXMin = roadX - roadHalfWidth;
+                const roadXMax = roadX + roadHalfWidth;
+                
+                if (buildingXMin < roadXMax && buildingXMax > roadXMin) {
+                    return true; // Building overlaps with vertical road
+                }
+            }
+            
+            return false;
+        }
+        
         function createCity() {
             const colors = [0x666666, 0x888888, 0x555555, 0x777777, 0x996633, 0x446688, 0xaa6666, 0x6688aa];
             const buildingTypes = ['normal', 'tall', 'wide', 'skyscraper', 'short'];
@@ -1352,6 +1386,7 @@
                     // Create city blocks with some open spaces (parks, plazas)
                     if (Math.random() < 0.12) continue; // 12% chance of open space
                     
+                    // Determine building size first to check road collision
                     const buildingType = buildingTypes[Math.floor(Math.random() * buildingTypes.length)];
                     let height, width, depth;
                     
@@ -1382,6 +1417,15 @@
                             depth = 6 + Math.random() * 8;
                     }
                     
+                    // Calculate final building position with random offset
+                    const finalX = x + (Math.random() - 0.5) * 10;
+                    const finalZ = z + (Math.random() - 0.5) * 10;
+                    
+                    // Skip if building would be on a road
+                    if (isOnRoad(finalX, finalZ, width, depth)) {
+                        continue; // Skip this building placement
+                    }
+                    
                     const building = new THREE.Mesh(
                         new THREE.BoxGeometry(width, height, depth),
                         new THREE.MeshStandardMaterial({ 
@@ -1390,7 +1434,7 @@
                             metalness: buildingType === 'skyscraper' ? 0.3 : 0
                         })
                     );
-                    building.position.set(x + (Math.random() - 0.5) * 10, height / 2, z + (Math.random() - 0.5) * 10);
+                    building.position.set(finalX, height / 2, finalZ);
                     building.castShadow = true;
                     building.receiveShadow = true;
                     building.userData = { isBuilding: true, health: height * 15, maxHealth: height * 15, destroyed: false, height, type: buildingType };
