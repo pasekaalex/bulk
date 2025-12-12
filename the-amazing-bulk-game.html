@@ -1010,70 +1010,128 @@
         let cameraTouchId = null;
         let lastCameraTouch = { x: 0, y: 0 };
         let mobileKeys = {};
+        let globalJoystickTouchHandler = null;
+        let globalJoystickEndHandler = null;
+        let globalJoystickCancelHandler = null;
 
         function initMobileControls() {
             const joystickBase = document.getElementById('joystick-base');
             const joystickStick = document.getElementById('joystick-stick');
             const cameraTouchArea = document.getElementById('camera-touch-area');
 
+            // Helper function to reset joystick and cleanup
+            function resetJoystick() {
+                joystickActive = false;
+                joystickTouchId = null;
+                joystickOffset.x = 0;
+                joystickOffset.y = 0;
+                joystickStick.style.transform = 'translate(-50%, -50%)';
+                mobileKeys['KeyW'] = false;
+                mobileKeys['KeyS'] = false;
+                mobileKeys['KeyA'] = false;
+                mobileKeys['KeyD'] = false;
+                
+                // Cleanup global listeners
+                if (globalJoystickTouchHandler) {
+                    document.removeEventListener('touchmove', globalJoystickTouchHandler);
+                    globalJoystickTouchHandler = null;
+                }
+                if (globalJoystickEndHandler) {
+                    document.removeEventListener('touchend', globalJoystickEndHandler);
+                    globalJoystickEndHandler = null;
+                }
+                if (globalJoystickCancelHandler) {
+                    document.removeEventListener('touchcancel', globalJoystickCancelHandler);
+                    globalJoystickCancelHandler = null;
+                }
+            }
+
             // Joystick touch handling
             joystickBase.addEventListener('touchstart', (e) => {
                 e.preventDefault();
-                if (joystickTouchId !== null) return;
+                e.stopPropagation();
+                
+                // Reset if we already have a touch
+                if (joystickTouchId !== null) {
+                    resetJoystick();
+                }
+                
                 const touch = e.touches[0];
+                if (!touch) return;
+                
                 const rect = joystickBase.getBoundingClientRect();
                 joystickCenter.x = rect.left + rect.width / 2;
                 joystickCenter.y = rect.top + rect.height / 2;
                 joystickTouchId = touch.identifier;
                 joystickActive = true;
+                
+                // Create global handler for this touch (handles touches that move outside joystick)
+                globalJoystickTouchHandler = (moveEvent) => {
+                    if (!joystickActive || joystickTouchId === null) return;
+                    
+                    const currentTouch = Array.from(moveEvent.touches).find(t => t.identifier === joystickTouchId);
+                    if (!currentTouch) {
+                        // Touch lost, reset
+                        resetJoystick();
+                        return;
+                    }
+                    
+                    const rect = joystickBase.getBoundingClientRect();
+                    const centerX = rect.left + rect.width / 2;
+                    const centerY = rect.top + rect.height / 2;
+                    const maxDist = rect.width / 2 - 25;
+                    
+                    let deltaX = currentTouch.clientX - centerX;
+                    let deltaY = currentTouch.clientY - centerY;
+                    const dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                    
+                    if (dist > maxDist) {
+                        deltaX = (deltaX / dist) * maxDist;
+                        deltaY = (deltaY / dist) * maxDist;
+                    }
+                    
+                    joystickOffset.x = deltaX;
+                    joystickOffset.y = deltaY;
+                    
+                    joystickStick.style.transform = `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px))`;
+                    
+                    // Update virtual keys based on joystick position
+                    const threshold = 20;
+                    mobileKeys['KeyW'] = deltaY < -threshold;
+                    mobileKeys['KeyS'] = deltaY > threshold;
+                    mobileKeys['KeyA'] = deltaX < -threshold;
+                    mobileKeys['KeyD'] = deltaX > threshold;
+                };
+                
+                globalJoystickEndHandler = (endEvent) => {
+                    if (joystickTouchId === null) return;
+                    
+                    const endTouch = Array.from(endEvent.changedTouches).find(t => t.identifier === joystickTouchId);
+                    if (endTouch) {
+                        resetJoystick();
+                    }
+                };
+                
+                globalJoystickCancelHandler = (cancelEvent) => {
+                    if (joystickTouchId === null) return;
+                    
+                    const cancelTouch = Array.from(cancelEvent.changedTouches).find(t => t.identifier === joystickTouchId);
+                    if (cancelTouch) {
+                        resetJoystick();
+                    }
+                };
+                
+                // Add global listeners to track touch even if it moves outside joystick
+                document.addEventListener('touchmove', globalJoystickTouchHandler, { passive: false });
+                document.addEventListener('touchend', globalJoystickEndHandler, { passive: false });
+                document.addEventListener('touchcancel', globalJoystickCancelHandler, { passive: false });
             }, { passive: false });
 
+            // Prevent default on joystick touchmove to avoid scrolling
             joystickBase.addEventListener('touchmove', (e) => {
-                e.preventDefault();
-                if (!joystickActive) return;
-                const touch = Array.from(e.touches).find(t => t.identifier === joystickTouchId);
-                if (!touch) return;
-                
-                const rect = joystickBase.getBoundingClientRect();
-                const centerX = rect.left + rect.width / 2;
-                const centerY = rect.top + rect.height / 2;
-                const maxDist = rect.width / 2 - 25;
-                
-                let deltaX = touch.clientX - centerX;
-                let deltaY = touch.clientY - centerY;
-                const dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-                
-                if (dist > maxDist) {
-                    deltaX = (deltaX / dist) * maxDist;
-                    deltaY = (deltaY / dist) * maxDist;
-                }
-                
-                joystickOffset.x = deltaX;
-                joystickOffset.y = deltaY;
-                
-                joystickStick.style.transform = `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px))`;
-                
-                // Update virtual keys based on joystick position
-                const threshold = 20;
-                mobileKeys['KeyW'] = deltaY < -threshold;
-                mobileKeys['KeyS'] = deltaY > threshold;
-                mobileKeys['KeyA'] = deltaX < -threshold;
-                mobileKeys['KeyD'] = deltaX > threshold;
-            }, { passive: false });
-
-            joystickBase.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                const touch = Array.from(e.changedTouches).find(t => t.identifier === joystickTouchId);
-                if (touch) {
-                    joystickActive = false;
-                    joystickTouchId = null;
-                    joystickOffset.x = 0;
-                    joystickOffset.y = 0;
-                    joystickStick.style.transform = 'translate(-50%, -50%)';
-                    mobileKeys['KeyW'] = false;
-                    mobileKeys['KeyS'] = false;
-                    mobileKeys['KeyA'] = false;
-                    mobileKeys['KeyD'] = false;
+                if (joystickActive) {
+                    e.preventDefault();
+                    e.stopPropagation();
                 }
             }, { passive: false });
 
