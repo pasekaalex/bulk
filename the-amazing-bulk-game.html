@@ -442,6 +442,257 @@
             font-size: 0.7rem;
             color: #ffd93d;
         }
+
+        /* Mobile Controls - Hidden on desktop */
+        #mobile-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: none;
+            z-index: 20;
+            pointer-events: none;
+        }
+
+        /* Virtual Joystick - Hidden on desktop */
+        #joystick-container {
+            display: none;
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            width: 120px;
+            height: 120px;
+            pointer-events: all;
+        }
+
+        /* Action Buttons - Hidden on desktop */
+        #action-buttons {
+            display: none;
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            flex-direction: column;
+            gap: 15px;
+            pointer-events: all;
+        }
+
+        /* Camera Touch Area - Hidden on desktop */
+        #camera-touch-area {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 200px;
+            pointer-events: all;
+            touch-action: none;
+        }
+
+        @media (max-width: 768px) {
+            #mobile-controls {
+                display: block;
+            }
+
+            #joystick-container {
+                display: block;
+            }
+
+            #action-buttons {
+                display: flex;
+            }
+
+            #camera-touch-area {
+                display: block;
+            }
+
+            #controls-hint {
+                display: none;
+            }
+
+            #hud {
+                font-size: 0.5rem;
+                top: 5px;
+                left: 5px;
+                right: 5px;
+                max-width: calc(100% - 150px); /* Leave space for minimap */
+            }
+
+            .hud-panel {
+                padding: 6px 10px;
+                font-size: 0.5rem;
+            }
+
+            .hud-value {
+                font-size: 0.8rem;
+            }
+
+            .bar-container {
+                width: 100px;
+                height: 12px;
+            }
+
+            #combo-display {
+                right: 10px;
+                top: 40%;
+                max-width: calc(100% - 150px); /* Don't overlap with minimap */
+            }
+
+            #combo-count {
+                font-size: 2.5rem;
+            }
+
+            #minimap {
+                width: 90px;
+                height: 90px;
+                bottom: 180px; /* Above action buttons */
+                right: 10px;
+            }
+
+            #powerup-icons {
+                bottom: 180px; /* Above action buttons */
+                left: 50%;
+                transform: translateX(-50%);
+                gap: 8px;
+            }
+
+            .powerup-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+            }
+
+            #level-display {
+                top: 5px;
+            }
+
+            #wanted-level {
+                top: 5px;
+                right: 5px;
+            }
+
+            #wave-announcement {
+                top: 15%;
+            }
+        }
+
+        #joystick-base {
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            border: 3px solid rgba(155, 48, 255, 0.8);
+            border-radius: 50%;
+            position: relative;
+        }
+
+        #joystick-stick {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: rgba(155, 48, 255, 0.9);
+            border: 2px solid #ff00ff;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: transform 0.1s;
+            box-shadow: 0 0 15px rgba(155, 48, 255, 0.6);
+        }
+
+
+        .mobile-btn {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            border: 3px solid;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 0 #000;
+            cursor: pointer;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            transition: all 0.1s;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .mobile-btn:active {
+            transform: scale(0.9);
+        }
+
+        .btn-smash {
+            background: linear-gradient(135deg, #ff0000, #ff6600);
+            border-color: #ffd93d;
+            box-shadow: 0 0 25px rgba(255, 0, 0, 0.6);
+        }
+
+        .btn-ground-pound {
+            background: linear-gradient(135deg, #9b30ff, #6b0099);
+            border-color: #ff00ff;
+            box-shadow: 0 0 25px rgba(155, 48, 255, 0.6);
+            font-size: 1.2rem;
+        }
+
+        .btn-taunt {
+            background: linear-gradient(135deg, #00ff00, #00aa00);
+            border-color: #88ff88;
+            box-shadow: 0 0 25px rgba(0, 255, 0, 0.6);
+            font-size: 1.2rem;
+        }
+
+        .btn-rage {
+            background: linear-gradient(135deg, #ff00ff, #9b30ff);
+            border-color: #ff00ff;
+            box-shadow: 0 0 25px rgba(255, 0, 255, 0.6);
+            font-size: 1.2rem;
+        }
+
+        @media (max-width: 480px) {
+            #joystick-container {
+                width: 100px;
+                height: 100px;
+                bottom: 15px;
+                left: 15px;
+            }
+
+            #joystick-stick {
+                width: 40px;
+                height: 40px;
+            }
+
+            .mobile-btn {
+                width: 60px;
+                height: 60px;
+                font-size: 1.2rem;
+            }
+
+            #action-buttons {
+                bottom: 15px;
+                right: 15px;
+                gap: 12px;
+            }
+
+            #hud {
+                max-width: calc(100% - 120px);
+            }
+
+            #minimap {
+                width: 80px;
+                height: 80px;
+                bottom: 160px;
+            }
+
+            #powerup-icons {
+                bottom: 160px;
+            }
+
+            #camera-touch-area {
+                bottom: 180px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -538,6 +789,22 @@
             <button class="start-btn" onclick="startGame()">START BULKING!</button>
             <div class="credits">
                 NOW WITH COMBOS, WAVES, BOSSES & MORE SCHMEG™
+            </div>
+        </div>
+
+        <!-- Mobile Controls -->
+        <div id="mobile-controls">
+            <div id="camera-touch-area"></div>
+            <div id="joystick-container">
+                <div id="joystick-base">
+                    <div id="joystick-stick"></div>
+                </div>
+            </div>
+            <div id="action-buttons">
+                <button class="mobile-btn btn-smash" id="btn-smash" ontouchstart="handleMobileSmash(event)" ontouchend="event.preventDefault()">💥</button>
+                <button class="mobile-btn btn-ground-pound" id="btn-ground-pound" ontouchstart="handleMobileGroundPound(event)" ontouchend="event.preventDefault()">⬇️</button>
+                <button class="mobile-btn btn-taunt" id="btn-taunt" ontouchstart="handleMobileTaunt(event)" ontouchend="event.preventDefault()">💪</button>
+                <button class="mobile-btn btn-rage" id="btn-rage" ontouchstart="handleMobileRage(event)" ontouchend="handleMobileRageEnd(event)">🔥</button>
             </div>
         </div>
     </div>
@@ -660,6 +927,150 @@
             { name: 'nuke', color: 0xffff00, emoji: '☢️', duration: 0 },
         ];
         
+        // Mobile Controls
+        let joystickActive = false;
+        let joystickTouchId = null;
+        let joystickCenter = { x: 0, y: 0 };
+        let joystickOffset = { x: 0, y: 0 };
+        let cameraTouchActive = false;
+        let cameraTouchId = null;
+        let lastCameraTouch = { x: 0, y: 0 };
+        let mobileKeys = {};
+
+        function initMobileControls() {
+            const joystickBase = document.getElementById('joystick-base');
+            const joystickStick = document.getElementById('joystick-stick');
+            const cameraTouchArea = document.getElementById('camera-touch-area');
+
+            // Joystick touch handling
+            joystickBase.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                if (joystickTouchId !== null) return;
+                const touch = e.touches[0];
+                const rect = joystickBase.getBoundingClientRect();
+                joystickCenter.x = rect.left + rect.width / 2;
+                joystickCenter.y = rect.top + rect.height / 2;
+                joystickTouchId = touch.identifier;
+                joystickActive = true;
+            }, { passive: false });
+
+            joystickBase.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                if (!joystickActive) return;
+                const touch = Array.from(e.touches).find(t => t.identifier === joystickTouchId);
+                if (!touch) return;
+                
+                const rect = joystickBase.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                const maxDist = rect.width / 2 - 25;
+                
+                let deltaX = touch.clientX - centerX;
+                let deltaY = touch.clientY - centerY;
+                const dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                
+                if (dist > maxDist) {
+                    deltaX = (deltaX / dist) * maxDist;
+                    deltaY = (deltaY / dist) * maxDist;
+                }
+                
+                joystickOffset.x = deltaX;
+                joystickOffset.y = deltaY;
+                
+                joystickStick.style.transform = `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px))`;
+                
+                // Update virtual keys based on joystick position
+                const threshold = 20;
+                mobileKeys['KeyW'] = deltaY < -threshold;
+                mobileKeys['KeyS'] = deltaY > threshold;
+                mobileKeys['KeyA'] = deltaX < -threshold;
+                mobileKeys['KeyD'] = deltaX > threshold;
+            }, { passive: false });
+
+            joystickBase.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                const touch = Array.from(e.changedTouches).find(t => t.identifier === joystickTouchId);
+                if (touch) {
+                    joystickActive = false;
+                    joystickTouchId = null;
+                    joystickOffset.x = 0;
+                    joystickOffset.y = 0;
+                    joystickStick.style.transform = 'translate(-50%, -50%)';
+                    mobileKeys['KeyW'] = false;
+                    mobileKeys['KeyS'] = false;
+                    mobileKeys['KeyA'] = false;
+                    mobileKeys['KeyD'] = false;
+                }
+            }, { passive: false });
+
+            // Camera touch handling
+            cameraTouchArea.addEventListener('touchstart', (e) => {
+                if (cameraTouchActive) return;
+                const touch = e.touches[0];
+                cameraTouchId = touch.identifier;
+                lastCameraTouch.x = touch.clientX;
+                lastCameraTouch.y = touch.clientY;
+                cameraTouchActive = true;
+            }, { passive: false });
+
+            cameraTouchArea.addEventListener('touchmove', (e) => {
+                if (!cameraTouchActive) return;
+                const touch = Array.from(e.touches).find(t => t.identifier === cameraTouchId);
+                if (!touch) return;
+                
+                const deltaX = touch.clientX - lastCameraTouch.x;
+                const deltaY = touch.clientY - lastCameraTouch.y;
+                
+                mouseX += (deltaX / window.innerWidth) * 2;
+                mouseY -= (deltaY / window.innerHeight) * 2;
+                
+                mouseX = Math.max(-1, Math.min(1, mouseX));
+                mouseY = Math.max(-1, Math.min(1, mouseY));
+                
+                lastCameraTouch.x = touch.clientX;
+                lastCameraTouch.y = touch.clientY;
+            }, { passive: false });
+
+            cameraTouchArea.addEventListener('touchend', (e) => {
+                const touch = Array.from(e.changedTouches).find(t => t.identifier === cameraTouchId);
+                if (touch) {
+                    cameraTouchActive = false;
+                    cameraTouchId = null;
+                }
+            }, { passive: false });
+        }
+
+        function handleMobileSmash(e) {
+            e.preventDefault();
+            if (gameStarted && !gameOver && smashCooldown <= 0) {
+                performSmash();
+            }
+        }
+
+        function handleMobileGroundPound(e) {
+            e.preventDefault();
+            if (gameStarted && !gameOver) {
+                performGroundPound();
+            }
+        }
+
+        function handleMobileTaunt(e) {
+            e.preventDefault();
+            if (gameStarted && !gameOver) {
+                performTaunt();
+            }
+        }
+
+        function handleMobileRage(e) {
+            e.preventDefault();
+            mobileKeys['ShiftLeft'] = true;
+        }
+
+        function handleMobileRageEnd(e) {
+            e.preventDefault();
+            mobileKeys['ShiftLeft'] = false;
+        }
+        
         function init() {
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x87ceeb);
@@ -710,6 +1121,9 @@
                 camera.updateProjectionMatrix();
                 renderer.setSize(window.innerWidth, window.innerHeight);
             });
+            
+            // Mobile Touch Controls
+            initMobileControls();
             
             animate();
         }
@@ -2008,10 +2422,11 @@
             const speed = baseSpeed * (powerupStates.speed.active ? 1.5 : 1) * (rageMode ? 1.3 : 1) * (powerupStates.schmeg.active ? 1.2 : 1);
             let isMoving = false;
             
-            if (keys['KeyW'] || keys['ArrowUp']) { bulkVelocity.z -= speed; isMoving = true; }
-            if (keys['KeyS'] || keys['ArrowDown']) { bulkVelocity.z += speed; isMoving = true; }
-            if (keys['KeyA'] || keys['ArrowLeft']) { bulkVelocity.x -= speed; isMoving = true; }
-            if (keys['KeyD'] || keys['ArrowRight']) { bulkVelocity.x += speed; isMoving = true; }
+            // Check both keyboard and mobile keys
+            if (keys['KeyW'] || keys['ArrowUp'] || mobileKeys['KeyW']) { bulkVelocity.z -= speed; isMoving = true; }
+            if (keys['KeyS'] || keys['ArrowDown'] || mobileKeys['KeyS']) { bulkVelocity.z += speed; isMoving = true; }
+            if (keys['KeyA'] || keys['ArrowLeft'] || mobileKeys['KeyA']) { bulkVelocity.x -= speed; isMoving = true; }
+            if (keys['KeyD'] || keys['ArrowRight'] || mobileKeys['KeyD']) { bulkVelocity.x += speed; isMoving = true; }
             
             // Store old position for collision
             const oldX = bulk.position.x;
@@ -2146,7 +2561,7 @@
             }
             
             // Rage mode
-            if (keys['ShiftLeft'] || keys['ShiftRight']) {
+            if (keys['ShiftLeft'] || keys['ShiftRight'] || mobileKeys['ShiftLeft']) {
                 if (rage > 0) {
                     rageMode = true;
                     rage -= powerupStates.schmeg.active ? 0.15 : 0.4;

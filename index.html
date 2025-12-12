@@ -97,6 +97,8 @@
             cursor: pointer;
             transition: all 0.2s;
             margin-top: 40px;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
         }
 
         .contract-address:hover {
@@ -123,6 +125,10 @@
             transition: all 0.3s;
             z-index: 1000;
             box-shadow: 0 0 15px rgba(155,77,202,0.4);
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            min-width: 44px;
+            min-height: 44px;
         }
 
         .sound-toggle-btn:hover {
@@ -204,6 +210,9 @@
             box-shadow: 0 0 30px rgba(155,77,202,0.6), 0 0 60px rgba(255,215,0,0.3);
             transition: all 0.3s;
             animation: gameBtnPulse 2s ease-in-out infinite;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            min-height: 44px;
         }
 
         @keyframes gameBtnPulse {
@@ -252,6 +261,9 @@
             text-decoration: none;
             transition: all 0.3s;
             font-size: 14px;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            min-height: 44px;
         }
 
         .dexscreener-btn {
@@ -295,17 +307,138 @@
 
 
         @media (max-width: 767px) {
+            body {
+                padding: 15px;
+            }
+
+            .container {
+                max-width: 100%;
+            }
+            
             .title-image {
-                max-width: 50%;
-                width: 50%;
+                max-width: 60%;
+                width: 60%;
+                margin-bottom: 15px;
             }
             
             .subtitle {
-                font-size: 18px;
+                font-size: 16px;
+                margin-bottom: 25px;
+                padding: 0 10px;
             }
             
             .banner {
-                max-width: 400px;
+                max-width: 100%;
+                margin-bottom: 30px;
+            }
+
+            .contract-address {
+                font-size: 10px;
+                padding: 10px 8px;
+                margin-top: 25px;
+                max-width: 95%;
+                word-break: break-all;
+                line-height: 1.4;
+            }
+
+            .game-btn-container {
+                margin-top: 25px;
+                margin-bottom: 15px;
+            }
+
+            .game-btn {
+                padding: 14px 24px;
+                font-size: 16px;
+                gap: 10px;
+            }
+
+            .game-btn svg {
+                width: 20px;
+                height: 20px;
+            }
+
+            .links-section {
+                flex-direction: column;
+                gap: 12px;
+                margin-top: 15px;
+            }
+
+            .link-separator {
+                display: none;
+            }
+
+            .link-btn {
+                width: 100%;
+                max-width: 280px;
+                padding: 14px 16px;
+                font-size: 13px;
+            }
+
+            .sound-toggle-btn {
+                bottom: 15px;
+                left: 15px;
+                padding: 10px 14px;
+                font-size: 11px;
+            }
+
+            .sound-toggle-btn svg {
+                width: 14px;
+                height: 14px;
+            }
+
+            .sound-toggle-btn span {
+                font-size: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .title-image {
+                max-width: 70%;
+                width: 70%;
+            }
+            
+            .subtitle {
+                font-size: 14px;
+                letter-spacing: 0.05em;
+            }
+
+            .contract-address {
+                font-size: 9px;
+                padding: 8px 6px;
+            }
+
+            .game-btn {
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+
+            .link-btn {
+                font-size: 12px;
+                padding: 12px 14px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .title-image {
+                max-width: 80%;
+                width: 80%;
+            }
+
+            .subtitle {
+                font-size: 12px;
+            }
+
+            .contract-address {
+                font-size: 8px;
+            }
+
+            .game-btn {
+                padding: 10px 16px;
+                font-size: 13px;
+            }
+
+            .link-btn {
+                font-size: 11px;
             }
         }
     </style>
