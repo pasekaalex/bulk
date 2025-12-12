@@ -460,8 +460,8 @@
             position: absolute;
             bottom: 20px;
             left: 20px;
-            width: 120px;
-            height: 120px;
+            width: 150px;
+            height: 150px;
             pointer-events: all;
         }
 
@@ -495,6 +495,10 @@
 
             #joystick-container {
                 display: block;
+                bottom: 120px; /* Higher up on screen */
+                left: 20px;
+                width: 150px;
+                height: 150px;
             }
 
             #action-buttons {
@@ -509,65 +513,90 @@
                 display: none;
             }
 
+            /* HUD - Top left, smaller and compact */
             #hud {
-                font-size: 0.5rem;
+                font-size: 0.45rem;
                 top: 5px;
                 left: 5px;
-                right: 5px;
-                max-width: calc(100% - 150px); /* Leave space for minimap */
+                right: auto;
+                max-width: 180px;
+                flex-direction: column;
+                gap: 4px;
             }
 
             .hud-panel {
-                padding: 6px 10px;
-                font-size: 0.5rem;
+                padding: 5px 8px;
+                font-size: 0.45rem;
             }
 
             .hud-value {
-                font-size: 0.8rem;
+                font-size: 0.7rem;
             }
 
             .bar-container {
-                width: 100px;
-                height: 12px;
-            }
-
-            #combo-display {
-                right: 10px;
-                top: 40%;
-                max-width: calc(100% - 150px); /* Don't overlap with minimap */
-            }
-
-            #combo-count {
-                font-size: 2.5rem;
-            }
-
-            #minimap {
                 width: 90px;
-                height: 90px;
-                bottom: 180px; /* Above action buttons */
-                right: 10px;
+                height: 10px;
             }
 
-            #powerup-icons {
-                bottom: 180px; /* Above action buttons */
+            /* Level display - Top center, smaller */
+            #level-display {
+                top: 5px;
                 left: 50%;
                 transform: translateX(-50%);
-                gap: 8px;
+                font-size: 0.5rem;
             }
 
-            .powerup-icon {
-                width: 40px;
-                height: 40px;
+            #level-number {
                 font-size: 1.2rem;
             }
 
-            #level-display {
-                top: 5px;
+            #skill-points {
+                font-size: 0.5rem;
             }
 
+            /* Wanted level - Top right, below level display */
             #wanted-level {
+                top: 50px;
+                right: 10px;
+                gap: 3px;
+            }
+
+            .wanted-star {
+                font-size: 1rem;
+            }
+
+            /* Minimap - Top right, above wanted level */
+            #minimap {
+                width: 80px;
+                height: 80px;
                 top: 5px;
                 right: 5px;
+                bottom: auto;
+            }
+
+            /* Combo display - Center right, adjusted */
+            #combo-display {
+                right: 10px;
+                top: 50%;
+                max-width: calc(100% - 100px);
+            }
+
+            #combo-count {
+                font-size: 2rem;
+            }
+
+            /* Powerup icons - Center bottom, above controls */
+            #powerup-icons {
+                bottom: 200px;
+                left: 50%;
+                transform: translateX(-50%);
+                gap: 6px;
+            }
+
+            .powerup-icon {
+                width: 35px;
+                height: 35px;
+                font-size: 1rem;
             }
 
             #wave-announcement {
@@ -578,24 +607,25 @@
         #joystick-base {
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            border: 3px solid rgba(155, 48, 255, 0.8);
+            background: rgba(0, 0, 0, 0.85);
+            border: 4px solid rgba(155, 48, 255, 1);
             border-radius: 50%;
             position: relative;
+            box-shadow: 0 0 20px rgba(155, 48, 255, 0.8);
         }
 
         #joystick-stick {
             position: absolute;
-            width: 50px;
-            height: 50px;
-            background: rgba(155, 48, 255, 0.9);
-            border: 2px solid #ff00ff;
+            width: 65px;
+            height: 65px;
+            background: rgba(155, 48, 255, 1);
+            border: 3px solid #ff00ff;
             border-radius: 50%;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             transition: transform 0.1s;
-            box-shadow: 0 0 15px rgba(155, 48, 255, 0.6);
+            box-shadow: 0 0 20px rgba(255, 0, 255, 0.9), inset 0 0 10px rgba(255, 255, 255, 0.3);
         }
 
 
@@ -652,15 +682,20 @@
 
         @media (max-width: 480px) {
             #joystick-container {
-                width: 100px;
-                height: 100px;
-                bottom: 15px;
+                width: 140px;
+                height: 140px;
+                bottom: 100px; /* Higher up on smaller screens too */
                 left: 15px;
             }
 
+            #joystick-base {
+                border-width: 3px;
+            }
+
             #joystick-stick {
-                width: 40px;
-                height: 40px;
+                width: 60px;
+                height: 60px;
+                border-width: 2px;
             }
 
             .mobile-btn {
@@ -676,21 +711,60 @@
             }
 
             #hud {
-                max-width: calc(100% - 120px);
+                max-width: 160px;
+                font-size: 0.4rem;
+            }
+
+            .hud-panel {
+                padding: 4px 6px;
+            }
+
+            .bar-container {
+                width: 80px;
+                height: 8px;
             }
 
             #minimap {
-                width: 80px;
-                height: 80px;
-                bottom: 160px;
+                width: 70px;
+                height: 70px;
+                top: 5px;
+                right: 5px;
+            }
+
+            #wanted-level {
+                top: 45px;
+                right: 5px;
+            }
+
+            .wanted-star {
+                font-size: 0.9rem;
+            }
+
+            #level-display {
+                top: 3px;
+            }
+
+            #level-number {
+                font-size: 1rem;
             }
 
             #powerup-icons {
-                bottom: 160px;
+                bottom: 180px;
+                gap: 5px;
+            }
+
+            .powerup-icon {
+                width: 30px;
+                height: 30px;
+                font-size: 0.9rem;
             }
 
             #camera-touch-area {
                 bottom: 180px;
+            }
+
+            #combo-count {
+                font-size: 1.5rem;
             }
         }
     </style>
