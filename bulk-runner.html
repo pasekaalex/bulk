@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>BULK RUNNER - Infinite Runner</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bangers&family=Press+Start+2P&display=swap');
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: #000;
+            overflow: hidden;
+            font-family: 'Press Start 2P', monospace;
+            touch-action: none;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            overscroll-behavior: none;
+        }
+        
+        /* Prevent pull-to-refresh on mobile */
+        html {
+            overscroll-behavior: none;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+        }
+        
+        #game-container { 
+            width: 100vw; 
+            height: 100vh; 
+            position: relative;
+        }
+        
+        canvas { 
+            display: block; 
+            width: 100%;
+            height: 100%;
+        }
+        
+        #ui-overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        #title-screen {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: linear-gradient(135deg, #2d1b4e 0%, #1a0a2e 30%, #0d0d0d 70%, #1a0a2e 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            pointer-events: all;
+        }
+        
+        #title-screen.hidden { display: none; }
+        
+        .title-main {
+            font-family: 'Bangers', cursive;
+            font-size: clamp(3rem, 10vw, 6rem);
+            color: #9b30ff;
+            text-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff, 0 0 40px #9b30ff, 4px 4px 0 #000;
+            letter-spacing: 0.1em;
+            animation: titlePulse 0.5s ease-in-out infinite alternate;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes titlePulse { from { transform: scale(1); } to { transform: scale(1.05); } }
+        
+        .subtitle {
+            font-size: clamp(0.8rem, 2vw, 1.2rem);
+            color: #ffd93d;
+            margin-top: 10px;
+            text-shadow: 2px 2px 0 #000;
+            text-align: center;
+        }
+        
+        .instructions {
+            font-size: clamp(0.5rem, 1.2vw, 0.7rem);
+            color: #fff;
+            margin-top: 30px;
+            text-align: center;
+            line-height: 2;
+            max-width: 600px;
+            padding: 0 20px;
+        }
+        
+        .start-btn {
+            margin-top: 40px;
+            padding: clamp(16px, 4vw, 20px) clamp(40px, 10vw, 60px);
+            font-family: 'Bangers', cursive;
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            background: linear-gradient(180deg, #9b30ff 0%, #6b0099 100%);
+            color: #fff;
+            border: 4px solid #ff00ff;
+            border-radius: 10px;
+            cursor: pointer;
+            text-shadow: 2px 2px 0 #000;
+            box-shadow: 0 0 20px #9b30ff;
+            transition: all 0.1s;
+            animation: btnFloat 1s ease-in-out infinite;
+            pointer-events: all;
+            min-height: 44px;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+        
+        @keyframes btnFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        
+        .start-btn:hover {
+            background: linear-gradient(180deg, #bf5fff 0%, #9b30ff 100%);
+            transform: scale(1.1);
+        }
+        
+        #game-ui {
+            position: absolute;
+            top: max(20px, env(safe-area-inset-top));
+            left: max(20px, env(safe-area-inset-left));
+            color: #fff;
+            font-size: clamp(10px, 2.5vw, 14px);
+            text-shadow: 2px 2px 0 #000, 0 0 10px rgba(0,0,0,0.8);
+            z-index: 20;
+        }
+        
+        #score {
+            font-size: clamp(12px, 3vw, 18px);
+            color: #ffd93d;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 0 #000, 0 0 15px rgba(255, 217, 61, 0.5);
+            transition: transform 0.2s;
+        }
+        
+        #score.pulse {
+            transform: scale(1.2);
+        }
+        
+        #distance {
+            font-size: clamp(10px, 2.5vw, 14px);
+            color: #9b30ff;
+            text-shadow: 2px 2px 0 #000, 0 0 10px rgba(155, 48, 255, 0.5);
+        }
+        
+        #speed-indicator {
+            font-size: clamp(8px, 2vw, 12px);
+            color: #ff6b6b;
+            margin-top: 5px;
+            text-shadow: 2px 2px 0 #000, 0 0 10px rgba(255, 107, 107, 0.5);
+        }
+        
+        #game-over {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            pointer-events: all;
+        }
+        
+        #game-over.show { display: flex; }
+        
+        .game-over-title {
+            font-family: 'Bangers', cursive;
+            font-size: clamp(2rem, 6vw, 4rem);
+            color: #ff6b6b;
+            text-shadow: 0 0 10px #ff0000, 4px 4px 0 #000;
+            margin-bottom: 20px;
+        }
+        
+        .final-score {
+            font-size: clamp(1rem, 3vw, 1.5rem);
+            color: #ffd93d;
+            margin-bottom: 30px;
+        }
+        
+        .restart-btn {
+            padding: clamp(12px, 3vw, 15px) clamp(30px, 8vw, 40px);
+            font-family: 'Bangers', cursive;
+            font-size: clamp(1rem, 3vw, 1.5rem);
+            background: linear-gradient(180deg, #9b30ff 0%, #6b0099 100%);
+            color: #fff;
+            border: 4px solid #ff00ff;
+            border-radius: 10px;
+            cursor: pointer;
+            text-shadow: 2px 2px 0 #000;
+            box-shadow: 0 0 20px #9b30ff;
+            transition: all 0.1s;
+            min-height: 44px;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+        
+        .restart-btn:hover {
+            background: linear-gradient(180deg, #bf5fff 0%, #9b30ff 100%);
+            transform: scale(1.1);
+        }
+        
+        .back-btn {
+            margin-top: 20px;
+            padding: clamp(10px, 2.5vw, 12px) clamp(25px, 6vw, 30px);
+            font-size: clamp(0.7rem, 2vw, 0.8rem);
+            background: rgba(155, 48, 255, 0.3);
+            color: #fff;
+            border: 2px solid #9b30ff;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.1s;
+            min-height: 44px;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            display: inline-block;
+        }
+        
+        .back-btn:hover {
+            background: rgba(155, 48, 255, 0.5);
+        }
+        
+        #controls-hint {
+            position: absolute;
+            bottom: max(20px, env(safe-area-inset-bottom));
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: clamp(0.5rem, 1.5vw, 0.6rem);
+            color: rgba(255, 255, 255, 0.7);
+            text-align: center;
+            z-index: 20;
+            padding: 0 20px;
+            opacity: 0.6;
+            animation: fadeInOut 3s ease-in-out infinite;
+        }
+        
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 0.3; }
+        }
+        
+        .action-feedback {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Bangers', cursive;
+            font-size: clamp(2rem, 8vw, 4rem);
+            color: #ffd93d;
+            text-shadow: 0 0 20px #ffd93d, 4px 4px 0 #000;
+            pointer-events: none;
+            z-index: 30;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+        }
+        
+        .action-feedback.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1.2);
+        }
+        
+        .action-feedback.jump {
+            color: #9b30ff;
+            text-shadow: 0 0 20px #9b30ff, 4px 4px 0 #000;
+        }
+        
+        .action-feedback.slide {
+            color: #ff6b6b;
+            text-shadow: 0 0 20px #ff6b6b, 4px 4px 0 #000;
+        }
+        
+        @media (max-width: 768px) {
+            #controls-hint {
+                font-size: 0.5rem;
+            }
+            
+            .instructions {
+                font-size: clamp(0.4rem, 1.5vw, 0.6rem);
+                line-height: 1.8;
+            }
+            
+            #title-screen {
+                padding: 20px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            #game-ui {
+                top: max(10px, env(safe-area-inset-top));
+                left: max(10px, env(safe-area-inset-left));
+            }
+            
+            #controls-hint {
+                bottom: max(10px, env(safe-area-inset-bottom));
+                font-size: 0.4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="title-screen">
+            <div class="title-main">BULK RUNNER</div>
+            <div class="subtitle">INFINITE RUNNER</div>
+            <div class="instructions">
+                SWIPE LEFT/RIGHT to change lanes<br>
+                SWIPE UP to jump<br>
+                SWIPE DOWN to slide<br>
+                Avoid obstacles and run as far as you can!
+            </div>
+            <button class="start-btn" onclick="startGame()">START RUNNING</button>
+        </div>
+        
+        <div id="game-ui">
+            <div id="score">SCORE: 0</div>
+            <div id="distance">DISTANCE: 0m</div>
+            <div id="speed-indicator">SPEED: 1.0x</div>
+        </div>
+        
+        <div id="controls-hint">
+            ← → Move | ↑ Jump | ↓ Slide
+        </div>
+        
+        <div class="action-feedback" id="action-feedback"></div>
+        
+        <div id="game-over">
+            <div class="game-over-title">GAME OVER</div>
+            <div class="final-score" id="final-score">FINAL SCORE: 0</div>
+            <button class="restart-btn" onclick="restartGame()">PLAY AGAIN</button>
+            <a href="index.html" class="back-btn">BACK TO HOME</a>
+        </div>
+    </div>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
+    
+    <script type="module">
+        import * as THREE from 'three';
+        import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js';
+        
+        let scene, camera, renderer;
+        let bulkModel, bulkMixer;
+        let gameStarted = false;
+        let gameOver = false;
+        let score = 0;
+        let distance = 0;
+        let speed = 0.3;
+        let baseSpeed = 0.3;
+        let currentLane = 1; // 0 = left, 1 = center, 2 = right
+        let lanePositions = [-2, 0, 2];
+        let isJumping = false;
+        let isSliding = false;
+        let jumpVelocity = 0;
+        let gravity = -0.02;
+        let groundY = 0;
+        let obstacles = [];
+        let trackSegments = [];
+        let lastObstacleZ = -50;
+        let lastTrackZ = 0;
+        let particles = [];
+        let particleSystem = null;
+        let combo = 0;
+        let lastComboTime = 0;
+        let cameraShake = { x: 0, y: 0, intensity: 0 };
+        
+        // Touch/Mouse controls
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchEndX = 0;
+        let touchEndY = 0;
+        
+        function init() {
+            // Scene setup
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x1a0a2e);
+            scene.fog = new THREE.Fog(0x1a0a2e, 50, 200);
+            
+            // Camera
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 3, 8);
+            camera.lookAt(0, 1, 0);
+            
+            // Renderer with device pixel ratio for mobile
+            renderer = new THREE.WebGLRenderer({ 
+                antialias: true,
+                powerPreference: "high-performance"
+            });
+            const pixelRatio = Math.min(window.devicePixelRatio, 2); // Limit to 2x for performance
+            renderer.setPixelRatio(pixelRatio);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            document.getElementById('game-container').appendChild(renderer.domElement);
+            
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0x9b30ff, 1);
+            directionalLight.position.set(5, 10, 5);
+            directionalLight.castShadow = true;
+            directionalLight.shadow.camera.left = -10;
+            directionalLight.shadow.camera.right = 10;
+            directionalLight.shadow.camera.top = 10;
+            directionalLight.shadow.camera.bottom = -10;
+            scene.add(directionalLight);
+            
+            const pointLight = new THREE.PointLight(0xff00ff, 0.5, 100);
+            pointLight.position.set(0, 5, 0);
+            scene.add(pointLight);
+            
+            // Additional rim lighting
+            const rimLight1 = new THREE.DirectionalLight(0xffd93d, 0.3);
+            rimLight1.position.set(-5, 3, 5);
+            scene.add(rimLight1);
+            
+            const rimLight2 = new THREE.DirectionalLight(0xff6b6b, 0.3);
+            rimLight2.position.set(5, 3, 5);
+            scene.add(rimLight2);
+            
+            // Create particle system (optional enhancement)
+            try {
+                createParticleSystem();
+            } catch (e) {
+                console.log('Particle system creation skipped');
+            }
+            
+            // Ground
+            createGround();
+            
+            // Load Bulk model
+            loadBulkModel();
+            
+            // Create initial track
+            for (let i = 0; i < 20; i++) {
+                createTrackSegment(i * 10);
+            }
+            
+            // Controls
+            setupControls();
+            
+            // Start animation loop
+            animate();
+        }
+        
+        function createGround() {
+            // Main ground
+            const groundGeometry = new THREE.PlaneGeometry(20, 1000);
+            const groundMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x1a0a2e,
+                roughness: 0.9,
+                metalness: 0.1
+            });
+            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = -Math.PI / 2;
+            ground.position.y = -0.2;
+            ground.position.z = -500;
+            ground.receiveShadow = true;
+            scene.add(ground);
+            
+            // Side barriers for visual depth
+            for (let side = -1; side <= 1; side += 2) {
+                const barrierGeometry = new THREE.BoxGeometry(0.5, 2, 1000);
+                const barrierMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0x0d0d0d,
+                    emissive: 0x9b30ff,
+                    emissiveIntensity: 0.1
+                });
+                const barrier = new THREE.Mesh(barrierGeometry, barrierMaterial);
+                barrier.position.set(side * 10, 1, -500);
+                barrier.castShadow = true;
+                scene.add(barrier);
+            }
+        }
+        
+        function createTrackSegment(z) {
+            // Create track with lanes
+            for (let lane = 0; lane < 3; lane++) {
+                const trackGeometry = new THREE.PlaneGeometry(2, 10);
+                const trackMaterial = new THREE.MeshStandardMaterial({ 
+                    color: lane === 1 ? 0x4a1d6e : 0x2d1b4e,
+                    roughness: 0.7,
+                    metalness: 0.1
+                });
+                const track = new THREE.Mesh(trackGeometry, trackMaterial);
+                track.rotation.x = -Math.PI / 2;
+                track.position.set(lanePositions[lane], 0, z);
+                track.receiveShadow = true;
+                scene.add(track);
+                trackSegments.push(track);
+            }
+            
+            // Add animated lane markers
+            for (let i = 0; i < 2; i++) {
+                const markerGeometry = new THREE.PlaneGeometry(0.1, 10);
+                const markerMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0x9b30ff,
+                    emissive: 0x9b30ff,
+                    emissiveIntensity: 0.8,
+                    transparent: true,
+                    opacity: 0.9
+                });
+                const marker = new THREE.Mesh(markerGeometry, markerMaterial);
+                marker.rotation.x = -Math.PI / 2;
+                marker.position.set(lanePositions[i] + 1, 0.01, z);
+                marker.userData = { originalZ: z, speed: speed };
+                scene.add(marker);
+            }
+        }
+        
+        function createParticleSystem() {
+            const particleCount = 100;
+            const geometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(particleCount * 3);
+            
+            for (let i = 0; i < particleCount * 3; i++) {
+                positions[i] = (Math.random() - 0.5) * 20;
+            }
+            
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            
+            const material = new THREE.PointsMaterial({
+                color: 0x9b30ff,
+                size: 0.1,
+                transparent: true,
+                opacity: 0.6,
+                blending: THREE.AdditiveBlending
+            });
+            
+            particleSystem = new THREE.Points(geometry, material);
+            scene.add(particleSystem);
+        }
+        
+        function loadBulkModel() {
+            const loader = new GLTFLoader();
+            loader.load('bulk.glb', (gltf) => {
+                bulkModel = gltf.scene;
+                bulkModel.scale.set(0.5, 0.5, 0.5);
+                bulkModel.position.set(0, groundY, 0);
+                bulkModel.castShadow = true;
+                bulkModel.receiveShadow = true;
+                
+                // Setup animation mixer
+                if (gltf.animations && gltf.animations.length > 0) {
+                    bulkMixer = new THREE.AnimationMixer(bulkModel);
+                    gltf.animations.forEach((clip) => {
+                        bulkMixer.clipAction(clip).play();
+                    });
+                }
+                
+                scene.add(bulkModel);
+            }, undefined, (error) => {
+                console.error('Error loading model:', error);
+                // Create a simple placeholder if model fails to load
+                createPlaceholderModel();
+            });
+        }
+        
+        function createPlaceholderModel() {
+            const geometry = new THREE.BoxGeometry(1, 2, 1);
+            const material = new THREE.MeshStandardMaterial({ 
+                color: 0x9b30ff,
+                emissive: 0x9b30ff,
+                emissiveIntensity: 0.3
+            });
+            bulkModel = new THREE.Mesh(geometry, material);
+            bulkModel.position.set(0, groundY + 1, 0);
+            bulkModel.castShadow = true;
+            scene.add(bulkModel);
+        }
+        
+        function createObstacle(lane, z) {
+            const obstacleTypes = ['low', 'high', 'medium'];
+            const type = obstacleTypes[Math.floor(Math.random() * obstacleTypes.length)];
+            
+            let height, yPos, color, emissive;
+            
+            switch(type) {
+                case 'low':
+                    height = 1;
+                    yPos = 0.5;
+                    color = 0xff6b6b;
+                    emissive = 0xff0000;
+                    break;
+                case 'high':
+                    height = 3;
+                    yPos = 1.5;
+                    color = 0xff4444;
+                    emissive = 0xff0000;
+                    break;
+                case 'medium':
+                default:
+                    height = 2;
+                    yPos = 1;
+                    color = 0xff5555;
+                    emissive = 0xff0000;
+                    break;
+            }
+            
+            const obstacleGeometry = new THREE.BoxGeometry(1.5, height, 1.5);
+            const obstacleMaterial = new THREE.MeshStandardMaterial({ 
+                color: color,
+                emissive: emissive,
+                emissiveIntensity: 0.6,
+                roughness: 0.3,
+                metalness: 0.5
+            });
+            const obstacle = new THREE.Mesh(obstacleGeometry, obstacleMaterial);
+            obstacle.position.set(lanePositions[lane], yPos, z);
+            obstacle.castShadow = true;
+            obstacle.receiveShadow = true;
+            obstacle.userData = { type: type, height: height, yPos: yPos };
+            
+            // Add glow effect
+            const glowGeometry = new THREE.BoxGeometry(1.6, height + 0.1, 1.6);
+            const glowMaterial = new THREE.MeshBasicMaterial({
+                color: emissive,
+                transparent: true,
+                opacity: 0.3,
+                side: THREE.BackSide
+            });
+            const glow = new THREE.Mesh(glowGeometry, glowMaterial);
+            obstacle.add(glow);
+            
+            scene.add(obstacle);
+            obstacles.push(obstacle);
+        }
+        
+        function createParticleExplosion(x, y, z, color = 0xff6b6b) {
+            for (let i = 0; i < 20; i++) {
+                const particleGeometry = new THREE.SphereGeometry(0.05, 8, 8);
+                const particleMaterial = new THREE.MeshBasicMaterial({
+                    color: color,
+                    transparent: true,
+                    opacity: 1
+                });
+                const particle = new THREE.Mesh(particleGeometry, particleMaterial);
+                particle.position.set(x, y, z);
+                particle.userData = {
+                    velocity: new THREE.Vector3(
+                        (Math.random() - 0.5) * 0.3,
+                        Math.random() * 0.3,
+                        (Math.random() - 0.5) * 0.3
+                    ),
+                    life: 1.0,
+                    decay: 0.02
+                };
+                particles.push(particle);
+                scene.add(particle);
+            }
+        }
+        
+        function setupControls() {
+            // Keyboard controls
+            window.addEventListener('keydown', (e) => {
+                if (!gameStarted || gameOver) return;
+                
+                switch(e.key) {
+                    case 'ArrowLeft':
+                    case 'a':
+                    case 'A':
+                        moveLeft();
+                        break;
+                    case 'ArrowRight':
+                    case 'd':
+                    case 'D':
+                        moveRight();
+                        break;
+                    case 'ArrowUp':
+                    case 'w':
+                    case 'W':
+                    case ' ':
+                        jump();
+                        break;
+                    case 'ArrowDown':
+                    case 's':
+                    case 'S':
+                        slide();
+                        break;
+                }
+            });
+            
+            // Touch controls
+            const container = document.getElementById('game-container');
+            
+            // Prevent context menu on long press
+            container.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+            });
+            
+            container.addEventListener('touchstart', (e) => {
+                if (!gameStarted || gameOver) {
+                    e.preventDefault();
+                    return;
+                }
+                e.preventDefault();
+                e.stopPropagation();
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+            }, { passive: false });
+            
+            container.addEventListener('touchmove', (e) => {
+                if (!gameStarted || gameOver) return;
+                e.preventDefault();
+            }, { passive: false });
+            
+            container.addEventListener('touchend', (e) => {
+                if (!gameStarted || gameOver) {
+                    e.preventDefault();
+                    return;
+                }
+                e.preventDefault();
+                e.stopPropagation();
+                if (e.changedTouches && e.changedTouches.length > 0) {
+                    touchEndX = e.changedTouches[0].clientX;
+                    touchEndY = e.changedTouches[0].clientY;
+                    handleSwipe();
+                }
+            }, { passive: false });
+            
+            container.addEventListener('touchcancel', (e) => {
+                e.preventDefault();
+            }, { passive: false });
+            
+            // Mouse controls (for desktop)
+            container.addEventListener('mousedown', (e) => {
+                if (!gameStarted || gameOver) return;
+                touchStartX = e.clientX;
+                touchStartY = e.clientY;
+            });
+            
+            container.addEventListener('mouseup', (e) => {
+                if (!gameStarted || gameOver) return;
+                touchEndX = e.clientX;
+                touchEndY = e.clientY;
+                handleSwipe();
+            });
+        }
+        
+        function handleSwipe() {
+            const deltaX = touchEndX - touchStartX;
+            const deltaY = touchEndY - touchStartY;
+            const minSwipeDistance = 30;
+            const maxSwipeTime = 300; // milliseconds
+            
+            // Calculate swipe distance
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            
+            if (distance < minSwipeDistance) {
+                // Tap - could be used for jump as default action
+                if (!isJumping && !isSliding) {
+                    jump();
+                }
+                return;
+            }
+            
+            // Determine swipe direction
+            if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                // Horizontal swipe
+                if (Math.abs(deltaX) > minSwipeDistance) {
+                    if (deltaX > 0) {
+                        moveRight();
+                    } else {
+                        moveLeft();
+                    }
+                }
+            } else {
+                // Vertical swipe
+                if (Math.abs(deltaY) > minSwipeDistance) {
+                    if (deltaY < 0) {
+                        jump();
+                    } else {
+                        slide();
+                    }
+                }
+            }
+        }
+        
+        function showActionFeedback(text, type = '') {
+            const feedback = document.getElementById('action-feedback');
+            feedback.textContent = text;
+            feedback.className = `action-feedback ${type} show`;
+            setTimeout(() => {
+                feedback.classList.remove('show');
+            }, 300);
+        }
+        
+        function moveLeft() {
+            if (currentLane > 0) {
+                currentLane--;
+                showActionFeedback('←', '');
+            }
+        }
+        
+        function moveRight() {
+            if (currentLane < 2) {
+                currentLane++;
+                showActionFeedback('→', '');
+            }
+        }
+        
+        function jump() {
+            if (!isJumping && !isSliding) {
+                isJumping = true;
+                jumpVelocity = 0.15;
+                showActionFeedback('JUMP!', 'jump');
+                createParticleExplosion(bulkModel ? bulkModel.position.x : 0, groundY + 0.5, bulkModel ? bulkModel.position.z : 0, 0x9b30ff);
+                cameraShake.intensity = 0.1;
+            }
+        }
+        
+        function slide() {
+            if (!isSliding && !isJumping) {
+                isSliding = true;
+                showActionFeedback('SLIDE!', 'slide');
+                createParticleExplosion(bulkModel ? bulkModel.position.x : 0, groundY, bulkModel ? bulkModel.position.z : 0, 0xff6b6b);
+                setTimeout(() => {
+                    isSliding = false;
+                }, 500);
+            }
+        }
+        
+        function updateGame() {
+            if (!gameStarted || gameOver) return;
+            
+            const deltaTime = 0.016; // Approximate frame time
+            
+            // Update distance and score with combo multiplier
+            const comboMultiplier = 1 + (combo * 0.1);
+            distance += speed * 10 * comboMultiplier;
+            score = Math.floor(distance);
+            
+            // Update UI with animation
+            const scoreEl = document.getElementById('score');
+            scoreEl.textContent = `SCORE: ${score}`;
+            if (score % 100 === 0 && score > 0) {
+                scoreEl.classList.add('pulse');
+                setTimeout(() => scoreEl.classList.remove('pulse'), 200);
+            }
+            
+            document.getElementById('distance').textContent = `DISTANCE: ${Math.floor(distance)}m`;
+            
+            // Update speed indicator
+            const speedMultiplier = (speed / baseSpeed).toFixed(1);
+            document.getElementById('speed-indicator').textContent = `SPEED: ${speedMultiplier}x`;
+            
+            // Increase speed over time (capped)
+            speed = Math.min(baseSpeed + (distance / 1000) * 0.1, baseSpeed * 3);
+            
+            // Update combo timer
+            if (Date.now() - lastComboTime > 2000) {
+                combo = 0;
+            }
+            
+            // Update camera shake
+            if (cameraShake.intensity > 0) {
+                cameraShake.x = (Math.random() - 0.5) * cameraShake.intensity;
+                cameraShake.y = (Math.random() - 0.5) * cameraShake.intensity;
+                cameraShake.intensity *= 0.9;
+                if (cameraShake.intensity < 0.01) {
+                    cameraShake.intensity = 0;
+                }
+            }
+            
+            // Update Bulk model position
+            if (bulkModel) {
+                // Smooth lane transition with easing
+                const targetX = lanePositions[currentLane];
+                const diff = targetX - bulkModel.position.x;
+                bulkModel.position.x += diff * 0.15;
+                
+                // Add slight rotation when changing lanes
+                bulkModel.rotation.z = -diff * 0.1;
+                
+                // Jump physics
+                if (isJumping) {
+                    jumpVelocity += gravity;
+                    bulkModel.position.y += jumpVelocity;
+                    bulkModel.rotation.x = Math.sin(Date.now() * 0.01) * 0.1;
+                    if (bulkModel.position.y <= groundY) {
+                        bulkModel.position.y = groundY;
+                        isJumping = false;
+                        jumpVelocity = 0;
+                        bulkModel.rotation.x = 0;
+                        createParticleExplosion(bulkModel.position.x, groundY, bulkModel.position.z, 0xffd93d);
+                    }
+                } else if (!isSliding) {
+                    bulkModel.position.y = groundY;
+                    bulkModel.rotation.x = 0;
+                }
+                
+                // Slide animation with scale
+                if (isSliding) {
+                    bulkModel.scale.y = 0.4;
+                    bulkModel.position.y = groundY - 0.6;
+                    bulkModel.rotation.x = Math.PI / 6;
+                } else {
+                    bulkModel.scale.y = 0.5;
+                    if (!isJumping) {
+                        bulkModel.position.y = groundY;
+                    }
+                }
+                
+                // Running animation (bob)
+                if (!isJumping && !isSliding) {
+                    bulkModel.position.y = groundY + Math.sin(Date.now() * 0.02) * 0.1;
+                }
+            }
+            
+            // Update particles
+            particles.forEach((particle, index) => {
+                particle.position.add(particle.userData.velocity);
+                particle.userData.velocity.y -= 0.01; // gravity
+                particle.userData.life -= particle.userData.decay;
+                particle.material.opacity = particle.userData.life;
+                particle.scale.multiplyScalar(0.98);
+                
+                if (particle.userData.life <= 0) {
+                    scene.remove(particle);
+                    particles.splice(index, 1);
+                }
+            });
+            
+            // Update particle system
+            if (particleSystem) {
+                const positions = particleSystem.geometry.attributes.position.array;
+                for (let i = 0; i < positions.length; i += 3) {
+                    positions[i + 2] += speed * 0.5;
+                    if (positions[i + 2] > 20) {
+                        positions[i + 2] -= 200;
+                        positions[i] = (Math.random() - 0.5) * 20;
+                        positions[i + 1] = Math.random() * 10;
+                    }
+                }
+                particleSystem.geometry.attributes.position.needsUpdate = true;
+            }
+            
+            // Move obstacles
+            obstacles.forEach((obstacle, index) => {
+                obstacle.position.z += speed;
+                
+                // Animate obstacle (pulse)
+                const scale = 1 + Math.sin(Date.now() * 0.005 + obstacle.position.z) * 0.1;
+                obstacle.scale.set(scale, scale, scale);
+                
+                // Check collision
+                if (bulkModel) {
+                    const distanceX = Math.abs(obstacle.position.x - bulkModel.position.x);
+                    const distanceZ = Math.abs(obstacle.position.z - bulkModel.position.z);
+                    const distanceY = Math.abs(obstacle.position.y - bulkModel.position.y);
+                    
+                    if (distanceX < 1.2 && distanceZ < 1.5) {
+                        const obstacleHeight = obstacle.userData.height || 2;
+                        const obstacleY = obstacle.userData.yPos || 1;
+                        
+                        // Check if jumping over or sliding under
+                        if (isJumping && obstacleHeight < 2 && obstacleY < 1.5) {
+                            // Successfully jumped over!
+                            combo++;
+                            lastComboTime = Date.now();
+                            createParticleExplosion(obstacle.position.x, obstacle.position.y, obstacle.position.z, 0xffd93d);
+                            scene.remove(obstacle);
+                            obstacles.splice(index, 1);
+                            return;
+                        } else if (isSliding && obstacleHeight > 2 && obstacleY > 1.2) {
+                            // Successfully slid under!
+                            combo++;
+                            lastComboTime = Date.now();
+                            createParticleExplosion(obstacle.position.x, obstacle.position.y, obstacle.position.z, 0xffd93d);
+                            scene.remove(obstacle);
+                            obstacles.splice(index, 1);
+                            return;
+                        } else if (!isJumping && !isSliding) {
+                            // Collision!
+                            createParticleExplosion(bulkModel.position.x, bulkModel.position.y, bulkModel.position.z, 0xff0000);
+                            cameraShake.intensity = 0.5;
+                            endGame();
+                            return;
+                        }
+                    }
+                }
+                
+                // Remove obstacles that are behind
+                if (obstacle.position.z > 20) {
+                    scene.remove(obstacle);
+                    obstacles.splice(index, 1);
+                }
+            });
+            
+            // Move track segments
+            trackSegments.forEach((segment) => {
+                segment.position.z += speed;
+                if (segment.position.z > 20) {
+                    segment.position.z -= 200;
+                }
+            });
+            
+            // Create new obstacles
+            if (bulkModel && bulkModel.position.z - lastObstacleZ > 15) {
+                const lane = Math.floor(Math.random() * 3);
+                createObstacle(lane, bulkModel.position.z - 30);
+                lastObstacleZ = bulkModel.position.z;
+            }
+            
+            // Create new track segments
+            if (lastTrackZ - bulkModel.position.z < 50) {
+                createTrackSegment(lastTrackZ - 10);
+                lastTrackZ -= 10;
+            }
+            
+            // Update camera to follow player with shake
+            if (bulkModel) {
+                const targetX = bulkModel.position.x + cameraShake.x;
+                const targetY = 3 + cameraShake.y;
+                const targetZ = bulkModel.position.z + 8;
+                
+                camera.position.x += (targetX - camera.position.x) * 0.1;
+                camera.position.y += (targetY - camera.position.y) * 0.1;
+                camera.position.z += (targetZ - camera.position.z) * 0.1;
+                
+                // Camera looks slightly ahead
+                camera.lookAt(bulkModel.position.x, bulkModel.position.y + 1, bulkModel.position.z + 5);
+            }
+            
+            // Update track markers animation
+            trackSegments.forEach((segment) => {
+                if (segment.material && segment.material.emissive) {
+                    const intensity = 0.5 + Math.sin(Date.now() * 0.005 + segment.position.z) * 0.3;
+                    segment.material.emissiveIntensity = intensity;
+                }
+            });
+        }
+        
+        function endGame() {
+            if (gameOver) return; // Prevent multiple calls
+            gameOver = true;
+            
+            // Final camera shake
+            cameraShake.intensity = 0.3;
+            
+            // Show game over after brief delay
+            setTimeout(() => {
+                document.getElementById('final-score').textContent = `FINAL SCORE: ${score}`;
+                document.getElementById('game-over').classList.add('show');
+            }, 500);
+        }
+        
+        let lastTime = performance.now();
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            const currentTime = performance.now();
+            const deltaTime = (currentTime - lastTime) / 1000;
+            lastTime = currentTime;
+            
+            // Clamp deltaTime to prevent large jumps
+            const clampedDelta = Math.min(deltaTime, 0.033);
+            
+            if (bulkMixer) {
+                bulkMixer.update(clampedDelta);
+            }
+            
+            updateGame();
+            renderer.render(scene, camera);
+        }
+        
+        // Game control functions
+        window.startGame = function() {
+            document.getElementById('title-screen').classList.add('hidden');
+            gameStarted = true;
+        };
+        
+        window.restartGame = function() {
+            location.reload();
+        };
+        
+        // Handle window resize and orientation change
+        function handleResize() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            
+            const pixelRatio = Math.min(window.devicePixelRatio, 2);
+            renderer.setPixelRatio(pixelRatio);
+            renderer.setSize(width, height);
+        }
+        
+        window.addEventListener('resize', handleResize);
+        window.addEventListener('orientationchange', () => {
+            // Delay to allow orientation change to complete
+            setTimeout(handleResize, 100);
+        });
+        
+        // Prevent zoom on double tap (iOS)
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', (e) => {
+            const now = Date.now();
+            if (now - lastTouchEnd <= 300) {
+                e.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+        
+        // Initialize game
+        init();
+    </script>
+</body>
+</html>
+
