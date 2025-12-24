@@ -361,12 +361,46 @@
             console.error('Global error:', e.error);
             const titleScreen = document.getElementById('title-screen');
             if (titleScreen && !titleScreen.classList.contains('hidden')) {
+                let errorMsg = e.error ? e.error.message : 'Unknown error';
+                let helpText = '';
+                
+                if (errorMsg.includes('WebGL') || errorMsg.includes('context')) {
+                    helpText = `
+                        <div style="color: #ffd93d; font-size: 0.5rem; margin-top: 15px; line-height: 1.8; max-width: 500px; padding: 0 20px;">
+                            TIPS:<br>
+                            • Update your browser to the latest version<br>
+                            • Update your graphics drivers<br>
+                            • Try a different browser (Chrome, Firefox, Edge)<br>
+                            • Check if hardware acceleration is enabled in browser settings
+                        </div>
+                    `;
+                }
+                
                 titleScreen.innerHTML = `
                     <div class="title-main">BULK RUNNER</div>
                     <div class="subtitle" style="color: #ff6b6b; margin-top: 20px;">
-                        Error: ${e.error ? e.error.message : 'Unknown error'}
+                        Error: ${errorMsg}
                     </div>
-                    <button class="start-btn" onclick="location.reload()">RELOAD</button>
+                    ${helpText}
+                    <button class="start-btn" onclick="location.reload()" style="margin-top: 30px;">RELOAD</button>
+                `;
+            }
+        });
+        
+        // Handle unhandled promise rejections
+        window.addEventListener('unhandledrejection', (e) => {
+            console.error('Unhandled promise rejection:', e.reason);
+            const titleScreen = document.getElementById('title-screen');
+            if (titleScreen && !titleScreen.classList.contains('hidden')) {
+                titleScreen.innerHTML = `
+                    <div class="title-main">BULK RUNNER</div>
+                    <div class="subtitle" style="color: #ff6b6b; margin-top: 20px;">
+                        Failed to load game
+                    </div>
+                    <div style="color: #fff; font-size: 0.6rem; margin-top: 20px; max-width: 500px; padding: 0 20px;">
+                        ${e.reason ? e.reason.toString() : 'Unknown error'}
+                    </div>
+                    <button class="start-btn" onclick="location.reload()" style="margin-top: 30px;">RELOAD PAGE</button>
                 `;
             }
         });
@@ -425,6 +459,7 @@
         let jumpVelocity = 0;
         let gravity = -0.02;
         let groundY = 0;
+        let bulkBaseY = 0; // Store the base Y position from bounding box calculation
         let obstacles = [];
         let trackSegments = [];
         let lastObstacleZ = -50;
@@ -463,16 +498,65 @@
                 throw new Error('Game container not found');
             }
             
-            renderer = new THREE.WebGLRenderer({ 
-                antialias: true,
-                powerPreference: "high-performance"
-            });
-            const pixelRatio = Math.min(window.devicePixelRatio, 2); // Limit to 2x for performance
-            renderer.setPixelRatio(pixelRatio);
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.shadowMap.enabled = true;
-            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-            container.appendChild(renderer.domElement);
+            // Check for WebGL support
+            function checkWebGLSupport() {
+                try {
+                    const canvas = document.createElement('canvas');
+                    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                    return !!gl;
+                } catch (e) {
+                    return false;
+                }
+            }
+            
+            if (!checkWebGLSupport()) {
+                throw new Error('WebGL is not supported in your browser. Please try a different browser or update your graphics drivers.');
+            }
+            
+            // Try to create WebGL renderer with fallbacks
+            let rendererCreated = false;
+            const rendererOptions = [
+                { antialias: true, powerPreference: "high-performance" },
+                { antialias: true, powerPreference: "default" },
+                { antialias: false, powerPreference: "default" },
+                { antialias: false, powerPreference: "low-power" }
+            ];
+            
+            for (const options of rendererOptions) {
+                try {
+                    renderer = new THREE.WebGLRenderer(options);
+                    rendererCreated = true;
+                    break;
+                } catch (e) {
+                    console.warn('Failed to create renderer with options:', options, e);
+                    continue;
+                }
+            }
+            
+            if (!rendererCreated || !renderer) {
+                throw new Error('Failed to create WebGL context. Your browser or device may not support WebGL.');
+            }
+            
+            try {
+                // Verify the renderer has a valid context
+                const canvas = renderer.domElement;
+                const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                if (!gl) {
+                    throw new Error('WebGL context is null after renderer creation');
+                }
+                
+                const pixelRatio = Math.min(window.devicePixelRatio, 2); // Limit to 2x for performance
+                renderer.setPixelRatio(pixelRatio);
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.shadowMap.enabled = true;
+                renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+                container.appendChild(renderer.domElement);
+                
+                // Test if we can actually render something
+                renderer.clear();
+            } catch (e) {
+                throw new Error('Failed to initialize renderer: ' + (e.message || 'Unknown WebGL error'));
+            }
             
             // Lighting
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
@@ -615,28 +699,134 @@
         }
         
         function loadBulkModel() {
-            const loader = new GLTFLoader();
-            loader.load('bulk.glb', (gltf) => {
-                bulkModel = gltf.scene;
-                bulkModel.scale.set(0.5, 0.5, 0.5);
-                bulkModel.position.set(0, groundY, 0);
-                bulkModel.castShadow = true;
-                bulkModel.receiveShadow = true;
-                
-                // Setup animation mixer
-                if (gltf.animations && gltf.animations.length > 0) {
-                    bulkMixer = new THREE.AnimationMixer(bulkModel);
-                    gltf.animations.forEach((clip) => {
-                        bulkMixer.clipAction(clip).play();
-                    });
-                }
-                
-                scene.add(bulkModel);
-            }, undefined, (error) => {
-                console.error('Error loading model:', error);
-                // Create a simple placeholder if model fails to load
+            if (!GLTFLoader) {
+                console.error('GLTFLoader not available');
                 createPlaceholderModel();
-            });
+                return;
+            }
+            
+            const loader = new GLTFLoader();
+            console.log('Attempting to load bulk.glb...');
+            
+            loader.load(
+                'bulk.glb',
+                (gltf) => {
+                    console.log('GLB loaded successfully!', gltf);
+                    
+                    const model = gltf.scene || (gltf.scenes && gltf.scenes[0]);
+                    if (!model) {
+                        console.error('No scene found in GLB file. Available keys:', Object.keys(gltf));
+                        createPlaceholderModel();
+                        return;
+                    }
+                    
+                    console.log('Model found, calculating scale...');
+                    
+                    // Calculate bounding box to determine proper scale (same as rampage game)
+                    const box = new THREE.Box3().setFromObject(model);
+                    const size = box.getSize(new THREE.Vector3());
+                    const maxDim = Math.max(size.x, size.y, size.z);
+                    
+                    console.log('Model size:', size, 'Max dimension:', maxDim);
+                    
+                    // Scale to approximately match the original Bulk size (about 8-10 units tall)
+                    // For runner game, we want it a bit smaller, so use targetHeight of 4-5
+                    const targetHeight = 4; // Smaller for runner game
+                    const baseScale = maxDim > 0 ? targetHeight / maxDim : 0.1;
+                    const scale = baseScale;
+                    console.log('Calculated scale:', scale);
+                    
+                    model.scale.set(scale, scale, scale);
+                    
+                    // Center the model (same as rampage game)
+                    const center = box.getCenter(new THREE.Vector3());
+                    model.position.set(-center.x * scale, -center.y * scale, -center.z * scale);
+                    model.rotation.set(0, 0, 0);
+                    
+                    // Enable shadows on all meshes (same as rampage game)
+                    let meshCount = 0;
+                    model.traverse((child) => {
+                        if (child.isMesh) {
+                            child.castShadow = true;
+                            child.receiveShadow = true;
+                            meshCount++;
+                        }
+                    });
+                    console.log('Found', meshCount, 'meshes in model');
+                    
+                    // Store model reference
+                    bulkModel = model;
+                    
+                    // Position model based on bounding box (same approach as rampage game)
+                    const bottomY = box.min.y * scale;
+                    const groundLevel = groundY;
+                    const clearance = 0.5; // Smaller clearance for runner game
+                    bulkBaseY = groundLevel - bottomY + clearance;
+                    bulkModel.position.y = bulkBaseY;
+                    bulkModel.userData = bulkModel.userData || {};
+                    bulkModel.userData.baseY = bulkBaseY; // Store for animation updates (same as rampage game)
+                    
+                    console.log('Positioned bulk at Y:', bulkBaseY);
+                    console.log('Model position:', bulkModel.position);
+                    console.log('Model scale:', bulkModel.scale);
+                    
+                    // Make sure model is visible
+                    bulkModel.visible = true;
+                    
+                    // Setup animation mixer if animations exist (same as rampage game)
+                    if (gltf.animations && gltf.animations.length > 0) {
+                        console.log('Found', gltf.animations.length, 'animations in GLB');
+                        console.log('Animation names:', gltf.animations.map(a => a.name));
+                        bulkMixer = new THREE.AnimationMixer(model);
+                        
+                        // Try to find and play idle/walk/run animation
+                        const walkAnim = gltf.animations.find(anim => 
+                            anim.name.toLowerCase().includes('walk') || 
+                            anim.name.toLowerCase().includes('run') ||
+                            anim.name.toLowerCase().includes('idle')
+                        );
+                        
+                        if (walkAnim) {
+                            console.log('Found animation:', walkAnim.name);
+                            const action = bulkMixer.clipAction(walkAnim);
+                            action.setLoop(THREE.LoopRepeat);
+                            action.play();
+                        } else {
+                            // Play first animation if no walk/run/idle found
+                            gltf.animations.forEach((clip) => {
+                                const action = bulkMixer.clipAction(clip);
+                                action.setLoop(THREE.LoopRepeat);
+                                action.play();
+                            });
+                        }
+                    } else {
+                        console.log('No animations found in GLB file');
+                    }
+                    
+                    scene.add(bulkModel);
+                    
+                    // Force a render update
+                    if (renderer) {
+                        renderer.render(scene, camera);
+                    }
+                    
+                    console.log('GLB model loaded and configured successfully!');
+                },
+                (progress) => {
+                    if (progress.lengthComputable) {
+                        const percent = (progress.loaded / progress.total * 100).toFixed(0);
+                        console.log('Loading GLB:', percent + '%');
+                    } else {
+                        console.log('Loading GLB...', progress);
+                    }
+                },
+                (error) => {
+                    console.error('Error loading model:', error);
+                    console.error('Error details:', error.message || error);
+                    console.log('Falling back to placeholder model');
+                    createPlaceholderModel();
+                }
+            );
         }
         
         function createPlaceholderModel() {
@@ -891,7 +1081,8 @@
                 isJumping = true;
                 jumpVelocity = 0.15;
                 showActionFeedback('JUMP!', 'jump');
-                createParticleExplosion(bulkModel ? bulkModel.position.x : 0, groundY + 0.5, bulkModel ? bulkModel.position.z : 0, 0x9b30ff);
+                const baseY = bulkModel?.userData?.baseY || bulkBaseY || groundY;
+                createParticleExplosion(bulkModel ? bulkModel.position.x : 0, baseY + 0.5, bulkModel ? bulkModel.position.z : 0, 0x9b30ff);
                 cameraShake.intensity = 0.1;
             }
         }
@@ -900,7 +1091,8 @@
             if (!isSliding && !isJumping) {
                 isSliding = true;
                 showActionFeedback('SLIDE!', 'slide');
-                createParticleExplosion(bulkModel ? bulkModel.position.x : 0, groundY, bulkModel ? bulkModel.position.z : 0, 0xff6b6b);
+                const baseY = bulkModel?.userData?.baseY || bulkBaseY || groundY;
+                createParticleExplosion(bulkModel ? bulkModel.position.x : 0, baseY, bulkModel ? bulkModel.position.z : 0, 0xff6b6b);
                 setTimeout(() => {
                     isSliding = false;
                 }, 500);
@@ -969,38 +1161,41 @@
                 // Add slight rotation when changing lanes
                 bulkModel.rotation.z = -diff * 0.1;
                 
+                // Get base Y from userData if available, otherwise use bulkBaseY
+                const baseY = bulkModel.userData?.baseY || bulkBaseY || groundY;
+                
                 // Jump physics
                 if (isJumping) {
                     jumpVelocity += gravity;
                     bulkModel.position.y += jumpVelocity;
                     bulkModel.rotation.x = Math.sin(Date.now() * 0.01) * 0.1;
-                    if (bulkModel.position.y <= groundY) {
-                        bulkModel.position.y = groundY;
+                    if (bulkModel.position.y <= baseY) {
+                        bulkModel.position.y = baseY;
                         isJumping = false;
                         jumpVelocity = 0;
                         bulkModel.rotation.x = 0;
-                        createParticleExplosion(bulkModel.position.x, groundY, bulkModel.position.z, 0xffd93d);
+                        createParticleExplosion(bulkModel.position.x, baseY, bulkModel.position.z, 0xffd93d);
                     }
                 } else if (!isSliding) {
-                    bulkModel.position.y = groundY;
+                    bulkModel.position.y = baseY;
                     bulkModel.rotation.x = 0;
                 }
                 
-                // Slide animation with scale
+                // Slide animation - use position offset instead of scale to preserve model proportions
                 if (isSliding) {
-                    bulkModel.scale.y = 0.4;
-                    bulkModel.position.y = groundY - 0.6;
+                    // Don't scale the model, just lower it and rotate
+                    bulkModel.position.y = baseY - 0.8;
                     bulkModel.rotation.x = Math.PI / 6;
                 } else {
-                    bulkModel.scale.y = 0.5;
                     if (!isJumping) {
-                        bulkModel.position.y = groundY;
+                        bulkModel.position.y = baseY;
                     }
+                    bulkModel.rotation.x = 0;
                 }
                 
-                // Running animation (bob)
+                // Running animation (bob) - only when not jumping or sliding
                 if (!isJumping && !isSliding) {
-                    bulkModel.position.y = groundY + Math.sin(Date.now() * 0.02) * 0.1;
+                    bulkModel.position.y = baseY + Math.sin(Date.now() * 0.02) * 0.1;
                 }
             }
             
@@ -1233,15 +1428,31 @@
                 // Show error message on title screen
                 const titleScreen = document.getElementById('title-screen');
                 if (titleScreen) {
-                    const originalContent = titleScreen.innerHTML;
+                    let errorMessage = error.message || 'Unknown error. Please refresh the page.';
+                    let helpText = '';
+                    
+                    // Provide specific help based on error type
+                    if (error.message && error.message.includes('WebGL')) {
+                        helpText = `
+                            <div style="color: #ffd93d; font-size: 0.5rem; margin-top: 15px; line-height: 1.8;">
+                                TIPS:<br>
+                                • Update your browser to the latest version<br>
+                                • Update your graphics drivers<br>
+                                • Try a different browser (Chrome, Firefox, Edge)<br>
+                                • Check if hardware acceleration is enabled
+                            </div>
+                        `;
+                    }
+                    
                     titleScreen.innerHTML = `
                         <div class="title-main">BULK RUNNER</div>
                         <div class="subtitle" style="color: #ff6b6b; margin-top: 20px;">
                             Error loading game
                         </div>
-                        <div style="color: #fff; font-size: 0.6rem; margin-top: 20px; max-width: 500px; padding: 0 20px;">
-                            ${error.message || 'Unknown error. Please refresh the page.'}
+                        <div style="color: #fff; font-size: 0.6rem; margin-top: 20px; max-width: 500px; padding: 0 20px; line-height: 1.8;">
+                            ${errorMessage}
                         </div>
+                        ${helpText}
                         <button class="start-btn" onclick="location.reload()" style="margin-top: 30px;">RELOAD PAGE</button>
                     `;
                 }
