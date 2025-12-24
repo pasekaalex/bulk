@@ -199,6 +199,7 @@
         let drinks = [];
         let money = 0;
         let buildings = [];
+        let explosions = [];
         
         // Touch controls
         let touchStartX = 0, touchStartY = 0;
@@ -521,18 +522,140 @@
         
         function createObstacle() {
             const lane = Math.floor(Math.random() * 3);
-            const geo = new THREE.BoxGeometry(2, 3, 2);
-            const mat = new THREE.MeshStandardMaterial({ 
-                color: 0xff4444, 
-                emissive: 0xff0000, 
-                emissiveIntensity: 0.5 
+            const car = new THREE.Group();
+            
+            // Random car colors
+            const carColors = [0xff3333, 0x3333ff, 0x33ff33, 0xffff33, 0xff9900, 0x00ffff, 0xff00ff, 0xffffff];
+            const carColor = carColors[Math.floor(Math.random() * carColors.length)];
+            const carMat = new THREE.MeshStandardMaterial({ color: carColor, metalness: 0.8, roughness: 0.3 });
+            const darkMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
+            const glassMat = new THREE.MeshStandardMaterial({ color: 0x88ccff, transparent: true, opacity: 0.6 });
+            
+            // Car body (main)
+            const bodyGeo = new THREE.BoxGeometry(2, 1, 4);
+            const body = new THREE.Mesh(bodyGeo, carMat);
+            body.position.y = 0.7;
+            body.castShadow = true;
+            car.add(body);
+            
+            // Car roof/cabin
+            const cabinGeo = new THREE.BoxGeometry(1.8, 0.8, 2);
+            const cabin = new THREE.Mesh(cabinGeo, carMat);
+            cabin.position.set(0, 1.5, -0.3);
+            cabin.castShadow = true;
+            car.add(cabin);
+            
+            // Windshield
+            const windshieldGeo = new THREE.PlaneGeometry(1.6, 0.7);
+            const windshield = new THREE.Mesh(windshieldGeo, glassMat);
+            windshield.position.set(0, 1.5, 0.75);
+            windshield.rotation.x = -0.3;
+            car.add(windshield);
+            
+            // Rear window
+            const rearWindow = new THREE.Mesh(windshieldGeo, glassMat);
+            rearWindow.position.set(0, 1.5, -1.35);
+            rearWindow.rotation.x = 0.3;
+            rearWindow.rotation.y = Math.PI;
+            car.add(rearWindow);
+            
+            // Wheels
+            const wheelGeo = new THREE.CylinderGeometry(0.4, 0.4, 0.3, 16);
+            const wheelPositions = [
+                [-1, 0.4, 1.2], [1, 0.4, 1.2],
+                [-1, 0.4, -1.2], [1, 0.4, -1.2]
+            ];
+            wheelPositions.forEach(pos => {
+                const wheel = new THREE.Mesh(wheelGeo, darkMat);
+                wheel.rotation.z = Math.PI / 2;
+                wheel.position.set(pos[0], pos[1], pos[2]);
+                wheel.castShadow = true;
+                car.add(wheel);
             });
-            const obstacle = new THREE.Mesh(geo, mat);
-            obstacle.position.set(lanePositions[lane], 1.5, -200);
-            obstacle.castShadow = true;
-            obstacle.userData.lane = lane;
-            scene.add(obstacle);
-            obstacles.push(obstacle);
+            
+            // Headlights
+            const lightGeo = new THREE.BoxGeometry(0.3, 0.2, 0.1);
+            const lightMat = new THREE.MeshStandardMaterial({ color: 0xffffaa, emissive: 0xffffaa, emissiveIntensity: 0.8 });
+            const headlightL = new THREE.Mesh(lightGeo, lightMat);
+            headlightL.position.set(-0.6, 0.7, 2);
+            car.add(headlightL);
+            const headlightR = headlightL.clone();
+            headlightR.position.x = 0.6;
+            car.add(headlightR);
+            
+            // Taillights
+            const tailMat = new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0xff0000, emissiveIntensity: 0.5 });
+            const taillightL = new THREE.Mesh(lightGeo, tailMat);
+            taillightL.position.set(-0.6, 0.7, -2);
+            car.add(taillightL);
+            const taillightR = taillightL.clone();
+            taillightR.position.x = 0.6;
+            car.add(taillightR);
+            
+            car.position.set(lanePositions[lane], 0, -200);
+            car.userData.lane = lane;
+            scene.add(car);
+            obstacles.push(car);
+        }
+        
+        function createExplosion(x, y, z) {
+            const explosion = new THREE.Group();
+            explosion.position.set(x, y, z);
+            
+            // Create explosion particles
+            const particleCount = 30;
+            for (let i = 0; i < particleCount; i++) {
+                const size = 0.3 + Math.random() * 0.5;
+                const geo = new THREE.SphereGeometry(size, 8, 8);
+                const colors = [0xff4400, 0xff8800, 0xffcc00, 0xff0000, 0xffff00];
+                const mat = new THREE.MeshStandardMaterial({ 
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    emissive: colors[Math.floor(Math.random() * colors.length)],
+                    emissiveIntensity: 2
+                });
+                const particle = new THREE.Mesh(geo, mat);
+                
+                // Random direction
+                particle.userData.velocity = new THREE.Vector3(
+                    (Math.random() - 0.5) * 0.5,
+                    Math.random() * 0.3 + 0.1,
+                    (Math.random() - 0.5) * 0.5
+                );
+                particle.userData.life = 1;
+                explosion.add(particle);
+            }
+            
+            // Add debris (car parts)
+            for (let i = 0; i < 10; i++) {
+                const debrisGeo = new THREE.BoxGeometry(
+                    0.2 + Math.random() * 0.4,
+                    0.1 + Math.random() * 0.2,
+                    0.2 + Math.random() * 0.4
+                );
+                const debrisMat = new THREE.MeshStandardMaterial({ color: 0x333333 });
+                const debris = new THREE.Mesh(debrisGeo, debrisMat);
+                debris.userData.velocity = new THREE.Vector3(
+                    (Math.random() - 0.5) * 0.4,
+                    Math.random() * 0.4 + 0.2,
+                    (Math.random() - 0.5) * 0.4
+                );
+                debris.userData.rotSpeed = new THREE.Vector3(
+                    Math.random() * 0.3,
+                    Math.random() * 0.3,
+                    Math.random() * 0.3
+                );
+                debris.userData.life = 1;
+                explosion.add(debris);
+            }
+            
+            // Flash light
+            const flashLight = new THREE.PointLight(0xff8800, 5, 20);
+            explosion.add(flashLight);
+            explosion.userData.flashLight = flashLight;
+            explosion.userData.age = 0;
+            
+            scene.add(explosion);
+            explosions.push(explosion);
         }
         
         function createDrink() {
@@ -708,8 +831,13 @@
                 // Collision check (lane-based only)
                 if (obs.position.z > -2 && obs.position.z < 2) {
                     if (Math.abs(bulk.position.x - obs.position.x) < 2) {
-                        // Hit!
-                        endGame();
+                        // Hit! Create explosion at car position
+                        createExplosion(obs.position.x, obs.position.y + 1, obs.position.z);
+                        scene.remove(obs);
+                        obstacles.splice(i, 1);
+                        // Delay game over so explosion can be seen
+                        setTimeout(endGame, 500);
+                        gameOver = true; // Stop updates immediately
                         return;
                     }
                 }
@@ -725,9 +853,48 @@
             camera.position.x += (bulk.position.x - camera.position.x) * 0.1;
         }
         
+        function updateExplosions() {
+            for (let i = explosions.length - 1; i >= 0; i--) {
+                const explosion = explosions[i];
+                explosion.userData.age += 0.016;
+                
+                // Fade out flash light
+                if (explosion.userData.flashLight) {
+                    explosion.userData.flashLight.intensity = Math.max(0, 5 - explosion.userData.age * 10);
+                }
+                
+                // Update particles
+                explosion.children.forEach(child => {
+                    if (child.userData.velocity) {
+                        child.position.add(child.userData.velocity);
+                        child.userData.velocity.y -= 0.01; // Gravity
+                        child.userData.life -= 0.02;
+                        
+                        // Rotation for debris
+                        if (child.userData.rotSpeed) {
+                            child.rotation.x += child.userData.rotSpeed.x;
+                            child.rotation.y += child.userData.rotSpeed.y;
+                            child.rotation.z += child.userData.rotSpeed.z;
+                        }
+                        
+                        // Scale down as life decreases
+                        const scale = Math.max(0.1, child.userData.life);
+                        child.scale.set(scale, scale, scale);
+                    }
+                });
+                
+                // Remove old explosions
+                if (explosion.userData.age > 2) {
+                    scene.remove(explosion);
+                    explosions.splice(i, 1);
+                }
+            }
+        }
+        
         function animate() {
             requestAnimationFrame(animate);
             update();
+            updateExplosions(); // Always update explosions even after game over
             if (renderer && scene && camera) {
                 renderer.render(scene, camera);
             }
