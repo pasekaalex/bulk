@@ -498,63 +498,116 @@
                 throw new Error('Game container not found');
             }
             
-            // Check for WebGL support
+            // Check for WebGL support with detailed diagnostics
             function checkWebGLSupport() {
                 try {
                     const canvas = document.createElement('canvas');
-                    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-                    return !!gl;
+                    
+                    // Try WebGL 2 first
+                    let gl = canvas.getContext('webgl2');
+                    if (gl) {
+                        console.log('WebGL 2.0 supported');
+                        return { supported: true, version: 2, context: gl };
+                    }
+                    
+                    // Try WebGL 1
+                    gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                    if (gl) {
+                        console.log('WebGL 1.0 supported');
+                        return { supported: true, version: 1, context: gl };
+                    }
+                    
+                    // Check if WebGL is disabled
+                    const debugInfo = gl ? gl.getExtension('WEBGL_debug_renderer_info') : null;
+                    if (debugInfo) {
+                        const vendor = gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL);
+                        const renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+                        console.log('WebGL Info - Vendor:', vendor, 'Renderer:', renderer);
+                    }
+                    
+                    return { supported: false, version: 0, context: null };
                 } catch (e) {
-                    return false;
+                    console.error('WebGL check error:', e);
+                    return { supported: false, version: 0, context: null, error: e.message };
                 }
             }
             
-            if (!checkWebGLSupport()) {
-                throw new Error('WebGL is not supported in your browser. Please try a different browser or update your graphics drivers.');
+            const webglCheck = checkWebGLSupport();
+            if (!webglCheck.supported) {
+                const errorMsg = webglCheck.error 
+                    ? `WebGL check failed: ${webglCheck.error}`
+                    : 'WebGL is not supported in your browser. Please try a different browser or update your graphics drivers.';
+                throw new Error(errorMsg);
             }
             
             // Try to create WebGL renderer with fallbacks
             let rendererCreated = false;
+            let lastError = null;
             const rendererOptions = [
-                { antialias: true, powerPreference: "high-performance" },
-                { antialias: true, powerPreference: "default" },
-                { antialias: false, powerPreference: "default" },
-                { antialias: false, powerPreference: "low-power" }
+                { antialias: true, powerPreference: "high-performance", alpha: false },
+                { antialias: true, powerPreference: "default", alpha: false },
+                { antialias: false, powerPreference: "default", alpha: false },
+                { antialias: false, powerPreference: "low-power", alpha: false },
+                { antialias: false, powerPreference: "low-power", alpha: true }
             ];
             
-            for (const options of rendererOptions) {
+            for (let i = 0; i < rendererOptions.length; i++) {
+                const options = rendererOptions[i];
                 try {
+                    console.log(`Attempting to create renderer with options ${i + 1}/${rendererOptions.length}:`, options);
                     renderer = new THREE.WebGLRenderer(options);
+                    
+                    // Check if renderer was actually created
+                    if (!renderer || !renderer.domElement) {
+                        console.warn('Renderer created but domElement is missing');
+                        continue;
+                    }
+                    
+                    // Verify the context exists
+                    const canvas = renderer.domElement;
+                    const gl = canvas.getContext('webgl') || canvas.getContext('webgl2') || canvas.getContext('experimental-webgl');
+                    if (!gl) {
+                        console.warn('Renderer created but WebGL context is null');
+                        continue;
+                    }
+                    
+                    console.log('Renderer created successfully with options:', options);
                     rendererCreated = true;
                     break;
                 } catch (e) {
-                    console.warn('Failed to create renderer with options:', options, e);
+                    lastError = e;
+                    console.warn(`Failed to create renderer with options ${i + 1}:`, options, e);
                     continue;
                 }
             }
             
             if (!rendererCreated || !renderer) {
-                throw new Error('Failed to create WebGL context. Your browser or device may not support WebGL.');
+                const errorDetails = lastError ? ` Error: ${lastError.message}` : '';
+                throw new Error(`Failed to create WebGL context after trying ${rendererOptions.length} different configurations.${errorDetails}`);
             }
             
             try {
-                // Verify the renderer has a valid context
-                const canvas = renderer.domElement;
-                const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-                if (!gl) {
-                    throw new Error('WebGL context is null after renderer creation');
-                }
-                
                 const pixelRatio = Math.min(window.devicePixelRatio, 2); // Limit to 2x for performance
                 renderer.setPixelRatio(pixelRatio);
                 renderer.setSize(window.innerWidth, window.innerHeight);
                 renderer.shadowMap.enabled = true;
                 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+                
+                // Clear the container first
+                while (container.firstChild) {
+                    container.removeChild(container.firstChild);
+                }
+                
                 container.appendChild(renderer.domElement);
                 
                 // Test if we can actually render something
+                renderer.setClearColor(0x1a0a2e, 1);
                 renderer.clear();
+                renderer.render(scene, camera);
+                
+                console.log('WebGL renderer initialized successfully');
             } catch (e) {
+                console.error('Renderer initialization error:', e);
                 throw new Error('Failed to initialize renderer: ' + (e.message || 'Unknown WebGL error'));
             }
             
@@ -1413,6 +1466,48 @@
             lastTouchEnd = now;
         }, false);
         
+        // WebGL diagnostics function
+        function getWebGLDiagnostics() {
+            const diagnostics = {
+                webglSupported: false,
+                webgl2Supported: false,
+                vendor: 'Unknown',
+                renderer: 'Unknown',
+                error: null
+            };
+            
+            try {
+                const canvas = document.createElement('canvas');
+                
+                // Check WebGL 2
+                const gl2 = canvas.getContext('webgl2');
+                if (gl2) {
+                    diagnostics.webgl2Supported = true;
+                    diagnostics.webglSupported = true;
+                    const debugInfo = gl2.getExtension('WEBGL_debug_renderer_info');
+                    if (debugInfo) {
+                        diagnostics.vendor = gl2.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) || 'Unknown';
+                        diagnostics.renderer = gl2.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) || 'Unknown';
+                    }
+                } else {
+                    // Check WebGL 1
+                    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                    if (gl) {
+                        diagnostics.webglSupported = true;
+                        const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+                        if (debugInfo) {
+                            diagnostics.vendor = gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) || 'Unknown';
+                            diagnostics.renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) || 'Unknown';
+                        }
+                    }
+                }
+            } catch (e) {
+                diagnostics.error = e.message;
+            }
+            
+            return diagnostics;
+        }
+        
         // Initialize game scene only (not start game)
         // Game will start when user clicks "START RUNNING"
         let gameInitialized = false;
@@ -1430,16 +1525,31 @@
                 if (titleScreen) {
                     let errorMessage = error.message || 'Unknown error. Please refresh the page.';
                     let helpText = '';
+                    let diagnostics = '';
                     
                     // Provide specific help based on error type
                     if (error.message && error.message.includes('WebGL')) {
+                        const webglDiag = getWebGLDiagnostics();
+                        diagnostics = `
+                            <div style="color: #9b30ff; font-size: 0.5rem; margin-top: 15px; line-height: 1.8; text-align: left; max-width: 500px; padding: 0 20px;">
+                                <strong>WebGL Diagnostics:</strong><br>
+                                WebGL Supported: ${webglDiag.webglSupported ? 'Yes' : 'No'}<br>
+                                WebGL 2.0: ${webglDiag.webgl2Supported ? 'Yes' : 'No'}<br>
+                                Vendor: ${webglDiag.vendor}<br>
+                                Renderer: ${webglDiag.renderer}<br>
+                                ${webglDiag.error ? `Error: ${webglDiag.error}` : ''}
+                            </div>
+                        `;
+                        
                         helpText = `
                             <div style="color: #ffd93d; font-size: 0.5rem; margin-top: 15px; line-height: 1.8;">
-                                TIPS:<br>
+                                <strong>TIPS TO FIX:</strong><br>
                                 • Update your browser to the latest version<br>
                                 • Update your graphics drivers<br>
                                 • Try a different browser (Chrome, Firefox, Edge)<br>
-                                • Check if hardware acceleration is enabled
+                                • Enable hardware acceleration in browser settings<br>
+                                • Check if WebGL is blocked by browser extensions<br>
+                                • Try disabling browser extensions temporarily
                             </div>
                         `;
                     }
@@ -1452,6 +1562,7 @@
                         <div style="color: #fff; font-size: 0.6rem; margin-top: 20px; max-width: 500px; padding: 0 20px; line-height: 1.8;">
                             ${errorMessage}
                         </div>
+                        ${diagnostics}
                         ${helpText}
                         <button class="start-btn" onclick="location.reload()" style="margin-top: 30px;">RELOAD PAGE</button>
                     `;
