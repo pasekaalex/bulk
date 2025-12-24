@@ -356,8 +356,59 @@
     </script>
     
     <script type="module">
-        import * as THREE from 'three';
-        import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js';
+        // Global error handler
+        window.addEventListener('error', (e) => {
+            console.error('Global error:', e.error);
+            const titleScreen = document.getElementById('title-screen');
+            if (titleScreen && !titleScreen.classList.contains('hidden')) {
+                titleScreen.innerHTML = `
+                    <div class="title-main">BULK RUNNER</div>
+                    <div class="subtitle" style="color: #ff6b6b; margin-top: 20px;">
+                        Error: ${e.error ? e.error.message : 'Unknown error'}
+                    </div>
+                    <button class="start-btn" onclick="location.reload()">RELOAD</button>
+                `;
+            }
+        });
+        
+        // Load Three.js modules
+        let THREE, GLTFLoader;
+        let modulesLoaded = false;
+        
+        (async () => {
+            try {
+                THREE = await import('three');
+                const GLTFLoaderModule = await import('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js');
+                GLTFLoader = GLTFLoaderModule.GLTFLoader;
+                modulesLoaded = true;
+                
+                // Initialize game after modules load
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', () => {
+                        if (modulesLoaded) initializeGameScene();
+                    });
+                } else {
+                    setTimeout(() => {
+                        if (modulesLoaded) initializeGameScene();
+                    }, 100);
+                }
+            } catch (error) {
+                console.error('Failed to load Three.js:', error);
+                const titleScreen = document.getElementById('title-screen');
+                if (titleScreen) {
+                    titleScreen.innerHTML = `
+                        <div class="title-main">BULK RUNNER</div>
+                        <div class="subtitle" style="color: #ff6b6b; margin-top: 20px;">
+                            Failed to load game engine
+                        </div>
+                        <div style="color: #fff; font-size: 0.6rem; margin-top: 20px; max-width: 500px; padding: 0 20px; line-height: 1.8;">
+                            Please check your internet connection and refresh the page.
+                        </div>
+                        <button class="start-btn" onclick="location.reload()" style="margin-top: 30px;">RELOAD PAGE</button>
+                    `;
+                }
+            }
+        })();
         
         let scene, camera, renderer;
         let bulkModel, bulkMixer;
@@ -391,6 +442,11 @@
         let touchEndY = 0;
         
         function init() {
+            // Check if Three.js loaded
+            if (typeof THREE === 'undefined' || !THREE) {
+                throw new Error('Three.js failed to load. Please check your internet connection.');
+            }
+            
             // Scene setup
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x1a0a2e);
@@ -402,6 +458,11 @@
             camera.lookAt(0, 1, 0);
             
             // Renderer with device pixel ratio for mobile
+            const container = document.getElementById('game-container');
+            if (!container) {
+                throw new Error('Game container not found');
+            }
+            
             renderer = new THREE.WebGLRenderer({ 
                 antialias: true,
                 powerPreference: "high-performance"
@@ -411,7 +472,7 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-            document.getElementById('game-container').appendChild(renderer.domElement);
+            container.appendChild(renderer.domElement);
             
             // Lighting
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
@@ -439,12 +500,8 @@
             rimLight2.position.set(5, 3, 5);
             scene.add(rimLight2);
             
-            // Create particle system (optional enhancement)
-            try {
-                createParticleSystem();
-            } catch (e) {
-                console.log('Particle system creation skipped');
-            }
+            // Create particle system (optional enhancement - skip if it fails)
+            createParticleSystem();
             
             // Ground
             createGround();
@@ -530,26 +587,31 @@
         }
         
         function createParticleSystem() {
-            const particleCount = 100;
-            const geometry = new THREE.BufferGeometry();
-            const positions = new Float32Array(particleCount * 3);
-            
-            for (let i = 0; i < particleCount * 3; i++) {
-                positions[i] = (Math.random() - 0.5) * 20;
+            try {
+                const particleCount = 100;
+                const geometry = new THREE.BufferGeometry();
+                const positions = new Float32Array(particleCount * 3);
+                
+                for (let i = 0; i < particleCount * 3; i++) {
+                    positions[i] = (Math.random() - 0.5) * 20;
+                }
+                
+                geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                
+                const material = new THREE.PointsMaterial({
+                    color: 0x9b30ff,
+                    size: 0.1,
+                    transparent: true,
+                    opacity: 0.6,
+                    blending: THREE.AdditiveBlending
+                });
+                
+                particleSystem = new THREE.Points(geometry, material);
+                scene.add(particleSystem);
+            } catch (e) {
+                console.warn('Particle system creation failed:', e);
+                particleSystem = null;
             }
-            
-            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-            
-            const material = new THREE.PointsMaterial({
-                color: 0x9b30ff,
-                size: 0.1,
-                transparent: true,
-                opacity: 0.6,
-                blending: THREE.AdditiveBlending
-            });
-            
-            particleSystem = new THREE.Points(geometry, material);
-            scene.add(particleSystem);
         }
         
         function loadBulkModel() {
@@ -799,11 +861,15 @@
         
         function showActionFeedback(text, type = '') {
             const feedback = document.getElementById('action-feedback');
-            feedback.textContent = text;
-            feedback.className = `action-feedback ${type} show`;
-            setTimeout(() => {
-                feedback.classList.remove('show');
-            }, 300);
+            if (feedback) {
+                feedback.textContent = text;
+                feedback.className = `action-feedback ${type} show`;
+                setTimeout(() => {
+                    if (feedback) {
+                        feedback.classList.remove('show');
+                    }
+                }, 300);
+            }
         }
         
         function moveLeft() {
@@ -853,17 +919,27 @@
             
             // Update UI with animation
             const scoreEl = document.getElementById('score');
-            scoreEl.textContent = `SCORE: ${score}`;
-            if (score % 100 === 0 && score > 0) {
-                scoreEl.classList.add('pulse');
-                setTimeout(() => scoreEl.classList.remove('pulse'), 200);
+            if (scoreEl) {
+                scoreEl.textContent = `SCORE: ${score}`;
+                if (score % 100 === 0 && score > 0) {
+                    scoreEl.classList.add('pulse');
+                    setTimeout(() => {
+                        if (scoreEl) scoreEl.classList.remove('pulse');
+                    }, 200);
+                }
             }
             
-            document.getElementById('distance').textContent = `DISTANCE: ${Math.floor(distance)}m`;
+            const distanceEl = document.getElementById('distance');
+            if (distanceEl) {
+                distanceEl.textContent = `DISTANCE: ${Math.floor(distance)}m`;
+            }
             
             // Update speed indicator
-            const speedMultiplier = (speed / baseSpeed).toFixed(1);
-            document.getElementById('speed-indicator').textContent = `SPEED: ${speedMultiplier}x`;
+            const speedEl = document.getElementById('speed-indicator');
+            if (speedEl) {
+                const speedMultiplier = (speed / baseSpeed).toFixed(1);
+                speedEl.textContent = `SPEED: ${speedMultiplier}x`;
+            }
             
             // Increase speed over time (capped)
             speed = Math.min(baseSpeed + (distance / 1000) * 0.1, baseSpeed * 3);
@@ -943,17 +1019,22 @@
             });
             
             // Update particle system
-            if (particleSystem) {
-                const positions = particleSystem.geometry.attributes.position.array;
-                for (let i = 0; i < positions.length; i += 3) {
-                    positions[i + 2] += speed * 0.5;
-                    if (positions[i + 2] > 20) {
-                        positions[i + 2] -= 200;
-                        positions[i] = (Math.random() - 0.5) * 20;
-                        positions[i + 1] = Math.random() * 10;
+            if (particleSystem && particleSystem.geometry && particleSystem.geometry.attributes && particleSystem.geometry.attributes.position) {
+                try {
+                    const positions = particleSystem.geometry.attributes.position.array;
+                    for (let i = 0; i < positions.length; i += 3) {
+                        positions[i + 2] += speed * 0.5;
+                        if (positions[i + 2] > 20) {
+                            positions[i + 2] -= 200;
+                            positions[i] = (Math.random() - 0.5) * 20;
+                            positions[i + 1] = Math.random() * 10;
+                        }
                     }
+                    particleSystem.geometry.attributes.position.needsUpdate = true;
+                } catch (e) {
+                    // Particle system update failed, disable it
+                    particleSystem = null;
                 }
-                particleSystem.geometry.attributes.position.needsUpdate = true;
             }
             
             // Move obstacles
@@ -1088,8 +1169,20 @@
         
         // Game control functions
         window.startGame = function() {
-            document.getElementById('title-screen').classList.add('hidden');
-            gameStarted = true;
+            // Make sure game is initialized
+            if (!gameInitialized) {
+                initializeGameScene();
+                // Wait a bit for initialization
+                setTimeout(() => {
+                    if (gameInitialized) {
+                        document.getElementById('title-screen').classList.add('hidden');
+                        gameStarted = true;
+                    }
+                }, 500);
+            } else {
+                document.getElementById('title-screen').classList.add('hidden');
+                gameStarted = true;
+            }
         };
         
         window.restartGame = function() {
@@ -1125,8 +1218,43 @@
             lastTouchEnd = now;
         }, false);
         
-        // Initialize game
-        init();
+        // Initialize game scene only (not start game)
+        // Game will start when user clicks "START RUNNING"
+        let gameInitialized = false;
+        
+        function initializeGameScene() {
+            if (gameInitialized) return;
+            
+            try {
+                init();
+                gameInitialized = true;
+            } catch (error) {
+                console.error('Initialization error:', error);
+                // Show error message on title screen
+                const titleScreen = document.getElementById('title-screen');
+                if (titleScreen) {
+                    const originalContent = titleScreen.innerHTML;
+                    titleScreen.innerHTML = `
+                        <div class="title-main">BULK RUNNER</div>
+                        <div class="subtitle" style="color: #ff6b6b; margin-top: 20px;">
+                            Error loading game
+                        </div>
+                        <div style="color: #fff; font-size: 0.6rem; margin-top: 20px; max-width: 500px; padding: 0 20px;">
+                            ${error.message || 'Unknown error. Please refresh the page.'}
+                        </div>
+                        <button class="start-btn" onclick="location.reload()" style="margin-top: 30px;">RELOAD PAGE</button>
+                    `;
+                }
+            }
+        }
+        
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeGameScene);
+        } else {
+            // DOM already loaded
+            setTimeout(initializeGameScene, 100);
+        }
     </script>
 </body>
 </html>
