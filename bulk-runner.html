@@ -406,7 +406,7 @@
         });
         
         // Load Three.js modules
-        let THREE, GLTFLoader;
+        let THREE, GLTFLoader, FBXLoader;
         let modulesLoaded = false;
         
         (async () => {
@@ -414,6 +414,19 @@
                 THREE = await import('three');
                 const GLTFLoaderModule = await import('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js');
                 GLTFLoader = GLTFLoaderModule.GLTFLoader;
+                
+                // Try to load FBXLoader (optional, for fallback)
+                // Note: FBXLoader requires additional dependencies (inflate, fflate, etc.)
+                try {
+                    // First try the standard import
+                    const FBXLoaderModule = await import('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/FBXLoader.js');
+                    FBXLoader = FBXLoaderModule.FBXLoader;
+                    console.log('FBXLoader loaded successfully');
+                } catch (e) {
+                    console.warn('FBXLoader not available (may need additional dependencies), will skip FBX fallback:', e);
+                    // FBXLoader might not work without additional dependencies, that's okay
+                }
+                
                 modulesLoaded = true;
                 
                 // Initialize game after modules load
@@ -462,7 +475,7 @@
         let bulkBaseY = 0; // Store the base Y position from bounding box calculation
         let obstacles = [];
         let trackSegments = [];
-        let lastObstacleZ = -50;
+        let lastObstacleZ = 0;
         let lastTrackZ = 0;
         let particles = [];
         let particleSystem = null;
@@ -643,13 +656,15 @@
             // Ground
             createGround();
             
-            // Load Bulk model
+            // Load Bulk model (create placeholder immediately so game can start)
+            createPlaceholderModel();
             loadBulkModel();
             
-            // Create initial track
+            // Create initial track ahead of player (positive Z values)
             for (let i = 0; i < 20; i++) {
                 createTrackSegment(i * 10);
             }
+            lastTrackZ = 19 * 10; // Set last track Z to the last segment
             
             // Controls
             setupControls();
@@ -751,148 +766,315 @@
             }
         }
         
-        function loadBulkModel() {
-            if (!GLTFLoader) {
-                console.error('GLTFLoader not available');
-                createPlaceholderModel();
-                return;
-            }
+        function setupModel(model, modelType = 'GLB') {
+            console.log(`Setting up ${modelType} model...`);
             
-            const loader = new GLTFLoader();
-            console.log('Attempting to load bulk.glb...');
+            // Calculate bounding box to determine proper scale
+            const box = new THREE.Box3().setFromObject(model);
+            const size = box.getSize(new THREE.Vector3());
+            const maxDim = Math.max(size.x, size.y, size.z);
             
-            loader.load(
-                'bulk.glb',
-                (gltf) => {
-                    console.log('GLB loaded successfully!', gltf);
-                    
-                    const model = gltf.scene || (gltf.scenes && gltf.scenes[0]);
-                    if (!model) {
-                        console.error('No scene found in GLB file. Available keys:', Object.keys(gltf));
-                        createPlaceholderModel();
-                        return;
-                    }
-                    
-                    console.log('Model found, calculating scale...');
-                    
-                    // Calculate bounding box to determine proper scale (same as rampage game)
-                    const box = new THREE.Box3().setFromObject(model);
-                    const size = box.getSize(new THREE.Vector3());
-                    const maxDim = Math.max(size.x, size.y, size.z);
-                    
-                    console.log('Model size:', size, 'Max dimension:', maxDim);
-                    
-                    // Scale to approximately match the original Bulk size (about 8-10 units tall)
-                    // For runner game, we want it a bit smaller, so use targetHeight of 4-5
-                    const targetHeight = 4; // Smaller for runner game
-                    const baseScale = maxDim > 0 ? targetHeight / maxDim : 0.1;
-                    const scale = baseScale;
-                    console.log('Calculated scale:', scale);
-                    
-                    model.scale.set(scale, scale, scale);
-                    
-                    // Center the model (same as rampage game)
-                    const center = box.getCenter(new THREE.Vector3());
-                    model.position.set(-center.x * scale, -center.y * scale, -center.z * scale);
-                    model.rotation.set(0, 0, 0);
-                    
-                    // Enable shadows on all meshes (same as rampage game)
-                    let meshCount = 0;
-                    model.traverse((child) => {
-                        if (child.isMesh) {
-                            child.castShadow = true;
-                            child.receiveShadow = true;
-                            meshCount++;
+            console.log('Model size:', size, 'Max dimension:', maxDim);
+            
+            // Scale to approximately match the original Bulk size
+            const targetHeight = 4; // Smaller for runner game
+            const baseScale = maxDim > 0 ? targetHeight / maxDim : 0.1;
+            const scale = baseScale;
+            console.log('Calculated scale:', scale);
+            
+            model.scale.set(scale, scale, scale);
+            
+            // Center the model
+            const center = box.getCenter(new THREE.Vector3());
+            model.position.set(-center.x * scale, -center.y * scale, -center.z * scale);
+            model.rotation.set(0, 0, 0);
+            
+            // Enable shadows on all meshes
+            let meshCount = 0;
+            model.traverse((child) => {
+                if (child.isMesh) {
+                    child.castShadow = true;
+                    child.receiveShadow = true;
+                    meshCount++;
+                }
+            });
+            console.log('Found', meshCount, 'meshes in model');
+            
+            // Store model reference
+            bulkModel = model;
+            
+            // Position model based on bounding box
+            const bottomY = box.min.y * scale;
+            const groundLevel = groundY;
+            const clearance = 0.5;
+            bulkBaseY = groundLevel - bottomY + clearance;
+            bulkModel.position.y = bulkBaseY;
+            bulkModel.userData = bulkModel.userData || {};
+            bulkModel.userData.baseY = bulkBaseY;
+            bulkModel.userData.modelType = modelType;
+            
+            console.log('Positioned bulk at Y:', bulkBaseY);
+            bulkModel.visible = true;
+            
+            // Remove placeholder if it exists (check both simple placeholder and hulk placeholder)
+            scene.children.forEach((child) => {
+                if (child.userData && child.userData.isPlaceholder) {
+                    scene.remove(child);
+                    console.log('Removed placeholder model');
+                }
+                // Also check if it's a Group with placeholder children
+                if (child.isGroup) {
+                    child.children.forEach((subChild) => {
+                        if (subChild.userData && subChild.userData.isPlaceholder) {
+                            scene.remove(child);
+                            console.log('Removed placeholder group');
+                            return;
                         }
                     });
-                    console.log('Found', meshCount, 'meshes in model');
-                    
-                    // Store model reference
-                    bulkModel = model;
-                    
-                    // Position model based on bounding box (same approach as rampage game)
-                    const bottomY = box.min.y * scale;
-                    const groundLevel = groundY;
-                    const clearance = 0.5; // Smaller clearance for runner game
-                    bulkBaseY = groundLevel - bottomY + clearance;
-                    bulkModel.position.y = bulkBaseY;
-                    bulkModel.userData = bulkModel.userData || {};
-                    bulkModel.userData.baseY = bulkBaseY; // Store for animation updates (same as rampage game)
-                    
-                    console.log('Positioned bulk at Y:', bulkBaseY);
-                    console.log('Model position:', bulkModel.position);
-                    console.log('Model scale:', bulkModel.scale);
-                    
-                    // Make sure model is visible
-                    bulkModel.visible = true;
-                    
-                    // Setup animation mixer if animations exist (same as rampage game)
-                    if (gltf.animations && gltf.animations.length > 0) {
-                        console.log('Found', gltf.animations.length, 'animations in GLB');
-                        console.log('Animation names:', gltf.animations.map(a => a.name));
-                        bulkMixer = new THREE.AnimationMixer(model);
+                }
+            });
+            
+            scene.add(bulkModel);
+            
+            // Force a render update
+            if (renderer) {
+                renderer.render(scene, camera);
+            }
+            
+            console.log(`${modelType} model loaded and configured successfully!`);
+        }
+        
+        function loadBulkModel() {
+            // Try GLB first (primary)
+            if (GLTFLoader) {
+                const loader = new GLTFLoader();
+                console.log('Attempting to load bulk.glb (primary)...');
+                
+                loader.load(
+                    'bulk.glb',
+                    (gltf) => {
+                        console.log('GLB loaded successfully!', gltf);
                         
-                        // Try to find and play idle/walk/run animation
-                        const walkAnim = gltf.animations.find(anim => 
-                            anim.name.toLowerCase().includes('walk') || 
-                            anim.name.toLowerCase().includes('run') ||
-                            anim.name.toLowerCase().includes('idle')
-                        );
+                        const model = gltf.scene || (gltf.scenes && gltf.scenes[0]);
+                        if (!model) {
+                            console.error('No scene found in GLB file. Trying FBX fallback...');
+                            tryLoadFBX();
+                            return;
+                        }
                         
-                        if (walkAnim) {
-                            console.log('Found animation:', walkAnim.name);
-                            const action = bulkMixer.clipAction(walkAnim);
-                            action.setLoop(THREE.LoopRepeat);
-                            action.play();
-                        } else {
-                            // Play first animation if no walk/run/idle found
-                            gltf.animations.forEach((clip) => {
-                                const action = bulkMixer.clipAction(clip);
+                        setupModel(model, 'GLB');
+                        
+                        // Setup animation mixer if animations exist
+                        if (gltf.animations && gltf.animations.length > 0) {
+                            console.log('Found', gltf.animations.length, 'animations in GLB');
+                            bulkMixer = new THREE.AnimationMixer(model);
+                            
+                            const walkAnim = gltf.animations.find(anim => 
+                                anim.name.toLowerCase().includes('walk') || 
+                                anim.name.toLowerCase().includes('run') ||
+                                anim.name.toLowerCase().includes('idle')
+                            );
+                            
+                            if (walkAnim) {
+                                const action = bulkMixer.clipAction(walkAnim);
                                 action.setLoop(THREE.LoopRepeat);
                                 action.play();
-                            });
+                            } else {
+                                gltf.animations.forEach((clip) => {
+                                    const action = bulkMixer.clipAction(clip);
+                                    action.setLoop(THREE.LoopRepeat);
+                                    action.play();
+                                });
+                            }
                         }
-                    } else {
-                        console.log('No animations found in GLB file');
+                    },
+                    (progress) => {
+                        if (progress.lengthComputable) {
+                            const percent = (progress.loaded / progress.total * 100).toFixed(0);
+                            console.log('Loading GLB:', percent + '%');
+                        }
+                    },
+                    (error) => {
+                        console.error('Error loading GLB:', error);
+                        console.log('Trying FBX fallback...');
+                        tryLoadFBX();
                     }
-                    
-                    scene.add(bulkModel);
-                    
-                    // Force a render update
-                    if (renderer) {
-                        renderer.render(scene, camera);
+                );
+            } else {
+                console.log('GLTFLoader not available, trying FBX...');
+                tryLoadFBX();
+            }
+        }
+        
+        function tryLoadFBX() {
+            // Try FBX second (secondary fallback)
+            if (FBXLoader) {
+                const loader = new FBXLoader();
+                console.log('Attempting to load bulk.fbx (secondary fallback)...');
+                
+                loader.load(
+                    'bulk.fbx',
+                    (fbx) => {
+                        console.log('FBX loaded successfully!', fbx);
+                        setupModel(fbx, 'FBX');
+                        
+                        // Setup animation mixer if animations exist
+                        if (fbx.animations && fbx.animations.length > 0) {
+                            console.log('Found', fbx.animations.length, 'animations in FBX');
+                            bulkMixer = new THREE.AnimationMixer(fbx);
+                            
+                            const walkAnim = fbx.animations.find(anim => 
+                                anim.name.toLowerCase().includes('walk') || 
+                                anim.name.toLowerCase().includes('run') ||
+                                anim.name.toLowerCase().includes('idle')
+                            );
+                            
+                            if (walkAnim) {
+                                const action = bulkMixer.clipAction(walkAnim);
+                                action.setLoop(THREE.LoopRepeat);
+                                action.play();
+                            }
+                        }
+                    },
+                    (progress) => {
+                        if (progress.lengthComputable) {
+                            const percent = (progress.loaded / progress.total * 100).toFixed(0);
+                            console.log('Loading FBX:', percent + '%');
+                        }
+                    },
+                    (error) => {
+                        console.error('Error loading FBX:', error);
+                        console.log('Falling back to purple hulk placeholder...');
+                        createPurpleHulkPlaceholder();
                     }
-                    
-                    console.log('GLB model loaded and configured successfully!');
-                },
-                (progress) => {
-                    if (progress.lengthComputable) {
-                        const percent = (progress.loaded / progress.total * 100).toFixed(0);
-                        console.log('Loading GLB:', percent + '%');
-                    } else {
-                        console.log('Loading GLB...', progress);
-                    }
-                },
-                (error) => {
-                    console.error('Error loading model:', error);
-                    console.error('Error details:', error.message || error);
-                    console.log('Falling back to placeholder model');
-                    createPlaceholderModel();
-                }
-            );
+                );
+            } else {
+                console.log('FBXLoader not available, using purple hulk placeholder...');
+                createPurpleHulkPlaceholder();
+            }
         }
         
         function createPlaceholderModel() {
+            // Create a simple box placeholder immediately (temporary, will be replaced)
             const geometry = new THREE.BoxGeometry(1, 2, 1);
             const material = new THREE.MeshStandardMaterial({ 
                 color: 0x9b30ff,
                 emissive: 0x9b30ff,
-                emissiveIntensity: 0.3
+                emissiveIntensity: 0.5
             });
             bulkModel = new THREE.Mesh(geometry, material);
             bulkModel.position.set(0, groundY + 1, 0);
             bulkModel.castShadow = true;
+            bulkModel.receiveShadow = true;
+            bulkModel.userData = { baseY: groundY + 1, isPlaceholder: true };
+            bulkBaseY = groundY + 1;
             scene.add(bulkModel);
+            console.log('Temporary placeholder model created');
+        }
+        
+        function createPurpleHulkPlaceholder() {
+            // Create a rough polygon purple hulk creature (worst fallback)
+            console.log('Creating purple hulk placeholder...');
+            
+            const hulkGroup = new THREE.Group();
+            const purpleMat = new THREE.MeshStandardMaterial({ 
+                color: 0x9b30ff,
+                roughness: 0.6,
+                emissive: 0x6b0099,
+                emissiveIntensity: 0.3
+            });
+            const darkPurpleMat = new THREE.MeshStandardMaterial({ 
+                color: 0x6b0099,
+                roughness: 0.7,
+                emissive: 0x4a0080,
+                emissiveIntensity: 0.2
+            });
+            
+            // Torso (main body)
+            const torso = new THREE.Mesh(
+                new THREE.BoxGeometry(1.2, 1.5, 0.8),
+                purpleMat
+            );
+            torso.position.y = 1.2;
+            torso.castShadow = true;
+            torso.receiveShadow = true;
+            hulkGroup.add(torso);
+            
+            // Head
+            const head = new THREE.Mesh(
+                new THREE.BoxGeometry(0.9, 0.9, 0.9),
+                purpleMat
+            );
+            head.position.set(0, 2.2, 0);
+            head.castShadow = true;
+            hulkGroup.add(head);
+            
+            // Arms
+            const leftArm = new THREE.Mesh(
+                new THREE.BoxGeometry(0.4, 1.2, 0.4),
+                purpleMat
+            );
+            leftArm.position.set(-0.9, 1.2, 0);
+            leftArm.castShadow = true;
+            hulkGroup.add(leftArm);
+            
+            const rightArm = new THREE.Mesh(
+                new THREE.BoxGeometry(0.4, 1.2, 0.4),
+                purpleMat
+            );
+            rightArm.position.set(0.9, 1.2, 0);
+            rightArm.castShadow = true;
+            hulkGroup.add(rightArm);
+            
+            // Legs
+            const leftLeg = new THREE.Mesh(
+                new THREE.BoxGeometry(0.5, 1.0, 0.5),
+                darkPurpleMat
+            );
+            leftLeg.position.set(-0.3, 0.3, 0);
+            leftLeg.castShadow = true;
+            hulkGroup.add(leftLeg);
+            
+            const rightLeg = new THREE.Mesh(
+                new THREE.BoxGeometry(0.5, 1.0, 0.5),
+                darkPurpleMat
+            );
+            rightLeg.position.set(0.3, 0.3, 0);
+            rightLeg.castShadow = true;
+            hulkGroup.add(rightLeg);
+            
+            // Feet
+            const leftFoot = new THREE.Mesh(
+                new THREE.BoxGeometry(0.6, 0.3, 0.8),
+                darkPurpleMat
+            );
+            leftFoot.position.set(-0.3, -0.2, 0.2);
+            leftFoot.castShadow = true;
+            hulkGroup.add(leftFoot);
+            
+            const rightFoot = new THREE.Mesh(
+                new THREE.BoxGeometry(0.6, 0.3, 0.8),
+                darkPurpleMat
+            );
+            rightFoot.position.set(0.3, -0.2, 0.2);
+            rightFoot.castShadow = true;
+            hulkGroup.add(rightFoot);
+            
+            // Position the hulk
+            hulkGroup.position.set(0, groundY + 0.5, 0);
+            hulkGroup.userData = { baseY: groundY + 0.5, isPlaceholder: true };
+            bulkModel = hulkGroup;
+            bulkBaseY = groundY + 0.5;
+            
+            // Remove temporary placeholder if it exists
+            scene.children.forEach((child) => {
+                if (child.userData && child.userData.isPlaceholder && child.geometry && child.geometry.type === 'BoxGeometry') {
+                    scene.remove(child);
+                }
+            });
+            
+            scene.add(bulkModel);
+            console.log('Purple hulk placeholder created');
         }
         
         function createObstacle(lane, z) {
@@ -1285,9 +1467,9 @@
                 }
             }
             
-            // Move obstacles
+            // Move obstacles towards camera (decreasing Z)
             obstacles.forEach((obstacle, index) => {
-                obstacle.position.z += speed;
+                obstacle.position.z -= speed; // Move towards camera
                 
                 // Animate obstacle (pulse)
                 const scale = 1 + Math.sin(Date.now() * 0.005 + obstacle.position.z) * 0.1;
@@ -1330,47 +1512,63 @@
                     }
                 }
                 
-                // Remove obstacles that are behind
-                if (obstacle.position.z > 20) {
+                // Remove obstacles that are behind camera
+                if (obstacle.position.z < -20) {
                     scene.remove(obstacle);
                     obstacles.splice(index, 1);
                 }
             });
             
-            // Move track segments
+            // Move track segments towards camera (decreasing Z)
             trackSegments.forEach((segment) => {
-                segment.position.z += speed;
-                if (segment.position.z > 20) {
-                    segment.position.z -= 200;
+                if (segment && segment.position) {
+                    segment.position.z -= speed; // Move towards camera (negative direction)
+                    // Wrap around when segment goes too far behind camera
+                    if (segment.position.z < -50) {
+                        segment.position.z += 200;
+                    }
                 }
             });
             
-            // Create new obstacles
-            if (bulkModel && bulkModel.position.z - lastObstacleZ > 15) {
+            // Also move lane markers
+            scene.children.forEach((child) => {
+                if (child.userData && child.userData.originalZ !== undefined) {
+                    child.position.z -= speed;
+                    if (child.position.z < -50) {
+                        child.position.z += 200;
+                    }
+                }
+            });
+            
+            // Track player Z position (use model position or track distance)
+            const playerZ = bulkModel ? bulkModel.position.z : (distance * 0.1);
+            
+            // Create new obstacles ahead of player
+            if (playerZ - lastObstacleZ < -15) {
                 const lane = Math.floor(Math.random() * 3);
-                createObstacle(lane, bulkModel.position.z - 30);
-                lastObstacleZ = bulkModel.position.z;
+                createObstacle(lane, playerZ + 30); // Spawn ahead (positive Z)
+                lastObstacleZ = playerZ;
             }
             
-            // Create new track segments
-            if (lastTrackZ - bulkModel.position.z < 50) {
-                createTrackSegment(lastTrackZ - 10);
-                lastTrackZ -= 10;
+            // Create new track segments ahead
+            if (playerZ - lastTrackZ > -50) {
+                createTrackSegment(lastTrackZ + 10);
+                lastTrackZ += 10;
             }
             
             // Update camera to follow player with shake
-            if (bulkModel) {
-                const targetX = bulkModel.position.x + cameraShake.x;
-                const targetY = 3 + cameraShake.y;
-                const targetZ = bulkModel.position.z + 8;
-                
-                camera.position.x += (targetX - camera.position.x) * 0.1;
-                camera.position.y += (targetY - camera.position.y) * 0.1;
-                camera.position.z += (targetZ - camera.position.z) * 0.1;
-                
-                // Camera looks slightly ahead
-                camera.lookAt(bulkModel.position.x, bulkModel.position.y + 1, bulkModel.position.z + 5);
-            }
+            const playerX = bulkModel ? bulkModel.position.x : lanePositions[currentLane];
+            const playerY = bulkModel ? (bulkModel.position.y + 1) : 1;
+            const targetX = playerX + cameraShake.x;
+            const targetY = 3 + cameraShake.y;
+            const targetZ = playerZ + 8;
+            
+            camera.position.x += (targetX - camera.position.x) * 0.1;
+            camera.position.y += (targetY - camera.position.y) * 0.1;
+            camera.position.z += (targetZ - camera.position.z) * 0.1;
+            
+            // Camera looks slightly ahead
+            camera.lookAt(playerX, playerY, playerZ + 5);
             
             // Update track markers animation
             trackSegments.forEach((segment) => {
@@ -1425,11 +1623,13 @@
                     if (gameInitialized) {
                         document.getElementById('title-screen').classList.add('hidden');
                         gameStarted = true;
+                        console.log('Game started! Model:', bulkModel ? 'loaded' : 'placeholder');
                     }
                 }, 500);
             } else {
                 document.getElementById('title-screen').classList.add('hidden');
                 gameStarted = true;
+                console.log('Game started! Model:', bulkModel ? 'loaded' : 'placeholder');
             }
         };
         
