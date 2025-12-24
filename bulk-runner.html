@@ -643,8 +643,8 @@
             const targetX = lanePositions[currentLane];
             bulk.position.x += (targetX - bulk.position.x) * 0.2;
             
-            // Running animation (slight bob)
-            bulk.position.y = Math.sin(Date.now() * 0.02) * 0.2;
+            // Running animation (subtle bob) + raised to prevent feet clipping
+            bulk.position.y = 0.2 + Math.sin(Date.now() * 0.02) * 0.05;
             
             // Move ground
             ground.forEach(tile => {
