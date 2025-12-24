@@ -92,6 +92,7 @@
         }
         
         #score { font-size: 24px; color: #ffd93d; }
+        #money { margin-top: 10px; font-size: 20px; color: #00ff88; }
         #distance { margin-top: 10px; color: #9b30ff; }
         
         #game-over {
@@ -118,7 +119,14 @@
         .final-score {
             font-size: clamp(1rem, 3vw, 1.5rem);
             color: #ffd93d;
-            margin: 20px 0;
+            margin: 20px 0 10px 0;
+        }
+        
+        .final-money {
+            font-size: clamp(1.2rem, 3.5vw, 1.8rem);
+            color: #00ff88;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px #00ff88;
         }
         
         .restart-btn {
@@ -147,20 +155,21 @@
             <div class="subtitle">INFINITE RUNNER</div>
             <div class="instructions">
                 ← → or SWIPE to change lanes<br>
-                SPACE or TAP to jump<br>
-                Avoid obstacles!
+                Avoid obstacles! Collect drinks!
             </div>
             <button class="start-btn" onclick="startGame()">START</button>
         </div>
         
         <div id="hud" style="display: none;">
             <div id="score">SCORE: 0</div>
+            <div id="money">$0</div>
             <div id="distance">0m</div>
         </div>
         
         <div id="game-over">
             <div class="game-over-title">GAME OVER</div>
             <div class="final-score" id="final-score">SCORE: 0</div>
+            <div class="final-money" id="final-money">$0</div>
             <button class="restart-btn" onclick="location.reload()">PLAY AGAIN</button>
             <a href="index.html" class="back-link">BACK TO HOME</a>
         </div>
@@ -185,19 +194,20 @@
         let speed = 0.5;
         let currentLane = 1; // 0=left, 1=center, 2=right
         const lanePositions = [-3, 0, 3];
-        let isJumping = false, jumpVelocity = 0;
-        const gravity = -0.03;
         let obstacles = [];
         let ground = [];
+        let drinks = [];
+        let money = 0;
+        let buildings = [];
         
         // Touch controls
         let touchStartX = 0, touchStartY = 0;
         
         function init() {
-            // Scene
+            // Scene - night city atmosphere
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x1a0a2e);
-            scene.fog = new THREE.Fog(0x1a0a2e, 30, 100);
+            scene.background = new THREE.Color(0x0a0a15);
+            scene.fog = new THREE.Fog(0x0a0a15, 50, 200);
             
             // Camera - behind and above player
             camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -210,17 +220,30 @@
             renderer.shadowMap.enabled = true;
             document.getElementById('game-container').appendChild(renderer.domElement);
             
-            // Lights
-            const ambient = new THREE.AmbientLight(0xffffff, 0.4);
+            // Lights - city night lighting
+            const ambient = new THREE.AmbientLight(0x404060, 0.3);
             scene.add(ambient);
             
-            const sun = new THREE.DirectionalLight(0x9b30ff, 1);
-            sun.position.set(5, 20, 10);
-            sun.castShadow = true;
-            scene.add(sun);
+            // Main directional light (moonlight)
+            const moon = new THREE.DirectionalLight(0x6666aa, 0.5);
+            moon.position.set(5, 30, 10);
+            moon.castShadow = true;
+            scene.add(moon);
+            
+            // Purple city glow from below
+            const cityGlow = new THREE.DirectionalLight(0x9b30ff, 0.4);
+            cityGlow.position.set(0, -5, 0);
+            scene.add(cityGlow);
+            
+            // Street light effect (hemisphere)
+            const streetLight = new THREE.HemisphereLight(0xffffcc, 0x222233, 0.6);
+            scene.add(streetLight);
             
             // Create ground
             createGround();
+            
+            // Create city buildings
+            createCity();
             
             // Create Bulk character
             createBulk();
@@ -233,11 +256,11 @@
         }
         
         function createGround() {
-            // Create repeating ground segments
+            // Create repeating ground segments - city street
             for (let i = 0; i < 20; i++) {
-                // Main ground
-                const groundGeo = new THREE.PlaneGeometry(20, 20);
-                const groundMat = new THREE.MeshStandardMaterial({ color: 0x2d1b4e });
+                // Main road (dark asphalt)
+                const groundGeo = new THREE.PlaneGeometry(12, 20);
+                const groundMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a });
                 const tile = new THREE.Mesh(groundGeo, groundMat);
                 tile.rotation.x = -Math.PI / 2;
                 tile.position.z = -i * 20;
@@ -245,18 +268,152 @@
                 scene.add(tile);
                 ground.push(tile);
                 
-                // Lane markers
+                // Sidewalks on both sides
+                const sidewalkMat = new THREE.MeshStandardMaterial({ color: 0x3a3a3a });
+                const leftSidewalk = new THREE.Mesh(new THREE.PlaneGeometry(4, 20), sidewalkMat);
+                leftSidewalk.rotation.x = -Math.PI / 2;
+                leftSidewalk.position.set(-8, 0.05, -i * 20);
+                scene.add(leftSidewalk);
+                ground.push(leftSidewalk);
+                
+                const rightSidewalk = new THREE.Mesh(new THREE.PlaneGeometry(4, 20), sidewalkMat);
+                rightSidewalk.rotation.x = -Math.PI / 2;
+                rightSidewalk.position.set(8, 0.05, -i * 20);
+                scene.add(rightSidewalk);
+                ground.push(rightSidewalk);
+                
+                // Lane markers (white road lines)
                 for (let lane = 0; lane < 3; lane++) {
                     const marker = new THREE.Mesh(
-                        new THREE.PlaneGeometry(2, 20),
-                        new THREE.MeshStandardMaterial({ color: lane === 1 ? 0x4a1d6e : 0x3d1560 })
+                        new THREE.PlaneGeometry(0.3, 3),
+                        new THREE.MeshStandardMaterial({ color: 0xffffff })
                     );
                     marker.rotation.x = -Math.PI / 2;
-                    marker.position.set(lanePositions[lane], 0.01, -i * 20);
+                    marker.position.set(lanePositions[lane], 0.02, -i * 20);
                     scene.add(marker);
                     ground.push(marker);
                 }
+                
+                // Yellow center line
+                const centerLine = new THREE.Mesh(
+                    new THREE.PlaneGeometry(0.2, 20),
+                    new THREE.MeshStandardMaterial({ color: 0xffcc00 })
+                );
+                centerLine.rotation.x = -Math.PI / 2;
+                centerLine.position.set(0, 0.02, -i * 20);
+                scene.add(centerLine);
+                ground.push(centerLine);
             }
+        }
+        
+        function createCity() {
+            // Building colors - various city building tones
+            const buildingColors = [
+                0x2a2a3a, 0x3a3a4a, 0x252535, 0x1a1a2a, 0x353545,
+                0x404050, 0x2f2f3f, 0x454555
+            ];
+            
+            // Window color (lit windows at night)
+            const windowColor = 0xffffaa;
+            
+            // Create buildings on both sides
+            for (let i = 0; i < 30; i++) {
+                // Left side buildings
+                createBuilding(-12 - Math.random() * 5, -i * 15, buildingColors, windowColor);
+                
+                // Right side buildings
+                createBuilding(12 + Math.random() * 5, -i * 15, buildingColors, windowColor);
+            }
+        }
+        
+        function createBuilding(x, z, colors, windowColor) {
+            const building = new THREE.Group();
+            
+            // Random building dimensions
+            const width = 4 + Math.random() * 6;
+            const height = 15 + Math.random() * 40;
+            const depth = 4 + Math.random() * 6;
+            
+            // Main building body
+            const bodyGeo = new THREE.BoxGeometry(width, height, depth);
+            const bodyMat = new THREE.MeshStandardMaterial({ 
+                color: colors[Math.floor(Math.random() * colors.length)]
+            });
+            const body = new THREE.Mesh(bodyGeo, bodyMat);
+            body.position.y = height / 2;
+            body.castShadow = true;
+            body.receiveShadow = true;
+            building.add(body);
+            
+            // Add windows (emissive rectangles)
+            const windowMat = new THREE.MeshStandardMaterial({ 
+                color: windowColor,
+                emissive: windowColor,
+                emissiveIntensity: 0.5 + Math.random() * 0.5
+            });
+            
+            const windowRows = Math.floor(height / 3);
+            const windowCols = Math.floor(width / 1.5);
+            
+            for (let row = 0; row < windowRows; row++) {
+                for (let col = 0; col < windowCols; col++) {
+                    // Randomly skip some windows (lights off)
+                    if (Math.random() > 0.7) continue;
+                    
+                    const windowGeo = new THREE.PlaneGeometry(0.8, 1.2);
+                    const windowMesh = new THREE.Mesh(windowGeo, windowMat);
+                    
+                    // Position on front face
+                    const wx = -width/2 + 1 + col * 1.5;
+                    const wy = 2 + row * 3;
+                    windowMesh.position.set(wx, wy, depth/2 + 0.01);
+                    building.add(windowMesh);
+                    
+                    // Position on back face
+                    const windowBack = windowMesh.clone();
+                    windowBack.position.z = -depth/2 - 0.01;
+                    windowBack.rotation.y = Math.PI;
+                    building.add(windowBack);
+                }
+            }
+            
+            // Rooftop details (random)
+            if (Math.random() > 0.5) {
+                // AC unit or water tower
+                const roofGeo = new THREE.BoxGeometry(1.5, 2, 1.5);
+                const roofMat = new THREE.MeshStandardMaterial({ color: 0x555555 });
+                const roofDetail = new THREE.Mesh(roofGeo, roofMat);
+                roofDetail.position.set(
+                    (Math.random() - 0.5) * width * 0.5,
+                    height + 1,
+                    (Math.random() - 0.5) * depth * 0.5
+                );
+                building.add(roofDetail);
+            }
+            
+            // Antenna on some tall buildings
+            if (height > 35 && Math.random() > 0.5) {
+                const antennaGeo = new THREE.CylinderGeometry(0.1, 0.1, 8, 8);
+                const antennaMat = new THREE.MeshStandardMaterial({ color: 0x888888 });
+                const antenna = new THREE.Mesh(antennaGeo, antennaMat);
+                antenna.position.y = height + 4;
+                building.add(antenna);
+                
+                // Blinking light
+                const lightGeo = new THREE.SphereGeometry(0.2, 8, 8);
+                const lightMat = new THREE.MeshStandardMaterial({ 
+                    color: 0xff0000,
+                    emissive: 0xff0000,
+                    emissiveIntensity: 1
+                });
+                const light = new THREE.Mesh(lightGeo, lightMat);
+                light.position.y = height + 8;
+                building.add(light);
+            }
+            
+            building.position.set(x, 0, z);
+            scene.add(building);
+            buildings.push(building);
         }
         
         function createBulk() {
@@ -291,7 +448,10 @@
                         
                         // Center and position
                         const center = box.getCenter(new THREE.Vector3());
-                        model.position.set(-center.x * scale, -box.min.y * scale, -center.z * scale);
+                        model.position.set(-center.x * scale, -box.min.y * scale * 1.1, -center.z * scale);
+                        
+                        // Rotate 180 degrees to face forward
+                        model.rotation.y = Math.PI;
                         
                         // Enable shadows
                         model.traverse(child => {
@@ -318,37 +478,45 @@
             // Simple purple hulk made of boxes
             const mat = new THREE.MeshStandardMaterial({ color: 0x9b30ff, emissive: 0x4a0080, emissiveIntensity: 0.3 });
             
-            // Body
+            // Create a container for the model parts so we can rotate it
+            const modelContainer = new THREE.Group();
+            
+            // Body (Y raised 10%: 2 * 1.1 = 2.2)
             const body = new THREE.Mesh(new THREE.BoxGeometry(1.5, 2, 1), mat);
-            body.position.y = 2;
+            body.position.y = 2.2;
             body.castShadow = true;
-            bulk.add(body);
+            modelContainer.add(body);
             
-            // Head
+            // Head (Y raised 10%: 3.5 * 1.1 = 3.85)
             const head = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), mat);
-            head.position.y = 3.5;
+            head.position.y = 3.85;
             head.castShadow = true;
-            bulk.add(head);
+            modelContainer.add(head);
             
-            // Arms
+            // Arms (Y raised 10%: 2 * 1.1 = 2.2)
             const armL = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1.5, 0.5), mat);
-            armL.position.set(-1.2, 2, 0);
+            armL.position.set(-1.2, 2.2, 0);
             armL.castShadow = true;
-            bulk.add(armL);
+            modelContainer.add(armL);
             
             const armR = armL.clone();
             armR.position.x = 1.2;
-            bulk.add(armR);
+            modelContainer.add(armR);
             
-            // Legs
+            // Legs (Y raised 10%: 0.6 * 1.1 = 0.66)
             const legL = new THREE.Mesh(new THREE.BoxGeometry(0.6, 1.2, 0.6), mat);
-            legL.position.set(-0.4, 0.6, 0);
+            legL.position.set(-0.4, 0.66, 0);
             legL.castShadow = true;
-            bulk.add(legL);
+            modelContainer.add(legL);
             
             const legR = legL.clone();
             legR.position.x = 0.4;
-            bulk.add(legR);
+            modelContainer.add(legR);
+            
+            // Rotate 180 degrees to face forward
+            modelContainer.rotation.y = Math.PI;
+            
+            bulk.add(modelContainer);
         }
         
         function createObstacle() {
@@ -367,20 +535,73 @@
             obstacles.push(obstacle);
         }
         
+        function createDrink() {
+            const lane = Math.floor(Math.random() * 3);
+            const drink = new THREE.Group();
+            
+            // Bottle body (cylinder)
+            const bottleGeo = new THREE.CylinderGeometry(0.3, 0.4, 1.2, 8);
+            const bottleMat = new THREE.MeshStandardMaterial({ 
+                color: 0x9b30ff, 
+                emissive: 0x6b00ff, 
+                emissiveIntensity: 0.8,
+                transparent: true,
+                opacity: 0.9
+            });
+            const bottle = new THREE.Mesh(bottleGeo, bottleMat);
+            bottle.position.y = 0.6;
+            drink.add(bottle);
+            
+            // Bottle neck
+            const neckGeo = new THREE.CylinderGeometry(0.15, 0.25, 0.4, 8);
+            const neck = new THREE.Mesh(neckGeo, bottleMat);
+            neck.position.y = 1.4;
+            drink.add(neck);
+            
+            // Cap
+            const capGeo = new THREE.CylinderGeometry(0.18, 0.18, 0.15, 8);
+            const capMat = new THREE.MeshStandardMaterial({ 
+                color: 0xffd93d, 
+                emissive: 0xffaa00, 
+                emissiveIntensity: 0.5 
+            });
+            const cap = new THREE.Mesh(capGeo, capMat);
+            cap.position.y = 1.7;
+            drink.add(cap);
+            
+            // Glowing ring effect
+            const ringGeo = new THREE.TorusGeometry(0.6, 0.1, 8, 16);
+            const ringMat = new THREE.MeshStandardMaterial({ 
+                color: 0xff00ff, 
+                emissive: 0xff00ff, 
+                emissiveIntensity: 1 
+            });
+            const ring = new THREE.Mesh(ringGeo, ringMat);
+            ring.rotation.x = Math.PI / 2;
+            ring.position.y = 0.6;
+            drink.add(ring);
+            
+            drink.position.set(lanePositions[lane], 1, -200);
+            drink.userData.lane = lane;
+            drink.userData.rotationSpeed = 0.05;
+            scene.add(drink);
+            drinks.push(drink);
+        }
+        
         function setupControls() {
             // Keyboard
             window.addEventListener('keydown', (e) => {
                 if (!gameStarted || gameOver) return;
                 
-                if (e.key === 'ArrowLeft' || e.key === 'a') {
+                const key = e.key.toLowerCase();
+                
+                // A or Left Arrow = move LEFT (decrease lane)
+                if (e.key === 'ArrowLeft' || key === 'a') {
                     if (currentLane > 0) currentLane--;
-                } else if (e.key === 'ArrowRight' || e.key === 'd') {
+                }
+                // D or Right Arrow = move RIGHT (increase lane)
+                else if (e.key === 'ArrowRight' || key === 'd') {
                     if (currentLane < 2) currentLane++;
-                } else if (e.key === ' ' || e.key === 'ArrowUp') {
-                    if (!isJumping) {
-                        isJumping = true;
-                        jumpVelocity = 0.4;
-                    }
                 }
             });
             
@@ -398,16 +619,10 @@
                 const dx = e.changedTouches[0].clientX - touchStartX;
                 const dy = e.changedTouches[0].clientY - touchStartY;
                 
-                if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 30) {
+                if (Math.abs(dx) > 30) {
                     // Horizontal swipe
                     if (dx > 0 && currentLane < 2) currentLane++;
                     else if (dx < 0 && currentLane > 0) currentLane--;
-                } else if (Math.abs(dy) < 30 || dy < -30) {
-                    // Tap or swipe up = jump
-                    if (!isJumping) {
-                        isJumping = true;
-                        jumpVelocity = 0.4;
-                    }
                 }
             });
         }
@@ -428,20 +643,8 @@
             const targetX = lanePositions[currentLane];
             bulk.position.x += (targetX - bulk.position.x) * 0.2;
             
-            // Jump physics
-            if (isJumping) {
-                jumpVelocity += gravity;
-                bulk.position.y += jumpVelocity;
-                if (bulk.position.y <= 0) {
-                    bulk.position.y = 0;
-                    isJumping = false;
-                }
-            }
-            
-            // Running animation
-            if (!isJumping) {
-                bulk.position.y = Math.sin(Date.now() * 0.02) * 0.2;
-            }
+            // Running animation (slight bob)
+            bulk.position.y = Math.sin(Date.now() * 0.02) * 0.2;
             
             // Move ground
             ground.forEach(tile => {
@@ -451,9 +654,50 @@
                 }
             });
             
+            // Move buildings
+            buildings.forEach(building => {
+                building.position.z += speed;
+                if (building.position.z > 30) {
+                    building.position.z -= 450;
+                }
+            });
+            
             // Spawn obstacles
             if (Math.random() < 0.02) {
                 createObstacle();
+            }
+            
+            // Spawn drinks (less frequent than obstacles)
+            if (Math.random() < 0.015) {
+                createDrink();
+            }
+            
+            // Move and check drinks (pickups)
+            for (let i = drinks.length - 1; i >= 0; i--) {
+                const drink = drinks[i];
+                drink.position.z += speed;
+                
+                // Rotate and bob the drink
+                drink.rotation.y += drink.userData.rotationSpeed;
+                drink.position.y = 1 + Math.sin(Date.now() * 0.005 + i) * 0.3;
+                
+                // Pickup check
+                if (drink.position.z > -2 && drink.position.z < 2) {
+                    if (Math.abs(bulk.position.x - drink.position.x) < 1.5) {
+                        // Picked up!
+                        money += 50;
+                        document.getElementById('money').textContent = '$' + money;
+                        scene.remove(drink);
+                        drinks.splice(i, 1);
+                        continue;
+                    }
+                }
+                
+                // Remove passed drinks
+                if (drink.position.z > 10) {
+                    scene.remove(drink);
+                    drinks.splice(i, 1);
+                }
             }
             
             // Move and check obstacles
@@ -461,14 +705,12 @@
                 const obs = obstacles[i];
                 obs.position.z += speed;
                 
-                // Collision check
+                // Collision check (lane-based only)
                 if (obs.position.z > -2 && obs.position.z < 2) {
                     if (Math.abs(bulk.position.x - obs.position.x) < 2) {
-                        if (bulk.position.y < 2.5) {
-                            // Hit!
-                            endGame();
-                            return;
-                        }
+                        // Hit!
+                        endGame();
+                        return;
                     }
                 }
                 
@@ -500,6 +742,7 @@
         function endGame() {
             gameOver = true;
             document.getElementById('final-score').textContent = 'SCORE: ' + score;
+            document.getElementById('final-money').textContent = '$' + money;
             document.getElementById('game-over').classList.add('show');
         }
         
