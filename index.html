@@ -72,11 +72,57 @@
             }
         }
 
+        .click-particle {
+            position: fixed;
+            width: 12px;
+            height: 12px;
+            background: radial-gradient(circle, #9B4DCA, #6B2D9E);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9997;
+            box-shadow: 0 0 10px #9B4DCA;
+        }
+
+        @keyframes particleExplosion {
+            0% {
+                opacity: 1;
+                transform: translate(0, 0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--tx), var(--ty)) scale(0);
+            }
+        }
+
+        .move-particle {
+            position: fixed;
+            width: 6px;
+            height: 6px;
+            background: #9B4DCA;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9996;
+            opacity: 0.8;
+            box-shadow: 0 0 8px #9B4DCA, 0 0 15px rgba(155,77,202,0.5);
+            animation: moveParticleFade 1s ease-out forwards;
+        }
+
+        @keyframes moveParticleFade {
+            0% {
+                opacity: 0.8;
+                transform: scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0.3);
+            }
+        }
+
         .background-video {
             position: fixed;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%) scale(0.75);
             min-width: 100%;
             min-height: 100%;
             width: auto;
@@ -103,6 +149,7 @@
             z-index: 10;
             max-width: 600px;
             width: 100%;
+            margin-top: -100px;
         }
 
         .title-image {
@@ -365,37 +412,67 @@
         @media (max-width: 767px) {
             body {
                 padding: 15px;
+                cursor: auto;
+            }
+
+            .cursor, .cursor-trail, .click-particle, .move-particle {
+                display: none;
             }
 
             .container {
                 max-width: 100%;
+                margin-top: -50px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
             }
-            
+
             .title-image {
                 max-width: 60%;
                 width: 60%;
-                margin-bottom: 15px;
+                margin: 0 auto 20px;
             }
-            
 
             .contract-address {
                 font-size: 10px;
                 padding: 10px 8px;
-                margin-top: 25px;
+                margin: 25px auto;
                 max-width: 95%;
                 word-break: break-all;
                 line-height: 1.4;
+                text-align: center;
+            }
+
+            .content-columns {
+                flex-direction: column;
+                margin-top: 40px;
+                gap: 30px;
+                width: 100%;
+                align-items: center;
+            }
+
+            .column {
+                min-width: 100%;
+                max-width: 350px;
+                align-items: center;
+            }
+
+            .column-title {
+                text-align: center;
+                font-size: 18px;
             }
 
             .game-btn-container {
-                margin-top: 25px;
-                margin-bottom: 15px;
+                width: 100%;
+                align-items: center;
             }
 
             .game-btn {
                 padding: 14px 24px;
                 font-size: 16px;
                 gap: 10px;
+                width: 100%;
+                max-width: 280px;
             }
 
             .game-btn svg {
@@ -403,14 +480,9 @@
                 height: 20px;
             }
 
-            .content-columns {
-                flex-direction: column;
-                margin-top: 60px;
-                gap: 30px;
-            }
-
-            .column {
-                min-width: 100%;
+            .links-section {
+                width: 100%;
+                align-items: center;
             }
 
             .link-btn {
@@ -676,10 +748,10 @@
             setInterval(updateMarketCap, 30000); // Update every 30 seconds
         });
 
-        // Custom cursor with purple trail
+        // Custom cursor with purple trail and particles
         const cursor = document.getElementById('cursor');
         let lastTrailTime = 0;
-        const trailInterval = 30; // ms between trail particles
+        const trailInterval = 20; // ms between trail particles - reduced for more particles
 
         document.addEventListener('mousemove', (e) => {
             cursor.style.left = e.clientX + 'px';
@@ -688,6 +760,7 @@
             const now = Date.now();
             if (now - lastTrailTime > trailInterval) {
                 createTrail(e.clientX, e.clientY);
+                createMoveParticle(e.clientX, e.clientY);
                 lastTrailTime = now;
             }
         });
@@ -702,6 +775,55 @@
             setTimeout(() => {
                 trail.remove();
             }, 500);
+        }
+
+        function createMoveParticle(x, y) {
+            const particle = document.createElement('div');
+            particle.className = 'move-particle';
+            particle.style.left = x + 'px';
+            particle.style.top = y + 'px';
+
+            // Random offset for variety
+            const offsetX = (Math.random() - 0.5) * 20;
+            const offsetY = (Math.random() - 0.5) * 20;
+            particle.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+
+            document.body.appendChild(particle);
+
+            setTimeout(() => {
+                particle.remove();
+            }, 1000);
+        }
+
+        // Click particle explosion effect
+        document.addEventListener('click', (e) => {
+            createClickExplosion(e.clientX, e.clientY);
+        });
+
+        function createClickExplosion(x, y) {
+            const particleCount = 12; // Number of particles in explosion
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'click-particle';
+
+                const angle = (Math.PI * 2 * i) / particleCount;
+                const distance = 50 + Math.random() * 50; // Random distance 50-100px
+                const tx = Math.cos(angle) * distance;
+                const ty = Math.sin(angle) * distance;
+
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+                particle.style.setProperty('--tx', `${tx}px`);
+                particle.style.setProperty('--ty', `${ty}px`);
+                particle.style.animation = `particleExplosion ${0.6 + Math.random() * 0.4}s ease-out forwards`;
+
+                document.body.appendChild(particle);
+
+                setTimeout(() => {
+                    particle.remove();
+                }, 1000);
+            }
         }
 
         // Add hover effect to cursor on interactive elements
