@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Amazing Bulk - Coming Soon | $BULK on Solana</title>
     <meta name="description" content="The Amazing Bulk - Full site being bulked up! Coming soon.">
+    <link rel="icon" type="image/png" href="spin.png">
     <style>
         @font-face {
             font-family: 'Hulk Display';
@@ -258,6 +259,118 @@
             letter-spacing: 0.1em;
             text-shadow: 0 0 15px rgba(255,215,0,0.7);
             margin-bottom: 10px;
+            position: relative;
+            animation: glitchText 3s infinite;
+        }
+
+        @keyframes glitchText {
+            0%, 90%, 100% {
+                transform: translate(0);
+                text-shadow: 0 0 15px rgba(255,215,0,0.7);
+            }
+            92% {
+                transform: translate(-2px, 2px);
+                text-shadow: 2px 0 #9B4DCA, -2px 0 #FFD700;
+            }
+            94% {
+                transform: translate(2px, -2px);
+                text-shadow: -2px 0 #9B4DCA, 2px 0 #FFD700;
+            }
+            96% {
+                transform: translate(-2px, -2px);
+                text-shadow: 2px 2px #9B4DCA, -2px -2px #FFD700;
+            }
+        }
+
+        .about-section {
+            margin: 40px auto;
+            max-width: 700px;
+            padding: 20px 30px;
+            background: linear-gradient(135deg, rgba(45,27,78,0.5), rgba(26,11,46,0.5));
+            border: 2px solid rgba(155,77,202,0.4);
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(155,77,202,0.3);
+        }
+
+        .about-section h2 {
+            font-family: 'Hulk Display', 'Orbitron', sans-serif;
+            font-size: 24px;
+            color: #FFD700;
+            letter-spacing: 0.1em;
+            text-shadow: 0 0 15px rgba(255,215,0,0.7);
+            margin-bottom: 15px;
+            text-align: center;
+            animation: glitchText 3s infinite;
+        }
+
+        .about-section p {
+            font-size: 15px;
+            line-height: 1.6;
+            color: rgba(255,255,255,0.9);
+            text-align: center;
+        }
+
+        .buy-now-btn {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 16px 24px;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            border: 3px solid #9B4DCA;
+            border-radius: 12px;
+            color: #000;
+            font-weight: bold;
+            text-decoration: none;
+            font-size: 16px;
+            font-family: 'Hulk Display', 'Orbitron', sans-serif;
+            text-shadow: 0 0 5px rgba(255,215,0,0.5);
+            box-shadow: 0 0 30px rgba(255,215,0,0.6), 0 0 60px rgba(155,77,202,0.4);
+            transition: all 0.3s;
+            z-index: 1000;
+            animation: buyBtnPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes buyBtnPulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 30px rgba(255,215,0,0.6), 0 0 60px rgba(155,77,202,0.4);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 40px rgba(255,215,0,0.8), 0 0 80px rgba(155,77,202,0.6);
+            }
+        }
+
+        .buy-now-btn:hover {
+            background: linear-gradient(135deg, #FFA500, #FFD700);
+            transform: scale(1.15) rotate(-2deg);
+            box-shadow: 0 0 50px rgba(255,215,0,0.9), 0 0 100px rgba(155,77,202,0.7);
+        }
+
+        .buy-now-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .stats-container {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stat-separator {
+            color: rgba(255,255,255,0.3);
+            font-size: 14px;
         }
 
         .contract-address {
@@ -405,8 +518,16 @@
 
         .game-btn:hover {
             background: linear-gradient(to right, #BF5FFF, #9B4DCA);
-            transform: scale(1.1);
+            transform: scale(1.1) rotate(1deg);
             box-shadow: 0 0 50px rgba(155,77,202,0.9), 0 0 100px rgba(255,215,0,0.6);
+            animation: btnShake 0.3s ease-in-out;
+        }
+
+        @keyframes btnShake {
+            0%, 100% { transform: scale(1.1) rotate(1deg); }
+            25% { transform: scale(1.12) rotate(-1deg); }
+            50% { transform: scale(1.1) rotate(2deg); }
+            75% { transform: scale(1.12) rotate(-1deg); }
         }
 
         .game-btn svg {
@@ -446,6 +567,7 @@
         .dexscreener-btn:hover {
             background: linear-gradient(to right, #9B4DCA, #6B2D9E);
             box-shadow: 0 0 30px rgba(155,77,202,0.6);
+            transform: scale(1.05) translateY(-2px);
         }
 
 
@@ -458,6 +580,7 @@
         .x-btn:hover, .x-community-btn:hover {
             background: linear-gradient(to right, #9B4DCA, #6B2D9E);
             box-shadow: 0 0 30px rgba(155,77,202,0.6);
+            transform: scale(1.05) translateY(-2px);
         }
 
         .link-btn svg {
@@ -593,6 +716,35 @@
             .sound-toggle-btn span {
                 font-size: 10px;
             }
+
+            .about-section {
+                margin: 30px 15px;
+                padding: 20px;
+            }
+
+            .about-section h2 {
+                font-size: 20px;
+            }
+
+            .about-section p {
+                font-size: 14px;
+            }
+
+            .buy-now-btn {
+                bottom: 15px;
+                right: 15px;
+                padding: 12px 18px;
+                font-size: 14px;
+            }
+
+            .stats-container {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .stat-separator {
+                display: none;
+            }
         }
 
         @media (max-width: 480px) {
@@ -646,11 +798,11 @@
     <div class="cursor" id="cursor"></div>
 
     <div class="mobile-top-banner">
-        <video src="title.mp4" class="title-image" autoplay loop muted playsinline></video>
+        <video src="title.mp4" class="title-image" autoplay loop muted playsinline preload="auto"></video>
     </div>
 
     <div class="container">
-        <video src="title.mp4" class="title-image" autoplay loop muted playsinline></video>
+        <video src="title.mp4" class="title-image" autoplay loop muted playsinline preload="auto"></video>
 
         <code class="contract-address" id="contract-address" onclick="copyContract(event)" title="Click to copy">F4TJfiMVi7zFGRJj4FVC1Zuj7fdCo6skKa4SnAU4pump</code>
 
@@ -711,7 +863,21 @@
                 </div>
             </div>
         </div>
+
+        <div class="about-section">
+            <h2>ABOUT $BULK</h2>
+            <p>From mockbuster to memecoin legend. The Amazing Bulk transcends its origin as a low-budget film to become an icon of internet culture. Through community-driven Blender animations and organic content creation, BULK has evolved into something greater—a movement celebrating the beautifully absurd. No AI shortcuts, just pure dedication to the meme.</p>
+        </div>
     </div>
+
+    <a href="https://jup.ag/?sell=So11111111111111111111111111111111111111112&buy=F4TJfiMVi7zFGRJj4FVC1Zuj7fdCo6skKa4SnAU4pump" target="_blank" rel="noopener noreferrer" class="buy-now-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="9" cy="21" r="1"></circle>
+            <circle cx="20" cy="21" r="1"></circle>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+        </svg>
+        BUY NOW
+    </a>
 
     <button class="sound-toggle-btn" onclick="toggleSound()" title="Toggle sound">
         <svg id="sound-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -722,8 +888,17 @@
     </button>
 
     <div class="market-cap-container" id="market-cap-container">
-        <span class="market-cap-label">MARKET CAP:</span>
-        <span class="market-cap-value" id="market-cap-value">---</span>
+        <div class="stats-container">
+            <div class="stat-item">
+                <span class="market-cap-label">MARKET CAP:</span>
+                <span class="market-cap-value" id="market-cap-value">---</span>
+            </div>
+            <span class="stat-separator">|</span>
+            <div class="stat-item">
+                <span class="market-cap-label">HOLDERS:</span>
+                <span class="market-cap-value" id="holder-count">---</span>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -746,13 +921,62 @@
                     const pair = data.pairs[0];
                     const marketCap = pair.marketCap || pair.fdv;
                     const marketCapElement = document.getElementById('market-cap-value');
+                    const holderCountElement = document.getElementById('holder-count');
+
                     if (marketCapElement) {
                         marketCapElement.textContent = formatNumber(marketCap);
+                    }
+
+                    // Get holder count from txns data
+                    if (holderCountElement && pair.txns) {
+                        // Use buys + sells as a proxy for holder activity if holder count not directly available
+                        const h24Buys = pair.txns.h24?.buys || 0;
+                        const h24Sells = pair.txns.h24?.sells || 0;
+                        const totalTxns = h24Buys + h24Sells;
+                        // Note: DexScreener doesn't provide exact holder count, showing transaction activity
+                        holderCountElement.textContent = totalTxns > 0 ? `${totalTxns}+ TXs` : '---';
                     }
                 }
             } catch (err) {
                 console.error('Error fetching market data:', err);
             }
+        }
+
+        // Pull to refresh on mobile
+        let touchStartY = 0;
+        let touchEndY = 0;
+        let isPulling = false;
+
+        if ('ontouchstart' in window) {
+            document.addEventListener('touchstart', (e) => {
+                touchStartY = e.touches[0].clientY;
+            });
+
+            document.addEventListener('touchmove', (e) => {
+                touchEndY = e.touches[0].clientY;
+                const pullDistance = touchEndY - touchStartY;
+
+                if (pullDistance > 100 && window.scrollY === 0 && !isPulling) {
+                    isPulling = true;
+                }
+            });
+
+            document.addEventListener('touchend', () => {
+                if (isPulling) {
+                    isPulling = false;
+                    const marketCapElement = document.getElementById('market-cap-value');
+                    const holderCountElement = document.getElementById('holder-count');
+
+                    // Show loading state
+                    if (marketCapElement) marketCapElement.textContent = '...';
+                    if (holderCountElement) holderCountElement.textContent = '...';
+
+                    // Update data
+                    updateMarketCap();
+                }
+                touchStartY = 0;
+                touchEndY = 0;
+            });
         }
 
         function copyContract(event) {
@@ -816,13 +1040,19 @@
             const btn = document.querySelector('.sound-toggle-btn');
             const icon = document.getElementById('sound-icon');
             const text = document.getElementById('sound-text');
-            
+
+            // Ensure title videos autoplay
+            const titleVideos = document.querySelectorAll('.title-image');
+            titleVideos.forEach(vid => {
+                vid.play().catch(err => console.log('Title video autoplay:', err));
+            });
+
             // Start with sound on
             video.muted = false;
             btn.classList.remove('muted');
             text.textContent = 'SOUND ON';
             icon.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>';
-            
+
             // Try to play with sound (may be blocked by browser autoplay policy)
             video.play().catch(err => {
                 console.log('Autoplay with sound blocked:', err);
