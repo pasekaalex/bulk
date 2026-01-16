@@ -70,17 +70,6 @@
             90% { transform: translate(-10%, 10%); }
         }
 
-        /* Floating Particle Background */
-        .bg-particle {
-            position: fixed;
-            width: 4px;
-            height: 4px;
-            background: rgba(155,77,202,0.3);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 2;
-            box-shadow: 0 0 10px rgba(155,77,202,0.5);
-        }
 
         .cursor {
             position: fixed;
@@ -309,7 +298,7 @@
         }
 
         .market-cap-container {
-            animation: fadeInUp 0.8s ease-out 0.8s forwards;
+            animation: fadeInUp 0.8s ease-out 0.5s forwards;
             opacity: 0;
         }
 
@@ -545,22 +534,18 @@
         }
 
         .market-cap-container {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 12px;
-            padding: 16px 24px;
+            padding: 14px 20px;
             background: linear-gradient(to right, rgba(45,27,78,0.95), rgba(26,11,46,0.98));
             border: 2px solid rgba(155,77,202,0.6);
             border-radius: 8px;
             color: white;
-            font-size: 18px;
-            z-index: 1000;
+            font-size: 16px;
             box-shadow: 0 0 15px rgba(155,77,202,0.4);
             white-space: nowrap;
+            margin-top: 20px;
         }
 
         .market-cap-label {
@@ -577,17 +562,17 @@
 
         @media (max-width: 767px) {
             .market-cap-container {
-                bottom: 15px;
-                font-size: 14px;
-                padding: 12px 18px;
+                font-size: 13px;
+                padding: 10px 16px;
+                margin-top: 15px;
             }
 
             .market-cap-label {
-                font-size: 12px;
+                font-size: 11px;
             }
 
             .market-cap-value {
-                font-size: 16px;
+                font-size: 14px;
             }
         }
 
@@ -911,16 +896,17 @@
             }
 
             .market-cap-container {
-                font-size: 12px;
-                padding: 10px 14px;
+                font-size: 11px;
+                padding: 8px 12px;
+                margin-top: 12px;
             }
 
             .market-cap-label {
-                font-size: 10px;
+                font-size: 9px;
             }
 
             .market-cap-value {
-                font-size: 14px;
+                font-size: 12px;
             }
         }
     </style>
@@ -938,6 +924,11 @@
         <video src="title.mp4" class="title-image" autoplay loop muted playsinline preload="auto"></video>
 
         <code class="contract-address" id="contract-address" onclick="copyContract(event)" title="Click to copy">F4TJfiMVi7zFGRJj4FVC1Zuj7fdCo6skKa4SnAU4pump</code>
+
+        <div class="market-cap-container" id="market-cap-container">
+            <span class="market-cap-label">MARKET CAP:</span>
+            <span class="market-cap-value" id="market-cap-value">---</span>
+        </div>
 
         <div class="content-columns">
             <div class="column">
@@ -1013,11 +1004,6 @@
         </svg>
         <span id="sound-text">SOUND ON</span>
     </button>
-
-    <div class="market-cap-container" id="market-cap-container">
-        <span class="market-cap-label">MARKET CAP:</span>
-        <span class="market-cap-value" id="market-cap-value">---</span>
-    </div>
 
     <script>
         const CONTRACT_ADDRESS = "F4TJfiMVi7zFGRJj4FVC1Zuj7fdCo6skKa4SnAU4pump";
@@ -1313,64 +1299,6 @@
                 particle.remove();
             }, 1500);
         }
-
-        // Create floating particle field background
-        function createParticleField() {
-            const particleCount = 50;
-
-            for (let i = 0; i < particleCount; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'bg-particle';
-
-                // Random initial position
-                const startX = Math.random() * window.innerWidth;
-                const startY = Math.random() * window.innerHeight;
-                particle.style.left = startX + 'px';
-                particle.style.top = startY + 'px';
-
-                // Random size variation
-                const size = 2 + Math.random() * 4;
-                particle.style.width = size + 'px';
-                particle.style.height = size + 'px';
-
-                // Random opacity
-                particle.style.opacity = 0.2 + Math.random() * 0.3;
-
-                document.body.appendChild(particle);
-
-                // Animate particle
-                animateParticle(particle, startX, startY);
-            }
-        }
-
-        function animateParticle(particle, startX, startY) {
-            // Random movement parameters
-            const speedX = (Math.random() - 0.5) * 0.5;
-            const speedY = (Math.random() - 0.5) * 0.5;
-            let x = startX;
-            let y = startY;
-
-            function move() {
-                x += speedX;
-                y += speedY;
-
-                // Wrap around screen
-                if (x < 0) x = window.innerWidth;
-                if (x > window.innerWidth) x = 0;
-                if (y < 0) y = window.innerHeight;
-                if (y > window.innerHeight) y = 0;
-
-                particle.style.left = x + 'px';
-                particle.style.top = y + 'px';
-
-                requestAnimationFrame(move);
-            }
-
-            move();
-        }
-
-        // Initialize particle field
-        createParticleField();
 
         // Allow replacing banner with GIF later
         // Just change the src of #banner-image to your GIF file
