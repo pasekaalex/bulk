@@ -153,16 +153,17 @@
         .market-cap-container {
             position: fixed;
             bottom: 20px;
-            left: 150px;
+            left: 50%;
+            transform: translateX(-50%);
             display: flex;
             align-items: center;
-            gap: 8px;
-            padding: 8px 12px;
+            gap: 12px;
+            padding: 16px 24px;
             background: linear-gradient(to right, rgba(45,27,78,0.95), rgba(26,11,46,0.98));
             border: 2px solid rgba(155,77,202,0.6);
             border-radius: 8px;
             color: white;
-            font-size: 12px;
+            font-size: 18px;
             z-index: 1000;
             box-shadow: 0 0 15px rgba(155,77,202,0.4);
             white-space: nowrap;
@@ -170,13 +171,14 @@
 
         .market-cap-label {
             color: rgba(255,255,255,0.7);
-            font-size: 10px;
+            font-size: 16px;
             margin-right: 4px;
         }
 
         .market-cap-value {
             font-weight: bold;
             font-family: monospace;
+            font-size: 20px;
         }
 
         @media (max-width: 767px) {
