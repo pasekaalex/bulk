@@ -150,71 +150,19 @@
         }
 
         .background-video {
-            display: none;
-        }
-
-        .glitch-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            pointer-events: none;
-            z-index: 10000;
-            opacity: 0;
-            background: linear-gradient(45deg,
-                transparent 30%,
-                rgba(155,77,202,0.3) 50%,
-                transparent 70%);
-            animation: glitchFlash 0.3s ease-out;
+            top: 62.5%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.75);
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            z-index: 1;
+            opacity: 0.3;
+            object-fit: cover;
         }
 
-        @keyframes glitchFlash {
-            0% {
-                opacity: 0;
-                transform: translateX(0);
-            }
-            10% {
-                opacity: 1;
-                transform: translateX(-10px);
-            }
-            20% {
-                opacity: 0.8;
-                transform: translateX(10px);
-            }
-            30% {
-                opacity: 1;
-                transform: translateX(-5px);
-            }
-            40% {
-                opacity: 0.6;
-                transform: translateX(5px);
-            }
-            50% {
-                opacity: 0.9;
-                transform: translateX(-3px);
-            }
-            60% {
-                opacity: 0.4;
-                transform: translateX(3px);
-            }
-            70% {
-                opacity: 0.7;
-                transform: translateX(-2px);
-            }
-            80% {
-                opacity: 0.3;
-                transform: translateX(2px);
-            }
-            90% {
-                opacity: 0.5;
-                transform: translateX(-1px);
-            }
-            100% {
-                opacity: 0;
-                transform: translateX(0);
-            }
-        }
 
 
 
@@ -1238,21 +1186,10 @@
             }, 1000);
         }
 
-        // Click particle explosion effect with glitch
+        // Click particle explosion effect
         document.addEventListener('click', (e) => {
             createClickExplosion(e.clientX, e.clientY);
-            createGlitchEffect();
         });
-
-        function createGlitchEffect() {
-            const glitch = document.createElement('div');
-            glitch.className = 'glitch-overlay';
-            document.body.appendChild(glitch);
-
-            setTimeout(() => {
-                glitch.remove();
-            }, 300);
-        }
 
         function createClickExplosion(x, y) {
             const particleCount = 12; // Number of particles in explosion
