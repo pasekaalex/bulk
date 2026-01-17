@@ -494,7 +494,7 @@
             top: 0;
             left: 0;
             right: 0;
-            bottom: calc(220px + env(safe-area-inset-bottom, 20px));
+            bottom: 180px;
             pointer-events: all;
             touch-action: none;
         }
@@ -506,7 +506,7 @@
 
             #joystick-container {
                 display: block;
-                bottom: calc(140px + env(safe-area-inset-bottom, 20px));
+                bottom: max(20px, env(safe-area-inset-bottom, 20px));
                 left: max(20px, env(safe-area-inset-left, 20px));
                 width: 150px;
                 height: 150px;
@@ -514,7 +514,7 @@
 
             #action-buttons {
                 display: flex;
-                bottom: calc(120px + env(safe-area-inset-bottom, 20px));
+                bottom: max(20px, env(safe-area-inset-bottom, 20px));
                 right: max(20px, env(safe-area-inset-right, 20px));
             }
 
@@ -697,7 +697,7 @@
             #joystick-container {
                 width: 140px;
                 height: 140px;
-                bottom: calc(120px + env(safe-area-inset-bottom, 20px));
+                bottom: max(15px, env(safe-area-inset-bottom, 15px));
                 left: max(15px, env(safe-area-inset-left, 15px));
             }
 
@@ -718,7 +718,7 @@
             }
 
             #action-buttons {
-                bottom: calc(100px + env(safe-area-inset-bottom, 20px));
+                bottom: max(15px, env(safe-area-inset-bottom, 15px));
                 right: max(15px, env(safe-area-inset-right, 15px));
                 gap: 12px;
             }
@@ -773,7 +773,7 @@
             }
 
             #camera-touch-area {
-                bottom: calc(200px + env(safe-area-inset-bottom, 20px));
+                bottom: 170px;
             }
 
             #combo-count {
