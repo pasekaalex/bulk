@@ -379,25 +379,63 @@
         let obstacleSpawnTimer = 0;
 
         // === SOUND EFFECTS ===
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        // Create jump sound using Web Audio API
+        function playJumpSound() {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(600, audioContext.currentTime + 0.1);
+
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.1);
+        }
+
+        // Create score sound using Web Audio API
+        function playScoreSound() {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+            oscillator.frequency.setValueAtTime(1000, audioContext.currentTime + 0.05);
+
+            gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.1);
+        }
+
+        // Explosion sounds for destruction and rage
         const sounds = {
-            jump: new Audio('nuke.mp3'),
-            score: new Audio('nuke.mp3'),
             rage: new Audio('nuke.mp3'),
             destroy: new Audio('nuke.mp3'),
             gameOver: new Audio('nuke.mp3')
         };
 
-        // Set volume levels
-        sounds.jump.volume = 0.3;
-        sounds.score.volume = 0.2;
         sounds.rage.volume = 0.5;
         sounds.destroy.volume = 0.4;
         sounds.gameOver.volume = 0.4;
 
         function playSound(soundName) {
-            if (sounds[soundName]) {
+            if (soundName === 'jump') {
+                playJumpSound();
+            } else if (soundName === 'score') {
+                playScoreSound();
+            } else if (sounds[soundName]) {
                 sounds[soundName].currentTime = 0;
-                sounds[soundName].play().catch(() => {}); // Ignore errors
+                sounds[soundName].play().catch(() => {});
             }
         }
 
