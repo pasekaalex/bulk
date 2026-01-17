@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>THE AMAZING BULK - The Video Game</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Bangers&family=Permanent+Marker&family=Press+Start+2P&display=swap');
@@ -13,10 +13,21 @@
             background: #000;
             overflow: hidden;
             font-family: 'Press Start 2P', monospace;
+            touch-action: none;
+            -webkit-user-select: none;
+            user-select: none;
         }
         
-        #game-container { width: 100vw; height: 100vh; position: relative; }
-        canvas { display: block; }
+        #game-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            touch-action: none;
+        }
+        canvas {
+            display: block;
+            touch-action: none;
+        }
         
         #ui-overlay {
             position: absolute;
@@ -1256,7 +1267,24 @@
             
             // Mobile Touch Controls
             initMobileControls();
-            
+
+            // Prevent default touch behaviors on the whole document for mobile
+            document.addEventListener('touchmove', (e) => {
+                // Allow touch events on mobile controls, prevent elsewhere
+                if (e.target.closest('#mobile-controls') || e.target.closest('#camera-touch-area')) {
+                    // Let mobile controls handle their own touch events
+                    return;
+                }
+                e.preventDefault();
+            }, { passive: false });
+
+            // Prevent pull-to-refresh and other gestures
+            document.addEventListener('touchstart', (e) => {
+                if (e.touches.length > 1) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+
             animate();
         }
         
