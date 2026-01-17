@@ -367,7 +367,7 @@
         const GROUND_Y = -380; // Road at very bottom of screen
 
         // Game state
-        let bulkY = GROUND_Y + 115; // Start on ground (aligned with obstacles)
+        let bulkY = GROUND_Y + 95; // Start on ground (closer to ground)
         let bulkVelocity = 0;
         let bulkRotation = 0;
         let obstacles = [];
@@ -502,7 +502,7 @@
                         const box = new THREE.Box3().setFromObject(bulkModel);
                         const size = box.getSize(new THREE.Vector3());
                         const maxDim = Math.max(size.x, size.y, size.z);
-                        const scale = 100 / maxDim; // Larger model
+                        const scale = 130 / maxDim; // Larger model
                         bulkModel.scale.set(scale, scale, scale);
 
                         // Rotate to face right (90 degrees)
@@ -526,19 +526,19 @@
         function createFallbackBulk() {
             console.log('Creating fallback Bulk');
             // Simple purple square as fallback (larger)
-            const bulkGeo = new THREE.PlaneGeometry(80, 80);
+            const bulkGeo = new THREE.PlaneGeometry(100, 100);
             const bulkMat = new THREE.MeshBasicMaterial({
                 color: 0x9b4dca
             });
             bulkModel = new THREE.Mesh(bulkGeo, bulkMat);
 
             // Add eyes
-            const eyeGeo = new THREE.PlaneGeometry(15, 15);
+            const eyeGeo = new THREE.PlaneGeometry(18, 18);
             const eyeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
             const eye1 = new THREE.Mesh(eyeGeo, eyeMat);
             const eye2 = new THREE.Mesh(eyeGeo, eyeMat);
-            eye1.position.set(-20, 15, 1);
-            eye2.position.set(20, 15, 1);
+            eye1.position.set(-25, 18, 1);
+            eye2.position.set(25, 18, 1);
             bulkModel.add(eye1, eye2);
 
             bulk.add(bulkModel);
@@ -598,8 +598,8 @@
             bulk.position.y = bulkY;
 
             // Ground collision - LAND SAFELY, don't end game
-            if (bulkY <= GROUND_Y + 115) {
-                bulkY = GROUND_Y + 115;
+            if (bulkY <= GROUND_Y + 95) {
+                bulkY = GROUND_Y + 95;
                 bulkVelocity = 0;
                 bulkRotation = 0; // Reset rotation when on ground
             }
@@ -611,7 +611,7 @@
             }
 
             // Rotation based on velocity (physics-based tilt)
-            if (bulkY > GROUND_Y + 115) { // Only rotate when airborne
+            if (bulkY > GROUND_Y + 95) { // Only rotate when airborne
                 const targetRotation = bulkVelocity * 0.04;
                 bulkRotation += (targetRotation - bulkRotation) * 0.1;
             } else {
@@ -1139,7 +1139,7 @@
             gameStarted = true;
             gameOver = false;
             score = 0;
-            bulkY = GROUND_Y + 115; // Start on ground at bottom
+            bulkY = GROUND_Y + 95; // Start on ground at bottom
             bulkVelocity = 0;
             bulkRotation = 0;
             obstacleSpawnTimer = 0;
