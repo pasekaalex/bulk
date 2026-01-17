@@ -13,20 +13,20 @@
             background: #000;
             overflow: hidden;
             font-family: 'Press Start 2P', monospace;
-            touch-action: none;
             -webkit-user-select: none;
             user-select: none;
+            position: fixed;
+            width: 100%;
+            height: 100%;
         }
         
         #game-container {
             width: 100vw;
             height: 100vh;
             position: relative;
-            touch-action: none;
         }
         canvas {
             display: block;
-            touch-action: none;
         }
         
         #ui-overlay {
@@ -1079,33 +1079,35 @@
                 // Create global handler for this touch (handles touches that move outside joystick)
                 globalJoystickTouchHandler = (moveEvent) => {
                     if (!joystickActive || joystickTouchId === null) return;
-                    
+
+                    moveEvent.preventDefault(); // Prevent scrolling
+
                     const currentTouch = Array.from(moveEvent.touches).find(t => t.identifier === joystickTouchId);
                     if (!currentTouch) {
                         // Touch lost, reset
                         resetJoystick();
                         return;
                     }
-                    
+
                     const rect = joystickBase.getBoundingClientRect();
                     const centerX = rect.left + rect.width / 2;
                     const centerY = rect.top + rect.height / 2;
                     const maxDist = rect.width / 2 - 25;
-                    
+
                     let deltaX = currentTouch.clientX - centerX;
                     let deltaY = currentTouch.clientY - centerY;
                     const dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-                    
+
                     if (dist > maxDist) {
                         deltaX = (deltaX / dist) * maxDist;
                         deltaY = (deltaY / dist) * maxDist;
                     }
-                    
+
                     joystickOffset.x = deltaX;
                     joystickOffset.y = deltaY;
-                    
+
                     joystickStick.style.transform = `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px))`;
-                    
+
                     // Update virtual keys based on joystick position
                     const threshold = 20;
                     mobileKeys['KeyW'] = deltaY < -threshold;
@@ -1267,23 +1269,6 @@
             
             // Mobile Touch Controls
             initMobileControls();
-
-            // Prevent default touch behaviors on the whole document for mobile
-            document.addEventListener('touchmove', (e) => {
-                // Allow touch events on mobile controls, prevent elsewhere
-                if (e.target.closest('#mobile-controls') || e.target.closest('#camera-touch-area')) {
-                    // Let mobile controls handle their own touch events
-                    return;
-                }
-                e.preventDefault();
-            }, { passive: false });
-
-            // Prevent pull-to-refresh and other gestures
-            document.addEventListener('touchstart', (e) => {
-                if (e.touches.length > 1) {
-                    e.preventDefault();
-                }
-            }, { passive: false });
 
             animate();
         }
