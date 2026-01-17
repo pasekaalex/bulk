@@ -361,10 +361,11 @@
         let highScore = localStorage.getItem('flappyBulkHighScore') || 0;
 
         // Physics - 2D side scroller
-        const GRAVITY = -0.6; // Negative to pull DOWN
+        const GRAVITY = -0.45; // Negative to pull DOWN (reduced for less punishing)
         const JUMP_STRENGTH = 12; // Positive to jump UP
         const SCROLL_SPEED = 3; // Slower movement
         const GROUND_Y = -380; // Road at very bottom of screen
+        const MAX_HEIGHT = 280; // Fly too high = game over (orbit)
 
         // Game state
         let bulkY = GROUND_Y + 75; // Start on ground (closer to ground)
@@ -800,10 +801,10 @@
                 bulkRotation = 0; // Reset rotation when on ground
             }
 
-            // Ceiling - just stop movement
-            if (bulkY > 300) {
-                bulkY = 300;
-                bulkVelocity = 0;
+            // Ceiling - fly too high = GAME OVER (flew out of orbit!)
+            if (bulkY > MAX_HEIGHT) {
+                endGame();
+                return;
             }
 
             // Rotation based on velocity (physics-based tilt)
