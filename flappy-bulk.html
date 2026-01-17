@@ -333,7 +333,7 @@
         </div>
 
         <div id="game-over">
-            <div class="game-over-title">BULK FELL!</div>
+            <div class="game-over-title">BULK CRASHED!</div>
             <div class="final-score" id="final-score">SCORE: 0</div>
             <div class="high-score-display" id="high-score-display">BEST: 0</div>
             <button class="restart-btn" onclick="restartGame()">TRY AGAIN</button>
@@ -1410,7 +1410,7 @@
             if (reason === 'flew') {
                 gameOverTitle.textContent = 'BULK FLEW AWAY!';
             } else {
-                gameOverTitle.textContent = 'BULK FELL!';
+                gameOverTitle.textContent = 'BULK CRASHED!';
             }
 
             document.getElementById('final-score').textContent = 'SCORE: ' + score;
