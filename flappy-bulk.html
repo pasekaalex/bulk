@@ -361,13 +361,13 @@
         let highScore = localStorage.getItem('flappyBulkHighScore') || 0;
 
         // Physics - 2D side scroller
-        const GRAVITY = 0.6;
-        const JUMP_STRENGTH = -12;
+        const GRAVITY = -0.6; // Negative to pull DOWN
+        const JUMP_STRENGTH = 12; // Positive to jump UP
         const SCROLL_SPEED = 3; // Slower movement
-        const GROUND_Y = -350; // Road at bottom of screen
+        const GROUND_Y = -380; // Road at very bottom of screen
 
         // Game state
-        let bulkY = GROUND_Y + 80; // Start on ground
+        let bulkY = GROUND_Y + 115; // Start on ground (aligned with obstacles)
         let bulkVelocity = 0;
         let bulkRotation = 0;
         let obstacles = [];
@@ -598,20 +598,20 @@
             bulk.position.y = bulkY;
 
             // Ground collision - LAND SAFELY, don't end game
-            if (bulkY <= GROUND_Y + 80) {
-                bulkY = GROUND_Y + 80;
+            if (bulkY <= GROUND_Y + 115) {
+                bulkY = GROUND_Y + 115;
                 bulkVelocity = 0;
                 bulkRotation = 0; // Reset rotation when on ground
             }
 
             // Ceiling - just stop movement
-            if (bulkY > 250) {
-                bulkY = 250;
+            if (bulkY > 300) {
+                bulkY = 300;
                 bulkVelocity = 0;
             }
 
             // Rotation based on velocity (physics-based tilt)
-            if (bulkY > GROUND_Y + 80) { // Only rotate when airborne
+            if (bulkY > GROUND_Y + 115) { // Only rotate when airborne
                 const targetRotation = bulkVelocity * 0.04;
                 bulkRotation += (targetRotation - bulkRotation) * 0.1;
             } else {
@@ -645,12 +645,24 @@
                     }
                 }
 
-                // Check collision (larger hitbox for bigger model)
+                // Check collision - adjusted for different obstacle types
                 if (!obs.userData.destroyed) {
                     const distX = Math.abs(obs.position.x - bulk.position.x);
                     const distY = Math.abs(obs.position.y - bulkY);
 
-                    if (distX < 70 && distY < obs.userData.height / 2 + 40) {
+                    // Collision dimensions vary by obstacle type
+                    let collisionWidth = 70;
+                    let collisionHeight = obs.userData.height / 2 + 40;
+
+                    if (obs.userData.type === 'bus') {
+                        collisionWidth = 85; // Buses are longer
+                        collisionHeight = obs.userData.height / 2 + 45;
+                    } else if (obs.userData.type === 'car') {
+                        collisionWidth = 60; // Cars are shorter
+                        collisionHeight = obs.userData.height / 2 + 35;
+                    }
+
+                    if (distX < collisionWidth && distY < collisionHeight) {
                         if (isRaging) {
                             // Destroy in rage mode
                             obs.userData.destroyed = true;
@@ -674,60 +686,290 @@
         }
 
         function spawnObstacle() {
-            const isBuilding = Math.random() > 0.6;
+            const rand = Math.random();
 
-            if (isBuilding) {
-                // Building
-                const height = 200 + Math.random() * 150;
-                const width = 60 + Math.random() * 40;
-                const obstacleGeo = new THREE.PlaneGeometry(width, height);
-                const obstacleMat = new THREE.MeshBasicMaterial({ color: 0x2d1b4e });
-                const obstacle = new THREE.Mesh(obstacleGeo, obstacleMat);
+            if (rand > 0.65) {
+                // === BUILDING ===
+                const height = 220 + Math.random() * 180;
+                const width = 70 + Math.random() * 50;
+
+                const obstacle = new THREE.Group();
                 obstacle.position.set(600, GROUND_Y + height / 2 + 75, 0);
                 obstacle.userData = { type: 'building', scored: false, destroyed: false, height: height };
-                scene.add(obstacle);
-                obstacles.push(obstacle);
 
-                // Building border (so it doesn't look like a road)
-                const borderGeo = new THREE.PlaneGeometry(width + 4, height + 4);
-                const borderMat = new THREE.MeshBasicMaterial({ color: 0x9b30ff });
-                const border = new THREE.Mesh(borderGeo, borderMat);
-                border.position.set(0, 0, -0.1);
-                obstacle.add(border);
+                // Main building body
+                const bodyGeo = new THREE.PlaneGeometry(width, height);
+                const bodyMat = new THREE.MeshBasicMaterial({ color: 0x1a0f2e });
+                const body = new THREE.Mesh(bodyGeo, bodyMat);
+                obstacle.add(body);
 
-                // Windows
-                for (let i = 0; i < height / 30; i++) {
-                    if (Math.random() > 0.5) {
-                        const windowGeo = new THREE.PlaneGeometry(8, 12);
-                        const windowMat = new THREE.MeshBasicMaterial({ color: 0xffd93d });
-                        const window1 = new THREE.Mesh(windowGeo, windowMat);
-                        window1.position.set(0, -height/2 + i * 30 + 15, 1);
-                        obstacle.add(window1);
+                // Building outline
+                const outlineGeo = new THREE.PlaneGeometry(width + 3, height + 3);
+                const outlineMat = new THREE.MeshBasicMaterial({ color: 0x4a2b7c });
+                const outline = new THREE.Mesh(outlineGeo, outlineMat);
+                outline.position.z = -0.1;
+                obstacle.add(outline);
+
+                // Rooftop details
+                const roofGeo = new THREE.PlaneGeometry(width + 2, 15);
+                const roofMat = new THREE.MeshBasicMaterial({ color: 0x2d1b4e });
+                const roof = new THREE.Mesh(roofGeo, roofMat);
+                roof.position.set(0, height / 2 - 7.5, 0.1);
+                obstacle.add(roof);
+
+                // Rooftop equipment (AC units, antennas)
+                if (Math.random() > 0.3) {
+                    const acGeo = new THREE.PlaneGeometry(12, 8);
+                    const acMat = new THREE.MeshBasicMaterial({ color: 0x444444 });
+                    const ac = new THREE.Mesh(acGeo, acMat);
+                    ac.position.set(width / 4, height / 2 + 4, 0.2);
+                    obstacle.add(ac);
+                }
+
+                if (Math.random() > 0.4) {
+                    const antennaGeo = new THREE.PlaneGeometry(2, 20);
+                    const antennaMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+                    const antenna = new THREE.Mesh(antennaGeo, antennaMat);
+                    antenna.position.set(-width / 4, height / 2 + 10, 0.2);
+                    obstacle.add(antenna);
+
+                    // Red light on antenna
+                    const lightGeo = new THREE.CircleGeometry(3, 8);
+                    const lightMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+                    const light = new THREE.Mesh(lightGeo, lightMat);
+                    light.position.set(-width / 4, height / 2 + 20, 0.3);
+                    obstacle.add(light);
+                }
+
+                // Window grid - organized rows and columns
+                const windowCols = Math.floor(width / 18);
+                const windowRows = Math.floor(height / 25);
+
+                for (let row = 0; row < windowRows; row++) {
+                    for (let col = 0; col < windowCols; col++) {
+                        // Randomly lit windows
+                        const isLit = Math.random() > 0.4;
+                        const windowGeo = new THREE.PlaneGeometry(10, 14);
+                        const windowMat = new THREE.MeshBasicMaterial({
+                            color: isLit ? 0xffd93d : 0x0a0a0a
+                        });
+                        const window = new THREE.Mesh(windowGeo, windowMat);
+
+                        const xPos = -width / 2 + (col + 0.5) * (width / windowCols);
+                        const yPos = -height / 2 + (row + 0.5) * (height / windowRows);
+
+                        window.position.set(xPos, yPos, 0.1);
+                        obstacle.add(window);
+
+                        // Window frames
+                        const frameGeo = new THREE.PlaneGeometry(11, 15);
+                        const frameMat = new THREE.MeshBasicMaterial({ color: 0x2a2a2a });
+                        const frame = new THREE.Mesh(frameGeo, frameMat);
+                        frame.position.set(xPos, yPos, 0.09);
+                        obstacle.add(frame);
                     }
                 }
-            } else {
-                // Car
-                const height = 40 + Math.random() * 20;
-                const width = 80 + Math.random() * 40;
-                const obstacleGeo = new THREE.PlaneGeometry(width, height);
-                const colors = [0xff0000, 0xffff00, 0x00ffff, 0xff00ff];
-                const obstacleMat = new THREE.MeshBasicMaterial({
-                    color: colors[Math.floor(Math.random() * colors.length)]
-                });
-                const obstacle = new THREE.Mesh(obstacleGeo, obstacleMat);
-                obstacle.position.set(600, GROUND_Y + height / 2 + 75, 0);
-                obstacle.userData = { type: 'car', scored: false, destroyed: false, height: height };
+
                 scene.add(obstacle);
                 obstacles.push(obstacle);
 
-                // Wheels
-                const wheelGeo = new THREE.CircleGeometry(8, 16);
-                const wheelMat = new THREE.MeshBasicMaterial({ color: 0x222222 });
+            } else if (rand > 0.35) {
+                // === CAR ===
+                const height = 45 + Math.random() * 15;
+                const width = 90 + Math.random() * 30;
+
+                const obstacle = new THREE.Group();
+                obstacle.position.set(600, GROUND_Y + height / 2 + 75, 0);
+                obstacle.userData = { type: 'car', scored: false, destroyed: false, height: height };
+
+                const colors = [0xff0000, 0x0000ff, 0x00aa00, 0xffff00, 0xff00ff];
+                const carColor = colors[Math.floor(Math.random() * colors.length)];
+
+                // Car body
+                const bodyGeo = new THREE.PlaneGeometry(width, height * 0.6);
+                const bodyMat = new THREE.MeshBasicMaterial({ color: carColor });
+                const body = new THREE.Mesh(bodyGeo, bodyMat);
+                body.position.set(0, -height * 0.15, 0);
+                obstacle.add(body);
+
+                // Car roof/cabin
+                const roofWidth = width * 0.55;
+                const roofHeight = height * 0.5;
+                const roofGeo = new THREE.PlaneGeometry(roofWidth, roofHeight);
+                const roofMat = new THREE.MeshBasicMaterial({ color: carColor });
+                const roof = new THREE.Mesh(roofGeo, roofMat);
+                roof.position.set(width * 0.05, height * 0.15, 0.1);
+                obstacle.add(roof);
+
+                // Windshield
+                const windshieldGeo = new THREE.PlaneGeometry(roofWidth * 0.4, roofHeight * 0.7);
+                const windshieldMat = new THREE.MeshBasicMaterial({ color: 0x6ec9ff });
+                const windshield = new THREE.Mesh(windshieldGeo, windshieldMat);
+                windshield.position.set(width * 0.15, height * 0.15, 0.2);
+                obstacle.add(windshield);
+
+                // Headlights
+                const headlightGeo = new THREE.PlaneGeometry(8, 6);
+                const headlightMat = new THREE.MeshBasicMaterial({ color: 0xffff99 });
+                const headlight1 = new THREE.Mesh(headlightGeo, headlightMat);
+                const headlight2 = new THREE.Mesh(headlightGeo, headlightMat);
+                headlight1.position.set(width / 2 - 4, -height * 0.25, 0.2);
+                headlight2.position.set(width / 2 - 4, height * 0.05, 0.2);
+                obstacle.add(headlight1, headlight2);
+
+                // Taillights
+                const tailLightGeo = new THREE.PlaneGeometry(6, 5);
+                const tailLightMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+                const tailLight1 = new THREE.Mesh(tailLightGeo, tailLightMat);
+                const tailLight2 = new THREE.Mesh(tailLightGeo, tailLightMat);
+                tailLight1.position.set(-width / 2 + 3, -height * 0.25, 0.2);
+                tailLight2.position.set(-width / 2 + 3, height * 0.05, 0.2);
+                obstacle.add(tailLight1, tailLight2);
+
+                // Wheels with rims
+                const wheelRadius = 10;
+                const wheelGeo = new THREE.CircleGeometry(wheelRadius, 16);
+                const wheelMat = new THREE.MeshBasicMaterial({ color: 0x1a1a1a });
+
+                const rimGeo = new THREE.CircleGeometry(wheelRadius * 0.6, 16);
+                const rimMat = new THREE.MeshBasicMaterial({ color: 0x666666 });
+
+                // Front wheel
                 const wheel1 = new THREE.Mesh(wheelGeo, wheelMat);
+                wheel1.position.set(width * 0.25, -height / 2 + 2, 0.3);
+                obstacle.add(wheel1);
+                const rim1 = new THREE.Mesh(rimGeo, rimMat);
+                rim1.position.set(width * 0.25, -height / 2 + 2, 0.4);
+                obstacle.add(rim1);
+
+                // Back wheel
                 const wheel2 = new THREE.Mesh(wheelGeo, wheelMat);
-                wheel1.position.set(-width/3, -height/2, 1);
-                wheel2.position.set(width/3, -height/2, 1);
-                obstacle.add(wheel1, wheel2);
+                wheel2.position.set(-width * 0.28, -height / 2 + 2, 0.3);
+                obstacle.add(wheel2);
+                const rim2 = new THREE.Mesh(rimGeo, rimMat);
+                rim2.position.set(-width * 0.28, -height / 2 + 2, 0.4);
+                obstacle.add(rim2);
+
+                // Door outline
+                const doorGeo = new THREE.PlaneGeometry(width * 0.35, height * 0.5);
+                const doorMat = new THREE.MeshBasicMaterial({ color: 0x000000, opacity: 0.1, transparent: true });
+                const door = new THREE.Mesh(doorGeo, doorMat);
+                door.position.set(-width * 0.1, -height * 0.15, 0.15);
+                obstacle.add(door);
+
+                scene.add(obstacle);
+                obstacles.push(obstacle);
+
+            } else {
+                // === BUS ===
+                const height = 70 + Math.random() * 10;
+                const width = 140 + Math.random() * 30;
+
+                const obstacle = new THREE.Group();
+                obstacle.position.set(600, GROUND_Y + height / 2 + 75, 0);
+                obstacle.userData = { type: 'bus', scored: false, destroyed: false, height: height };
+
+                const busColors = [0xff6600, 0xffff00, 0x00aaff, 0xaa00aa];
+                const busColor = busColors[Math.floor(Math.random() * busColors.length)];
+
+                // Bus body
+                const bodyGeo = new THREE.PlaneGeometry(width, height);
+                const bodyMat = new THREE.MeshBasicMaterial({ color: busColor });
+                const body = new THREE.Mesh(bodyGeo, bodyMat);
+                obstacle.add(body);
+
+                // Bus outline/stripe
+                const stripeGeo = new THREE.PlaneGeometry(width + 2, height * 0.15);
+                const stripeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                const stripe = new THREE.Mesh(stripeGeo, stripeMat);
+                stripe.position.set(0, 0, 0.1);
+                obstacle.add(stripe);
+
+                // Multiple windows across the bus
+                const numWindows = 6;
+                const windowWidth = width / (numWindows + 1);
+
+                for (let i = 0; i < numWindows; i++) {
+                    const windowGeo = new THREE.PlaneGeometry(windowWidth * 0.7, height * 0.35);
+                    const windowMat = new THREE.MeshBasicMaterial({ color: 0x6ec9ff });
+                    const window = new THREE.Mesh(windowGeo, windowMat);
+
+                    const xPos = -width / 2 + (i + 1) * windowWidth;
+                    window.position.set(xPos, height * 0.15, 0.2);
+                    obstacle.add(window);
+
+                    // Window frames
+                    const frameGeo = new THREE.PlaneGeometry(windowWidth * 0.75, height * 0.38);
+                    const frameMat = new THREE.MeshBasicMaterial({ color: 0x222222 });
+                    const frame = new THREE.Mesh(frameGeo, frameMat);
+                    frame.position.set(xPos, height * 0.15, 0.19);
+                    obstacle.add(frame);
+                }
+
+                // Front windshield
+                const frontWindowGeo = new THREE.PlaneGeometry(width * 0.12, height * 0.5);
+                const frontWindowMat = new THREE.MeshBasicMaterial({ color: 0x88ddff });
+                const frontWindow = new THREE.Mesh(frontWindowGeo, frontWindowMat);
+                frontWindow.position.set(width / 2 - width * 0.06, height * 0.15, 0.2);
+                obstacle.add(frontWindow);
+
+                // Headlights
+                const headlightGeo = new THREE.PlaneGeometry(10, 8);
+                const headlightMat = new THREE.MeshBasicMaterial({ color: 0xffffaa });
+                const headlight1 = new THREE.Mesh(headlightGeo, headlightMat);
+                const headlight2 = new THREE.Mesh(headlightGeo, headlightMat);
+                headlight1.position.set(width / 2 - 5, -height * 0.25, 0.3);
+                headlight2.position.set(width / 2 - 5, height * 0.25, 0.3);
+                obstacle.add(headlight1, headlight2);
+
+                // Bus number sign
+                const signGeo = new THREE.PlaneGeometry(width * 0.15, height * 0.12);
+                const signMat = new THREE.MeshBasicMaterial({ color: 0xff6600 });
+                const sign = new THREE.Mesh(signGeo, signMat);
+                sign.position.set(width / 2 - width * 0.075, height / 2 - height * 0.06, 0.3);
+                obstacle.add(sign);
+
+                // Wheels - buses have more wheels
+                const wheelRadius = 12;
+                const wheelGeo = new THREE.CircleGeometry(wheelRadius, 16);
+                const wheelMat = new THREE.MeshBasicMaterial({ color: 0x1a1a1a });
+
+                const rimGeo = new THREE.CircleGeometry(wheelRadius * 0.5, 16);
+                const rimMat = new THREE.MeshBasicMaterial({ color: 0x555555 });
+
+                // Front wheels
+                const wheel1 = new THREE.Mesh(wheelGeo, wheelMat);
+                wheel1.position.set(width * 0.32, -height / 2 + 3, 0.4);
+                obstacle.add(wheel1);
+                const rim1 = new THREE.Mesh(rimGeo, rimMat);
+                rim1.position.set(width * 0.32, -height / 2 + 3, 0.5);
+                obstacle.add(rim1);
+
+                // Middle wheels
+                const wheel2 = new THREE.Mesh(wheelGeo, wheelMat);
+                wheel2.position.set(0, -height / 2 + 3, 0.4);
+                obstacle.add(wheel2);
+                const rim2 = new THREE.Mesh(rimGeo, rimMat);
+                rim2.position.set(0, -height / 2 + 3, 0.5);
+                obstacle.add(rim2);
+
+                // Back wheels
+                const wheel3 = new THREE.Mesh(wheelGeo, wheelMat);
+                wheel3.position.set(-width * 0.32, -height / 2 + 3, 0.4);
+                obstacle.add(wheel3);
+                const rim3 = new THREE.Mesh(rimGeo, rimMat);
+                rim3.position.set(-width * 0.32, -height / 2 + 3, 0.5);
+                obstacle.add(rim3);
+
+                // Door (darker rectangle)
+                const doorGeo = new THREE.PlaneGeometry(width * 0.15, height * 0.65);
+                const doorMat = new THREE.MeshBasicMaterial({ color: 0x333333 });
+                const door = new THREE.Mesh(doorGeo, doorMat);
+                door.position.set(width * 0.35, -height * 0.1, 0.15);
+                obstacle.add(door);
+
+                scene.add(obstacle);
+                obstacles.push(obstacle);
             }
 
             // Sometimes spawn power-up
@@ -897,7 +1139,7 @@
             gameStarted = true;
             gameOver = false;
             score = 0;
-            bulkY = GROUND_Y + 80; // Start on ground at bottom
+            bulkY = GROUND_Y + 115; // Start on ground at bottom
             bulkVelocity = 0;
             bulkRotation = 0;
             obstacleSpawnTimer = 0;
