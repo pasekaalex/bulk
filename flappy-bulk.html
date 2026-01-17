@@ -364,10 +364,10 @@
         const GRAVITY = 0.6;
         const JUMP_STRENGTH = -12;
         const SCROLL_SPEED = 3; // Slower movement
-        const GROUND_Y = -250; // Lower ground position
+        const GROUND_Y = -350; // Road at bottom of screen
 
         // Game state
-        let bulkY = GROUND_Y + 50; // Start on ground
+        let bulkY = GROUND_Y + 80; // Start on ground
         let bulkVelocity = 0;
         let bulkRotation = 0;
         let obstacles = [];
@@ -498,11 +498,11 @@
                         console.log('GLB loaded successfully!');
                         bulkModel = gltf.scene;
 
-                        // Scale to appropriate size
+                        // Scale to appropriate size (larger model)
                         const box = new THREE.Box3().setFromObject(bulkModel);
                         const size = box.getSize(new THREE.Vector3());
                         const maxDim = Math.max(size.x, size.y, size.z);
-                        const scale = 60 / maxDim;
+                        const scale = 100 / maxDim; // Larger model
                         bulkModel.scale.set(scale, scale, scale);
 
                         // Rotate to face right (90 degrees)
@@ -525,20 +525,20 @@
 
         function createFallbackBulk() {
             console.log('Creating fallback Bulk');
-            // Simple purple square as fallback
-            const bulkGeo = new THREE.PlaneGeometry(50, 50);
+            // Simple purple square as fallback (larger)
+            const bulkGeo = new THREE.PlaneGeometry(80, 80);
             const bulkMat = new THREE.MeshBasicMaterial({
                 color: 0x9b4dca
             });
             bulkModel = new THREE.Mesh(bulkGeo, bulkMat);
 
             // Add eyes
-            const eyeGeo = new THREE.PlaneGeometry(10, 10);
+            const eyeGeo = new THREE.PlaneGeometry(15, 15);
             const eyeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
             const eye1 = new THREE.Mesh(eyeGeo, eyeMat);
             const eye2 = new THREE.Mesh(eyeGeo, eyeMat);
-            eye1.position.set(-12, 10, 1);
-            eye2.position.set(12, 10, 1);
+            eye1.position.set(-20, 15, 1);
+            eye2.position.set(20, 15, 1);
             bulkModel.add(eye1, eye2);
 
             bulk.add(bulkModel);
@@ -598,20 +598,20 @@
             bulk.position.y = bulkY;
 
             // Ground collision - LAND SAFELY, don't end game
-            if (bulkY <= GROUND_Y + 50) {
-                bulkY = GROUND_Y + 50;
+            if (bulkY <= GROUND_Y + 80) {
+                bulkY = GROUND_Y + 80;
                 bulkVelocity = 0;
                 bulkRotation = 0; // Reset rotation when on ground
             }
 
             // Ceiling - just stop movement
-            if (bulkY > 350) {
-                bulkY = 350;
+            if (bulkY > 250) {
+                bulkY = 250;
                 bulkVelocity = 0;
             }
 
             // Rotation based on velocity (physics-based tilt)
-            if (bulkY > GROUND_Y + 50) { // Only rotate when airborne
+            if (bulkY > GROUND_Y + 80) { // Only rotate when airborne
                 const targetRotation = bulkVelocity * 0.04;
                 bulkRotation += (targetRotation - bulkRotation) * 0.1;
             } else {
@@ -625,9 +625,9 @@
         }
 
         function updateObstacles() {
-            // Spawn obstacles
+            // Spawn obstacles (more spacing)
             obstacleSpawnTimer++;
-            if (obstacleSpawnTimer > 90) {
+            if (obstacleSpawnTimer > 150) {
                 spawnObstacle();
                 obstacleSpawnTimer = 0;
             }
@@ -645,12 +645,12 @@
                     }
                 }
 
-                // Check collision
+                // Check collision (larger hitbox for bigger model)
                 if (!obs.userData.destroyed) {
                     const distX = Math.abs(obs.position.x - bulk.position.x);
                     const distY = Math.abs(obs.position.y - bulkY);
 
-                    if (distX < 50 && distY < obs.userData.height / 2 + 25) {
+                    if (distX < 70 && distY < obs.userData.height / 2 + 40) {
                         if (isRaging) {
                             // Destroy in rage mode
                             obs.userData.destroyed = true;
@@ -687,6 +687,13 @@
                 obstacle.userData = { type: 'building', scored: false, destroyed: false, height: height };
                 scene.add(obstacle);
                 obstacles.push(obstacle);
+
+                // Building border (so it doesn't look like a road)
+                const borderGeo = new THREE.PlaneGeometry(width + 4, height + 4);
+                const borderMat = new THREE.MeshBasicMaterial({ color: 0x9b30ff });
+                const border = new THREE.Mesh(borderGeo, borderMat);
+                border.position.set(0, 0, -0.1);
+                obstacle.add(border);
 
                 // Windows
                 for (let i = 0; i < height / 30; i++) {
@@ -890,7 +897,7 @@
             gameStarted = true;
             gameOver = false;
             score = 0;
-            bulkY = GROUND_Y + 50; // Start on ground
+            bulkY = GROUND_Y + 80; // Start on ground at bottom
             bulkVelocity = 0;
             bulkRotation = 0;
             obstacleSpawnTimer = 0;
