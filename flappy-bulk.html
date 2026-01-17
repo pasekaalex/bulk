@@ -26,7 +26,6 @@
 
         canvas {
             display: block;
-            background: #000;
         }
 
         #title-screen {
@@ -170,44 +169,6 @@
             to { box-shadow: 0 0 20px #ff00ff, 0 0 30px #ff00ff; }
         }
 
-        #tap-indicator {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 48px;
-            color: #39FF14;
-            text-shadow: 0 0 20px #39FF14, 3px 3px 0 #000;
-            opacity: 0;
-            pointer-events: none;
-            z-index: 60;
-            animation: tapPop 0.3s ease-out;
-        }
-
-        @keyframes tapPop {
-            0% { opacity: 1; transform: translate(-50%, -50%) scale(0.5); }
-            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
-            100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
-        }
-
-        #rage-overlay {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: radial-gradient(circle, rgba(255,0,255,0.2) 0%, rgba(155,48,255,0.1) 100%);
-            pointer-events: none;
-            z-index: 40;
-            display: none;
-            animation: rageFlash 0.3s ease-in-out infinite alternate;
-        }
-
-        #rage-overlay.active { display: block; }
-
-        @keyframes rageFlash {
-            from { opacity: 0.3; }
-            to { opacity: 0.6; }
-        }
-
         #game-over {
             position: absolute;
             top: 0; left: 0;
@@ -323,15 +284,11 @@
 </head>
 <body>
     <div id="game-container">
-        <canvas id="game-canvas"></canvas>
-
         <div id="title-screen">
             <div class="title-main">FLAPPY BULK</div>
             <div class="subtitle">TAP TO JUMP!</div>
             <div class="instructions">
-                <span class="highlight">1 TAP</span> = Small Jump (Cars)<br>
-                <span class="highlight">2 TAPS</span> = Medium Jump<br>
-                <span class="highlight">3+ TAPS</span> = High Jump (Buildings)<br><br>
+                <span class="highlight">TAP / SPACE</span> to jump over obstacles<br>
                 Collect purple orbs for <span class="highlight">RAGE MODE</span>!
             </div>
             <button class="start-btn" onclick="startGame()">START</button>
@@ -352,9 +309,6 @@
             </div>
         </div>
 
-        <div id="tap-indicator"></div>
-        <div id="rage-overlay"></div>
-
         <div id="game-over">
             <div class="game-over-title">BULK FELL!</div>
             <div class="final-score" id="final-score">SCORE: 0</div>
@@ -364,133 +318,313 @@
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        // === CONSTANTS ===
-        const GameState = {
-            TITLE: 'title',
-            PLAYING: 'playing',
-            GAME_OVER: 'game_over'
-        };
-
-        // === STATE ===
-        let currentState = GameState.TITLE;
+        // Load GLTFLoader
+        (function() {
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';
+            script.onload = () => console.log('GLTFLoader loaded');
+            document.head.appendChild(script);
+        })();
+    </script>
+    <script>
+        // === GAME VARIABLES ===
+        let scene, camera, renderer;
+        let bulk, bulkModel;
         let gameStarted = false;
         let gameOver = false;
         let score = 0;
         let highScore = localStorage.getItem('flappyBulkHighScore') || 0;
 
-        // === CANVAS SETUP ===
-        const canvas = document.getElementById('game-canvas');
-        const ctx = canvas.getContext('2d');
+        // Physics
+        const GRAVITY = 0.025;
+        const JUMP_STRENGTH = -0.6;
+        const GROUND_Y = 0;
+        const SCROLL_SPEED = 0.15;
 
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
-        // === GAME OBJECTS ===
-        const GROUND_HEIGHT = 100;
-        const GRAVITY = 0.8;
-        const MAX_FALL_SPEED = 15;
-        const TAP_WINDOW = 300; // milliseconds
-        const SCROLL_SPEED = 5;
-        const OBSTACLE_SPAWN_DISTANCE = 400;
-
-        const bulk = {
-            x: canvas.width / 4,
-            y: 0,
-            width: 50,
-            height: 50,
-            velocity: 0,
-            isOnGround: true,
-            tapCount: 0,
-            lastTapTime: 0,
-            isRaging: false,
-            runAnimation: 0
-        };
-
+        // Game state
+        let bulkVelocity = 0;
         let obstacles = [];
         let powerUps = [];
         let particles = [];
         let rageMeter = 0;
+        let isRaging = false;
         let rageTimer = 0;
-        let lastObstacleX = canvas.width;
-        let bgScrollX = 0;
-        let roadScrollX = 0;
 
         // === INITIALIZATION ===
         function init() {
-            bulk.y = getGroundY();
-            bulk.isOnGround = true;
-            bulk.velocity = 0;
-            bulk.tapCount = 0;
-            obstacles = [];
-            powerUps = [];
-            particles = [];
-            rageMeter = 0;
-            rageTimer = 0;
-            lastObstacleX = canvas.width;
-            bgScrollX = 0;
-            roadScrollX = 0;
+            // Scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x1a0a2e);
+            scene.fog = new THREE.Fog(0x1a0a2e, 50, 100);
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(-5, 3, 15);
+            camera.lookAt(0, 2, 0);
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            document.getElementById('game-container').appendChild(renderer.domElement);
+
+            // Lights
+            const ambient = new THREE.AmbientLight(0x404060, 0.5);
+            scene.add(ambient);
+
+            const directional = new THREE.DirectionalLight(0x9b30ff, 0.8);
+            directional.position.set(5, 10, 5);
+            directional.castShadow = true;
+            scene.add(directional);
+
+            const cityGlow = new THREE.HemisphereLight(0x9b30ff, 0x2d1b4e, 0.6);
+            scene.add(cityGlow);
+
+            // Create ground
+            createGround();
+
+            // Create background
+            createBackground();
+
+            // Create Bulk
+            createBulk();
+
+            // Setup controls
+            setupControls();
+
+            // Window resize
+            window.addEventListener('resize', onWindowResize);
+
+            // Update high score display
             updateHighScoreDisplay();
         }
 
-        function getGroundY() {
-            return canvas.height - GROUND_HEIGHT - bulk.height;
+        function createGround() {
+            // Main road
+            const roadGeo = new THREE.PlaneGeometry(200, 50);
+            const roadMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a });
+            const road = new THREE.Mesh(roadGeo, roadMat);
+            road.rotation.x = -Math.PI / 2;
+            road.position.y = GROUND_Y;
+            road.receiveShadow = true;
+            scene.add(road);
+
+            // Road stripes
+            for (let i = -20; i < 80; i += 5) {
+                const stripeGeo = new THREE.PlaneGeometry(3, 0.3);
+                const stripeMat = new THREE.MeshBasicMaterial({ color: 0xffd93d });
+                const stripe = new THREE.Mesh(stripeGeo, stripeMat);
+                stripe.rotation.x = -Math.PI / 2;
+                stripe.position.set(i, GROUND_Y + 0.01, 0);
+                scene.add(stripe);
+            }
         }
 
-        // === UPDATE FUNCTIONS ===
-        function updateBulk() {
-            // Apply gravity when in air
-            if (!bulk.isOnGround) {
-                bulk.velocity += GRAVITY;
-                if (bulk.velocity > MAX_FALL_SPEED) {
-                    bulk.velocity = MAX_FALL_SPEED;
+        function createBackground() {
+            // Skyline buildings
+            for (let i = 0; i < 20; i++) {
+                const width = 3 + Math.random() * 4;
+                const height = 5 + Math.random() * 15;
+                const buildingGeo = new THREE.BoxGeometry(width, height, 3);
+                const buildingMat = new THREE.MeshStandardMaterial({
+                    color: 0x2d1b4e,
+                    emissive: 0x9b30ff,
+                    emissiveIntensity: 0.1
+                });
+                const building = new THREE.Mesh(buildingGeo, buildingMat);
+                building.position.set(
+                    -30 + i * 10,
+                    height / 2,
+                    -20 - Math.random() * 20
+                );
+                scene.add(building);
+
+                // Windows
+                const windowCount = Math.floor(height / 2);
+                for (let w = 0; w < windowCount; w++) {
+                    if (Math.random() > 0.3) {
+                        const windowGeo = new THREE.PlaneGeometry(0.5, 0.5);
+                        const windowMat = new THREE.MeshBasicMaterial({ color: 0xffd93d });
+                        const window1 = new THREE.Mesh(windowGeo, windowMat);
+                        window1.position.set(0, -height/2 + w * 2 + 1, width/2 + 0.01);
+                        building.add(window1);
+                    }
                 }
             }
+        }
 
-            // Update position
-            bulk.y += bulk.velocity;
+        function createBulk() {
+            bulk = new THREE.Group();
+            bulk.position.set(0, 2, 0);
+            scene.add(bulk);
 
-            // Ground collision
-            const groundY = getGroundY();
-            if (bulk.y >= groundY) {
-                bulk.y = groundY;
-                bulk.velocity = 0;
-                bulk.isOnGround = true;
-            } else {
-                bulk.isOnGround = false;
+            // Try to load GLB model
+            function tryLoadModel(attempts) {
+                if (typeof THREE.GLTFLoader === 'undefined') {
+                    if (attempts < 30) {
+                        setTimeout(() => tryLoadModel(attempts + 1), 100);
+                        return;
+                    }
+                    console.log('GLTFLoader not available, using fallback');
+                    createFallbackBulk();
+                    return;
+                }
+
+                const loader = new THREE.GLTFLoader();
+                loader.load('bulk.glb',
+                    (gltf) => {
+                        console.log('GLB loaded!');
+                        bulkModel = gltf.scene;
+
+                        // Scale based on bounding box
+                        const box = new THREE.Box3().setFromObject(bulkModel);
+                        const size = box.getSize(new THREE.Vector3());
+                        const maxDim = Math.max(size.x, size.y, size.z);
+                        const scale = 3 / maxDim;
+                        bulkModel.scale.set(scale, scale, scale);
+
+                        // Position
+                        bulkModel.position.y = 0;
+                        bulkModel.rotation.y = Math.PI / 2; // Face right
+
+                        bulk.add(bulkModel);
+                    },
+                    undefined,
+                    (error) => {
+                        console.log('Error loading GLB:', error);
+                        createFallbackBulk();
+                    }
+                );
             }
 
-            // Update running animation
-            bulk.runAnimation += 0.2;
-            if (bulk.runAnimation >= 4) bulk.runAnimation = 0;
+            tryLoadModel(0);
+        }
+
+        function createFallbackBulk() {
+            // Simple purple cube as fallback
+            const bulkGeo = new THREE.BoxGeometry(1.5, 2, 1);
+            const bulkMat = new THREE.MeshStandardMaterial({
+                color: 0x9b4dca,
+                emissive: 0x9b30ff,
+                emissiveIntensity: 0.2
+            });
+            bulkModel = new THREE.Mesh(bulkGeo, bulkMat);
+            bulkModel.castShadow = true;
+            bulk.add(bulkModel);
+        }
+
+        function setupControls() {
+            // Keyboard
+            document.addEventListener('keydown', (e) => {
+                if (e.code === 'Space' || e.code === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
+                    e.preventDefault();
+                    handleJump();
+                }
+            });
+
+            // Mouse
+            renderer.domElement.addEventListener('click', () => {
+                if (gameStarted && !gameOver) {
+                    handleJump();
+                }
+            });
+
+            // Touch
+            renderer.domElement.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                if (gameStarted && !gameOver) {
+                    handleJump();
+                }
+            });
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // === GAME LOGIC ===
+        function handleJump() {
+            if (!gameStarted || gameOver) return;
+            bulkVelocity = JUMP_STRENGTH;
+        }
+
+        function updateBulk() {
+            // Apply gravity (always)
+            bulkVelocity += GRAVITY;
+
+            // Update position
+            bulk.position.y += bulkVelocity;
+
+            // Ground collision
+            if (bulk.position.y <= GROUND_Y + 1) {
+                bulk.position.y = GROUND_Y + 1;
+                bulkVelocity = 0;
+            }
+
+            // Ceiling
+            if (bulk.position.y > 15) {
+                bulk.position.y = 15;
+                bulkVelocity = 0;
+            }
+
+            // Slight tilt based on velocity
+            if (bulkModel) {
+                bulkModel.rotation.z = bulkVelocity * 0.5;
+            }
         }
 
         function updateObstacles() {
             // Spawn obstacles
-            if (obstacles.length === 0 || canvas.width - obstacles[obstacles.length - 1].x > OBSTACLE_SPAWN_DISTANCE) {
+            if (obstacles.length === 0 || obstacles[obstacles.length - 1].position.z > -30) {
                 spawnObstacle();
             }
 
             // Move obstacles
             obstacles.forEach((obstacle, index) => {
-                obstacle.x -= SCROLL_SPEED;
+                obstacle.position.z += SCROLL_SPEED;
 
                 // Score when passed
-                if (!obstacle.scored && obstacle.x + obstacle.width < bulk.x) {
-                    obstacle.scored = true;
-                    if (!bulk.isRaging) {
+                if (!obstacle.userData.scored && obstacle.position.z > bulk.position.z + 2) {
+                    obstacle.userData.scored = true;
+                    if (!isRaging) {
                         addScore(1);
+                    }
+                }
+
+                // Check collision
+                if (!obstacle.userData.destroyed) {
+                    const distance = Math.abs(obstacle.position.z - bulk.position.z);
+                    if (distance < 1.5) {
+                        const heightDiff = Math.abs(obstacle.position.y - bulk.position.y);
+                        if (heightDiff < obstacle.userData.height / 2 + 1) {
+                            if (isRaging) {
+                                // Destroy in rage mode
+                                obstacle.userData.destroyed = true;
+                                addScore(5);
+                                createExplosion(obstacle.position);
+                                scene.remove(obstacle);
+                                obstacles.splice(index, 1);
+                            } else {
+                                // Game over
+                                endGame();
+                            }
+                        }
                     }
                 }
             });
 
             // Remove off-screen obstacles
-            obstacles = obstacles.filter(obs => obs.x + obs.width > -100);
+            obstacles = obstacles.filter(obs => {
+                if (obs.position.z > 20) {
+                    scene.remove(obs);
+                    return false;
+                }
+                return true;
+            });
         }
 
         function spawnObstacle() {
@@ -498,96 +632,128 @@
 
             if (isBuilding) {
                 // Building
-                const height = 250 + Math.random() * 100;
-                obstacles.push({
-                    type: 'building',
-                    x: canvas.width,
-                    y: canvas.height - GROUND_HEIGHT - height,
-                    width: 150 + Math.random() * 100,
-                    height: height,
-                    color: '#2d1b4e',
-                    scored: false,
-                    windows: generateWindows(150, height)
+                const width = 2 + Math.random();
+                const height = 6 + Math.random() * 4;
+                const obstacleGeo = new THREE.BoxGeometry(width, height, 2);
+                const obstacleMat = new THREE.MeshStandardMaterial({
+                    color: 0x2d1b4e,
+                    emissive: 0x9b30ff,
+                    emissiveIntensity: 0.1
                 });
+                const obstacle = new THREE.Mesh(obstacleGeo, obstacleMat);
+                obstacle.position.set(0, height / 2, -50);
+                obstacle.castShadow = true;
+                obstacle.userData = { type: 'building', scored: false, destroyed: false, height: height };
+                scene.add(obstacle);
+                obstacles.push(obstacle);
+
+                // Add windows
+                for (let i = 0; i < Math.floor(height / 1.5); i++) {
+                    if (Math.random() > 0.4) {
+                        const windowGeo = new THREE.PlaneGeometry(0.3, 0.3);
+                        const windowMat = new THREE.MeshBasicMaterial({ color: 0xffd93d });
+                        const window1 = new THREE.Mesh(windowGeo, windowMat);
+                        window1.position.set(0, -height/2 + i * 1.5 + 0.5, 1.01);
+                        obstacle.add(window1);
+                    }
+                }
             } else {
                 // Car
-                const height = 60 + Math.random() * 20;
-                const colors = ['#ff0000', '#ffff00', '#00ffff', '#ff00ff', '#00ff00'];
-                obstacles.push({
-                    type: 'car',
-                    x: canvas.width,
-                    y: canvas.height - GROUND_HEIGHT - height,
-                    width: 100 + Math.random() * 50,
-                    height: height,
-                    color: colors[Math.floor(Math.random() * colors.length)],
-                    scored: false
+                const height = 1 + Math.random() * 0.5;
+                const obstacleGeo = new THREE.BoxGeometry(1.5, height, 2.5);
+                const colors = [0xff0000, 0xffff00, 0x00ffff, 0xff00ff];
+                const obstacleMat = new THREE.MeshStandardMaterial({
+                    color: colors[Math.floor(Math.random() * colors.length)]
                 });
+                const obstacle = new THREE.Mesh(obstacleGeo, obstacleMat);
+                obstacle.position.set(0, height / 2, -50);
+                obstacle.castShadow = true;
+                obstacle.userData = { type: 'car', scored: false, destroyed: false, height: height };
+                scene.add(obstacle);
+                obstacles.push(obstacle);
+
+                // Wheels
+                const wheelGeo = new THREE.CylinderGeometry(0.3, 0.3, 0.2, 16);
+                const wheelMat = new THREE.MeshStandardMaterial({ color: 0x222222 });
+                const wheel1 = new THREE.Mesh(wheelGeo, wheelMat);
+                const wheel2 = new THREE.Mesh(wheelGeo, wheelMat);
+                wheel1.rotation.z = Math.PI / 2;
+                wheel2.rotation.z = Math.PI / 2;
+                wheel1.position.set(0.5, -height/2, 0.8);
+                wheel2.position.set(0.5, -height/2, -0.8);
+                obstacle.add(wheel1, wheel2);
             }
 
-            // Randomly spawn power-up
-            if (Math.random() > 0.85 && powerUps.length < 2) {
+            // Sometimes spawn power-up
+            if (Math.random() > 0.85) {
                 spawnPowerUp();
             }
         }
 
-        function generateWindows(buildingWidth, buildingHeight) {
-            const windows = [];
-            const rows = Math.floor(buildingHeight / 40);
-            const cols = Math.floor(buildingWidth / 30);
-
-            for (let r = 0; r < rows; r++) {
-                for (let c = 0; c < cols; c++) {
-                    if (Math.random() > 0.3) { // 70% chance of window
-                        windows.push({
-                            x: c * 30 + 10,
-                            y: r * 40 + 10,
-                            lit: Math.random() > 0.4
-                        });
-                    }
-                }
-            }
-
-            return windows;
-        }
-
         function spawnPowerUp() {
-            powerUps.push({
-                x: canvas.width + 100,
-                y: canvas.height - GROUND_HEIGHT - 30,
-                width: 30,
-                height: 30,
-                collected: false,
-                pulse: 0
+            const powerUpGeo = new THREE.SphereGeometry(0.4, 16, 16);
+            const powerUpMat = new THREE.MeshBasicMaterial({
+                color: 0x9b30ff,
+                emissive: 0xff00ff,
+                emissiveIntensity: 0.8
             });
+            const powerUp = new THREE.Mesh(powerUpGeo, powerUpMat);
+            powerUp.position.set(0, 2 + Math.random() * 3, -50);
+            powerUp.userData = { collected: false, pulse: 0 };
+            scene.add(powerUp);
+            powerUps.push(powerUp);
         }
 
         function updatePowerUps() {
-            powerUps.forEach(powerUp => {
-                powerUp.x -= SCROLL_SPEED;
-                powerUp.pulse += 0.1;
+            powerUps.forEach((powerUp, index) => {
+                powerUp.position.z += SCROLL_SPEED;
+                powerUp.userData.pulse += 0.1;
+                powerUp.scale.setScalar(1 + Math.sin(powerUp.userData.pulse) * 0.2);
+
+                // Check collection
+                const distance = bulk.position.distanceTo(powerUp.position);
+                if (distance < 1.5 && !powerUp.userData.collected) {
+                    powerUp.userData.collected = true;
+                    collectPowerUp(powerUp);
+                    scene.remove(powerUp);
+                    powerUps.splice(index, 1);
+                }
             });
 
-            powerUps = powerUps.filter(p => p.x > -50 && !p.collected);
+            // Remove off-screen
+            powerUps = powerUps.filter(p => {
+                if (p.position.z > 20) {
+                    scene.remove(p);
+                    return false;
+                }
+                return true;
+            });
         }
 
-        function updateParticles() {
-            particles.forEach(particle => {
-                particle.x += particle.vx;
-                particle.y += particle.vy;
-                particle.life -= 0.02;
-                particle.alpha = particle.life;
-            });
+        function collectPowerUp(powerUp) {
+            rageMeter = 100;
+            activateRageMode();
+            updateRageMeter();
+            createExplosion(powerUp.position, 0x9b30ff);
+        }
 
-            particles = particles.filter(p => p.life > 0);
+        function activateRageMode() {
+            isRaging = true;
+            rageTimer = 10 * 60; // 10 seconds at 60fps
+
+            if (bulkModel && bulkModel.material) {
+                bulkModel.material.emissive = new THREE.Color(0xff00ff);
+                bulkModel.material.emissiveIntensity = 0.8;
+            }
         }
 
         function updateRageMode() {
-            if (bulk.isRaging) {
-                rageTimer -= 1/60; // Assuming 60fps
+            if (isRaging) {
+                rageTimer--;
 
-                // Create trail particles
+                // Create particle trail
                 if (Math.random() > 0.7) {
-                    createParticle(bulk.x + bulk.width/2, bulk.y + bulk.height/2, '#ff00ff');
+                    createParticle(bulk.position.clone(), 0xff00ff);
                 }
 
                 if (rageTimer <= 0) {
@@ -596,168 +762,54 @@
             }
         }
 
-        function createParticle(x, y, color) {
-            particles.push({
-                x: x,
-                y: y,
-                vx: (Math.random() - 0.5) * 4,
-                vy: (Math.random() - 0.5) * 4,
-                life: 1,
-                alpha: 1,
-                color: color
-            });
-        }
-
-        // === JUMP SYSTEM ===
-        function handleTap() {
-            if (!gameStarted || gameOver) return;
-
-            const now = Date.now();
-
-            // Check if within tap window
-            if (now - bulk.lastTapTime < TAP_WINDOW) {
-                bulk.tapCount++;
-            } else {
-                bulk.tapCount = 1;
-            }
-
-            bulk.lastTapTime = now;
-
-            // Show tap indicator
-            showTapIndicator(bulk.tapCount);
-
-            // Apply jump after short delay to allow for multi-tap
-            setTimeout(() => {
-                if (Date.now() - bulk.lastTapTime >= TAP_WINDOW * 0.8) {
-                    applyJump(bulk.tapCount);
-                }
-            }, TAP_WINDOW * 0.9);
-        }
-
-        function applyJump(tapCount) {
-            let jumpStrength = -12;
-
-            if (tapCount >= 3) {
-                jumpStrength = -20;
-            } else if (tapCount === 2) {
-                jumpStrength = -16;
-            }
-
-            bulk.velocity = jumpStrength;
-            bulk.isOnGround = false;
-            bulk.tapCount = 0;
-        }
-
-        function showTapIndicator(tapCount) {
-            const indicator = document.getElementById('tap-indicator');
-            let text = '';
-
-            if (tapCount === 1) text = 'TAP!';
-            else if (tapCount === 2) text = 'TAP! TAP!';
-            else if (tapCount >= 3) text = 'JUMP!!!';
-
-            indicator.textContent = text;
-            indicator.style.animation = 'none';
-            setTimeout(() => {
-                indicator.style.animation = 'tapPop 0.3s ease-out';
-            }, 10);
-        }
-
-        // === RAGE MODE ===
-        function activateRageMode() {
-            bulk.isRaging = true;
-            rageTimer = 10; // 10 seconds
-            document.getElementById('rage-overlay').classList.add('active');
-
-            // Visual feedback
-            for (let i = 0; i < 20; i++) {
-                createParticle(
-                    bulk.x + bulk.width/2 + (Math.random() - 0.5) * 100,
-                    bulk.y + bulk.height/2 + (Math.random() - 0.5) * 100,
-                    '#ff00ff'
-                );
-            }
-        }
-
         function deactivateRageMode() {
-            bulk.isRaging = false;
+            isRaging = false;
             rageMeter = 0;
-            document.getElementById('rage-overlay').classList.remove('active');
             updateRageMeter();
-        }
 
-        function updateRageMeter() {
-            const fill = document.getElementById('rage-fill');
-            fill.style.width = rageMeter + '%';
-
-            if (rageMeter >= 100) {
-                fill.classList.add('full');
-            } else {
-                fill.classList.remove('full');
+            if (bulkModel && bulkModel.material) {
+                bulkModel.material.emissive = new THREE.Color(0x9b30ff);
+                bulkModel.material.emissiveIntensity = 0.2;
             }
         }
 
-        function collectPowerUp(powerUp) {
-            powerUp.collected = true;
-            rageMeter += 100; // Full meter on collect
+        function createParticle(position, color) {
+            const particleGeo = new THREE.SphereGeometry(0.2, 8, 8);
+            const particleMat = new THREE.MeshBasicMaterial({ color: color });
+            const particle = new THREE.Mesh(particleGeo, particleMat);
+            particle.position.copy(position);
+            particle.userData = {
+                life: 1,
+                velocity: new THREE.Vector3(
+                    (Math.random() - 0.5) * 0.1,
+                    (Math.random() - 0.5) * 0.1,
+                    (Math.random() - 0.5) * 0.1
+                )
+            };
+            scene.add(particle);
+            particles.push(particle);
+        }
 
-            if (rageMeter >= 100) {
-                rageMeter = 100;
-                activateRageMode();
-            }
-
-            updateRageMeter();
-
-            // Particle effect
+        function createExplosion(position, color = 0xff0000) {
             for (let i = 0; i < 15; i++) {
-                createParticle(powerUp.x, powerUp.y, '#9b30ff');
+                createParticle(position.clone(), color);
             }
         }
 
-        // === COLLISION DETECTION ===
-        function checkCollisions() {
-            // Check obstacles
-            obstacles.forEach(obstacle => {
-                if (checkAABB(bulk, obstacle)) {
-                    if (bulk.isRaging) {
-                        // Destroy obstacle in rage mode
-                        obstacle.scored = true; // Mark to remove
-                        obstacle.x = -1000; // Move off screen
-                        addScore(5);
+        function updateParticles() {
+            particles.forEach((particle, index) => {
+                particle.userData.life -= 0.02;
+                particle.position.add(particle.userData.velocity);
+                particle.material.opacity = particle.userData.life;
+                particle.material.transparent = true;
 
-                        // Explosion effect
-                        for (let i = 0; i < 10; i++) {
-                            createParticle(
-                                obstacle.x + obstacle.width/2,
-                                obstacle.y + obstacle.height/2,
-                                '#ff0000'
-                            );
-                        }
-
-                        // Screen shake (could be enhanced)
-                    } else {
-                        // Game over
-                        endGame();
-                    }
-                }
-            });
-
-            // Check power-ups
-            powerUps.forEach(powerUp => {
-                if (!powerUp.collected && checkAABB(bulk, powerUp)) {
-                    collectPowerUp(powerUp);
+                if (particle.userData.life <= 0) {
+                    scene.remove(particle);
+                    particles.splice(index, 1);
                 }
             });
         }
 
-        function checkAABB(obj1, obj2) {
-            return obj1.x < obj2.x + obj2.width &&
-                   obj1.x + obj1.width > obj2.x &&
-                   obj1.y < obj2.y + obj2.height &&
-                   obj1.y + obj1.height > obj2.y;
-        }
-
-        // === SCORING ===
         function addScore(points) {
             score += points;
             document.getElementById('score').textContent = score;
@@ -773,240 +825,50 @@
             document.getElementById('high-score').textContent = 'BEST: ' + highScore;
         }
 
-        // === RENDERING ===
-        function drawBackground() {
-            // Sky gradient
-            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            gradient.addColorStop(0, '#2d1b4e');
-            gradient.addColorStop(0.6, '#1a0a2e');
-            gradient.addColorStop(1, '#0d0d0d');
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        function updateRageMeter() {
+            const fill = document.getElementById('rage-fill');
+            fill.style.width = rageMeter + '%';
 
-            // Parallax cityscape
-            bgScrollX -= SCROLL_SPEED * 0.3;
-            if (bgScrollX <= -canvas.width) bgScrollX = 0;
-
-            ctx.fillStyle = 'rgba(155, 77, 202, 0.15)';
-            for (let i = 0; i < 15; i++) {
-                const buildingHeight = 100 + Math.sin(i * 0.5) * 80;
-                const buildingWidth = 60 + Math.cos(i * 0.7) * 20;
-                const x = bgScrollX + i * 120;
-
-                ctx.fillRect(
-                    x,
-                    canvas.height - GROUND_HEIGHT - buildingHeight,
-                    buildingWidth,
-                    buildingHeight
-                );
-
-                // Duplicate for seamless scroll
-                ctx.fillRect(
-                    x + canvas.width,
-                    canvas.height - GROUND_HEIGHT - buildingHeight,
-                    buildingWidth,
-                    buildingHeight
-                );
+            if (rageMeter >= 100) {
+                fill.classList.add('full');
+            } else {
+                fill.classList.remove('full');
             }
         }
-
-        function drawRoad() {
-            // Ground
-            ctx.fillStyle = '#1a1a1a';
-            ctx.fillRect(0, canvas.height - GROUND_HEIGHT, canvas.width, GROUND_HEIGHT);
-
-            // Road stripes
-            roadScrollX -= SCROLL_SPEED;
-            if (roadScrollX <= -100) roadScrollX = 0;
-
-            ctx.fillStyle = '#ffd93d';
-            for (let i = 0; i < canvas.width / 100 + 2; i++) {
-                const x = roadScrollX + i * 100;
-                ctx.fillRect(x, canvas.height - GROUND_HEIGHT + 45, 60, 10);
-            }
-
-            // Ground edge
-            ctx.strokeStyle = '#9b30ff';
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            ctx.moveTo(0, canvas.height - GROUND_HEIGHT);
-            ctx.lineTo(canvas.width, canvas.height - GROUND_HEIGHT);
-            ctx.stroke();
-        }
-
-        function drawBulk() {
-            ctx.save();
-
-            // Rage mode glow
-            if (bulk.isRaging) {
-                ctx.shadowColor = '#ff00ff';
-                ctx.shadowBlur = 30;
-            }
-
-            // Body
-            ctx.fillStyle = bulk.isRaging ? '#ff00ff' : '#9B4DCA';
-            ctx.fillRect(bulk.x, bulk.y, bulk.width, bulk.height);
-
-            // Running animation (legs)
-            const legOffset = Math.floor(bulk.runAnimation) % 2 === 0 ? 5 : -5;
-            ctx.fillStyle = bulk.isRaging ? '#cc00cc' : '#6B2D9E';
-            ctx.fillRect(bulk.x + 10, bulk.y + bulk.height, 12, legOffset + 10);
-            ctx.fillRect(bulk.x + 28, bulk.y + bulk.height, 12, -legOffset + 10);
-
-            // Eyes
-            ctx.fillStyle = '#fff';
-            ctx.fillRect(bulk.x + 12, bulk.y + 15, 8, 8);
-            ctx.fillRect(bulk.x + 30, bulk.y + 15, 8, 8);
-
-            // Pupils
-            ctx.fillStyle = '#000';
-            ctx.fillRect(bulk.x + 15, bulk.y + 18, 4, 4);
-            ctx.fillRect(bulk.x + 33, bulk.y + 18, 4, 4);
-
-            // Glow based on tap count
-            if (bulk.tapCount > 0 && Date.now() - bulk.lastTapTime < TAP_WINDOW) {
-                ctx.shadowColor = '#39FF14';
-                ctx.shadowBlur = 15 + bulk.tapCount * 10;
-                ctx.strokeStyle = '#39FF14';
-                ctx.lineWidth = 2;
-                ctx.strokeRect(bulk.x, bulk.y, bulk.width, bulk.height);
-            }
-
-            ctx.restore();
-        }
-
-        function drawObstacles() {
-            obstacles.forEach(obstacle => {
-                if (obstacle.type === 'building') {
-                    // Building
-                    ctx.fillStyle = obstacle.color;
-                    ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
-
-                    // Windows
-                    obstacle.windows.forEach(window => {
-                        ctx.fillStyle = window.lit ? '#ffd93d' : '#1a0a2e';
-                        ctx.fillRect(
-                            obstacle.x + window.x,
-                            obstacle.y + window.y,
-                            15, 20
-                        );
-                    });
-
-                    // Outline
-                    ctx.strokeStyle = '#9b30ff';
-                    ctx.lineWidth = 2;
-                    ctx.strokeRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
-                } else {
-                    // Car
-                    ctx.fillStyle = obstacle.color;
-                    ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
-
-                    // Car details
-                    ctx.fillStyle = '#000';
-                    ctx.fillRect(obstacle.x + 10, obstacle.y + 10, obstacle.width - 20, obstacle.height - 30);
-
-                    // Wheels
-                    ctx.fillStyle = '#333';
-                    ctx.beginPath();
-                    ctx.arc(obstacle.x + 20, obstacle.y + obstacle.height, 10, 0, Math.PI * 2);
-                    ctx.arc(obstacle.x + obstacle.width - 20, obstacle.y + obstacle.height, 10, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-            });
-        }
-
-        function drawPowerUps() {
-            powerUps.forEach(powerUp => {
-                if (powerUp.collected) return;
-
-                ctx.save();
-
-                // Pulsing glow
-                const pulseSize = Math.sin(powerUp.pulse) * 5;
-                ctx.shadowColor = '#9b30ff';
-                ctx.shadowBlur = 20;
-
-                // Orb
-                ctx.fillStyle = '#9b30ff';
-                ctx.beginPath();
-                ctx.arc(
-                    powerUp.x + powerUp.width/2,
-                    powerUp.y + powerUp.height/2,
-                    powerUp.width/2 + pulseSize,
-                    0,
-                    Math.PI * 2
-                );
-                ctx.fill();
-
-                // Inner glow
-                ctx.fillStyle = '#ff00ff';
-                ctx.beginPath();
-                ctx.arc(
-                    powerUp.x + powerUp.width/2,
-                    powerUp.y + powerUp.height/2,
-                    powerUp.width/4,
-                    0,
-                    Math.PI * 2
-                );
-                ctx.fill();
-
-                ctx.restore();
-            });
-        }
-
-        function drawParticles() {
-            particles.forEach(particle => {
-                ctx.save();
-                ctx.globalAlpha = particle.alpha;
-                ctx.fillStyle = particle.color;
-                ctx.beginPath();
-                ctx.arc(particle.x, particle.y, 5, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.restore();
-            });
-        }
-
-        // === INPUT HANDLERS ===
-        document.addEventListener('keydown', (e) => {
-            if (e.code === 'Space' || e.code === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
-                e.preventDefault();
-                handleTap();
-            }
-        });
-
-        canvas.addEventListener('click', () => {
-            if (currentState === GameState.PLAYING) {
-                handleTap();
-            }
-        });
-
-        canvas.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            if (currentState === GameState.PLAYING) {
-                handleTap();
-            }
-        });
 
         // === GAME FLOW ===
         function startGame() {
             document.getElementById('title-screen').classList.add('hidden');
             document.getElementById('hud').classList.add('show');
 
-            currentState = GameState.PLAYING;
             gameStarted = true;
             gameOver = false;
             score = 0;
+            bulkVelocity = 0;
 
-            init();
+            // Reset bulk position
+            bulk.position.set(0, 2, 0);
+
+            // Clear obstacles and power-ups
+            obstacles.forEach(obs => scene.remove(obs));
+            powerUps.forEach(p => scene.remove(p));
+            particles.forEach(p => scene.remove(p));
+            obstacles = [];
+            powerUps = [];
+            particles = [];
+
+            rageMeter = 0;
+            isRaging = false;
+
             updateHighScoreDisplay();
             document.getElementById('score').textContent = '0';
+            updateRageMeter();
         }
 
         function endGame() {
             if (gameOver) return;
 
             gameOver = true;
-            currentState = GameState.GAME_OVER;
 
             document.getElementById('final-score').textContent = 'SCORE: ' + score;
             document.getElementById('high-score-display').textContent = 'BEST: ' + highScore;
@@ -1020,40 +882,29 @@
             document.getElementById('title-screen').classList.remove('hidden');
             document.getElementById('hud').classList.remove('show');
 
-            currentState = GameState.TITLE;
             gameStarted = false;
             gameOver = false;
             score = 0;
-
-            init();
         }
 
-        // === GAME LOOP ===
-        function gameLoop() {
-            if (currentState === GameState.PLAYING && !gameOver) {
-                // Update
+        // === ANIMATION LOOP ===
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (gameStarted && !gameOver) {
                 updateBulk();
                 updateObstacles();
                 updatePowerUps();
                 updateParticles();
                 updateRageMode();
-                checkCollisions();
-
-                // Render
-                drawBackground();
-                drawRoad();
-                drawObstacles();
-                drawPowerUps();
-                drawBulk();
-                drawParticles();
             }
 
-            requestAnimationFrame(gameLoop);
+            renderer.render(scene, camera);
         }
 
         // === START ===
         init();
-        requestAnimationFrame(gameLoop);
+        animate();
     </script>
 </body>
 </html>
