@@ -506,16 +506,18 @@
 
             #joystick-container {
                 display: block;
-                bottom: max(20px, env(safe-area-inset-bottom, 20px));
-                left: max(20px, env(safe-area-inset-left, 20px));
+                top: 50%;
+                transform: translateY(-50%);
+                left: 20px;
                 width: 150px;
                 height: 150px;
             }
 
             #action-buttons {
                 display: flex;
-                bottom: max(20px, env(safe-area-inset-bottom, 20px));
-                right: max(20px, env(safe-area-inset-right, 20px));
+                top: 50%;
+                transform: translateY(-50%);
+                right: 20px;
             }
 
             #camera-touch-area {
@@ -697,8 +699,9 @@
             #joystick-container {
                 width: 140px;
                 height: 140px;
-                bottom: max(15px, env(safe-area-inset-bottom, 15px));
-                left: max(15px, env(safe-area-inset-left, 15px));
+                top: 50%;
+                transform: translateY(-50%);
+                left: 15px;
             }
 
             #joystick-base {
@@ -718,8 +721,9 @@
             }
 
             #action-buttons {
-                bottom: max(15px, env(safe-area-inset-bottom, 15px));
-                right: max(15px, env(safe-area-inset-right, 15px));
+                top: 50%;
+                transform: translateY(-50%);
+                right: 15px;
                 gap: 12px;
             }
 
