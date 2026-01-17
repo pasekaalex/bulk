@@ -445,7 +445,21 @@
 
             // Scene
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x1a0a2e);
+
+            // Gradient background (purple to dark)
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            const gradient = ctx.createLinearGradient(0, 0, 0, 512);
+            gradient.addColorStop(0, '#4a0e4e');
+            gradient.addColorStop(0.5, '#2d1b4e');
+            gradient.addColorStop(1, '#0a0a0a');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 512, 512);
+
+            const bgTexture = new THREE.CanvasTexture(canvas);
+            scene.background = bgTexture;
 
             // Camera - Orthographic for 2D look
             const aspect = container.clientWidth / container.clientHeight;
@@ -491,42 +505,119 @@
         }
 
         function createGround() {
-            // Road
+            // Road base
             const roadGeo = new THREE.PlaneGeometry(2000, 150);
-            const roadMat = new THREE.MeshBasicMaterial({ color: 0x1a1a1a });
+            const roadMat = new THREE.MeshBasicMaterial({ color: 0x0d0d0d });
             const road = new THREE.Mesh(roadGeo, roadMat);
             road.position.set(0, GROUND_Y, -10);
             scene.add(road);
 
-            // Road stripes
+            // Road edge glow
+            const edgeGeo1 = new THREE.PlaneGeometry(2000, 8);
+            const edgeMat1 = new THREE.MeshBasicMaterial({
+                color: 0x9b30ff,
+                transparent: true,
+                opacity: 0.6
+            });
+            const edge1 = new THREE.Mesh(edgeGeo1, edgeMat1);
+            edge1.position.set(0, GROUND_Y + 75, -8);
+            scene.add(edge1);
+
+            const edge2 = new THREE.Mesh(edgeGeo1, edgeMat1);
+            edge2.position.set(0, GROUND_Y - 75, -8);
+            scene.add(edge2);
+
+            // Road stripes (animated)
             for (let i = -1000; i < 1000; i += 100) {
-                const stripeGeo = new THREE.PlaneGeometry(60, 5);
+                const stripeGeo = new THREE.PlaneGeometry(60, 6);
                 const stripeMat = new THREE.MeshBasicMaterial({ color: 0xffd93d });
                 const stripe = new THREE.Mesh(stripeGeo, stripeMat);
                 stripe.position.set(i, GROUND_Y, -9);
+                stripe.userData.scrollSpeed = SCROLL_SPEED;
                 scene.add(stripe);
             }
 
-            // Ground line
-            const lineGeo = new THREE.PlaneGeometry(2000, 3);
-            const lineMat = new THREE.MeshBasicMaterial({ color: 0x9b30ff });
+            // Center line (purple glow)
+            const lineGeo = new THREE.PlaneGeometry(2000, 4);
+            const lineMat = new THREE.MeshBasicMaterial({
+                color: 0xff00ff,
+                transparent: true,
+                opacity: 0.8
+            });
             const line = new THREE.Mesh(lineGeo, lineMat);
-            line.position.set(0, GROUND_Y + 75, -9);
+            line.position.set(0, GROUND_Y + 75, -8.5);
             scene.add(line);
+
+            // Road texture pattern
+            for (let i = -1000; i < 1000; i += 40) {
+                for (let j = -60; j < 60; j += 30) {
+                    if (Math.abs(j) > 10 && Math.random() > 0.7) {
+                        const dotGeo = new THREE.PlaneGeometry(3, 3);
+                        const dotMat = new THREE.MeshBasicMaterial({
+                            color: 0x2a2a2a,
+                            transparent: true,
+                            opacity: 0.5
+                        });
+                        const dot = new THREE.Mesh(dotGeo, dotMat);
+                        dot.position.set(i, GROUND_Y + j, -9.5);
+                        scene.add(dot);
+                    }
+                }
+            }
         }
 
         function createBackground() {
-            // Background buildings
+            // Stars in the background
+            for (let i = 0; i < 80; i++) {
+                const starSize = 2 + Math.random() * 3;
+                const starGeo = new THREE.CircleGeometry(starSize, 6);
+                const starMat = new THREE.MeshBasicMaterial({
+                    color: Math.random() > 0.5 ? 0xffffff : 0xffffaa,
+                    transparent: true,
+                    opacity: 0.6 + Math.random() * 0.4
+                });
+                const star = new THREE.Mesh(starGeo, starMat);
+                star.position.set(
+                    -600 + Math.random() * 1200,
+                    -200 + Math.random() * 600,
+                    -100
+                );
+                scene.add(star);
+            }
+
+            // Background buildings with windows
             for (let i = 0; i < 10; i++) {
                 const width = 80 + Math.random() * 60;
                 const height = 150 + Math.random() * 200;
+
+                const building = new THREE.Group();
+
+                // Building body
                 const buildingGeo = new THREE.PlaneGeometry(width, height);
                 const buildingMat = new THREE.MeshBasicMaterial({
-                    color: 0x2d1b4e,
-                    opacity: 0.3,
+                    color: 0x1a0f2e,
+                    opacity: 0.5,
                     transparent: true
                 });
-                const building = new THREE.Mesh(buildingGeo, buildingMat);
+                const buildingMesh = new THREE.Mesh(buildingGeo, buildingMat);
+                building.add(buildingMesh);
+
+                // Add windows to background buildings
+                const numWindows = Math.floor(height / 30);
+                for (let w = 0; w < numWindows; w++) {
+                    if (Math.random() > 0.6) {
+                        const windowGeo = new THREE.PlaneGeometry(width * 0.6, 8);
+                        const windowMat = new THREE.MeshBasicMaterial({
+                            color: 0xffd93d,
+                            transparent: true,
+                            opacity: 0.3
+                        });
+                        const windowMesh = new THREE.Mesh(windowGeo, windowMat);
+                        windowMesh.position.set(0, -height/2 + w * 30 + 15, 0.1);
+                        building.add(windowMesh);
+                    }
+                }
+
                 building.position.set(
                     -500 + i * 120,
                     GROUND_Y + height / 2 + 75,
@@ -540,6 +631,18 @@
             bulk = new THREE.Group();
             bulk.position.set(-200, bulkY, 0);
             scene.add(bulk);
+
+            // Add glow effect behind Bulk
+            const glowGeo = new THREE.CircleGeometry(80, 32);
+            const glowMat = new THREE.MeshBasicMaterial({
+                color: 0x9b30ff,
+                transparent: true,
+                opacity: 0.3
+            });
+            const glow = new THREE.Mesh(glowGeo, glowMat);
+            glow.position.z = -5;
+            glow.userData.isGlow = true;
+            bulk.add(glow);
 
             // Try to load GLB model
             function tryLoadModel(attempts) {
@@ -832,6 +935,17 @@
                     }
                 }
 
+                // Add shadow under building
+                const shadowGeo = new THREE.PlaneGeometry(width + 10, 20);
+                const shadowMat = new THREE.MeshBasicMaterial({
+                    color: 0x000000,
+                    transparent: true,
+                    opacity: 0.4
+                });
+                const shadow = new THREE.Mesh(shadowGeo, shadowMat);
+                shadow.position.set(0, -height / 2 - 10, -0.2);
+                obstacle.add(shadow);
+
                 scene.add(obstacle);
                 obstacles.push(obstacle);
 
@@ -918,6 +1032,17 @@
                 const door = new THREE.Mesh(doorGeo, doorMat);
                 door.position.set(-width * 0.1, -height * 0.15, 0.15);
                 obstacle.add(door);
+
+                // Add shadow under car
+                const carShadowGeo = new THREE.PlaneGeometry(width + 5, 15);
+                const carShadowMat = new THREE.MeshBasicMaterial({
+                    color: 0x000000,
+                    transparent: true,
+                    opacity: 0.5
+                });
+                const carShadow = new THREE.Mesh(carShadowGeo, carShadowMat);
+                carShadow.position.set(0, -height / 2 - 8, -0.2);
+                obstacle.add(carShadow);
 
                 scene.add(obstacle);
                 obstacles.push(obstacle);
@@ -1029,6 +1154,17 @@
                 const door = new THREE.Mesh(doorGeo, doorMat);
                 door.position.set(width * 0.35, -height * 0.1, 0.15);
                 obstacle.add(door);
+
+                // Add shadow under bus
+                const busShadowGeo = new THREE.PlaneGeometry(width + 8, 18);
+                const busShadowMat = new THREE.MeshBasicMaterial({
+                    color: 0x000000,
+                    transparent: true,
+                    opacity: 0.5
+                });
+                const busShadow = new THREE.Mesh(busShadowGeo, busShadowMat);
+                busShadow.position.set(0, -height / 2 - 9, -0.2);
+                obstacle.add(busShadow);
 
                 scene.add(obstacle);
                 obstacles.push(obstacle);
@@ -1253,8 +1389,21 @@
         }
 
         // === ANIMATION LOOP ===
+        let animationTime = 0;
         function animate() {
             requestAnimationFrame(animate);
+            animationTime += 0.016; // ~60fps
+
+            // Pulse glow effect on Bulk
+            if (bulk) {
+                bulk.children.forEach(child => {
+                    if (child.userData.isGlow) {
+                        const pulseScale = 1 + Math.sin(animationTime * 3) * 0.15;
+                        child.scale.set(pulseScale, pulseScale, 1);
+                        child.material.opacity = 0.25 + Math.sin(animationTime * 3) * 0.1;
+                    }
+                });
+            }
 
             if (gameStarted && !gameOver) {
                 updateBulk();
