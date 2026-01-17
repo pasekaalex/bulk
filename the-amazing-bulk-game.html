@@ -1075,21 +1075,47 @@
             joystickBase.addEventListener('touchstart', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                
+
                 // Reset if we already have a touch
                 if (joystickTouchId !== null) {
                     resetJoystick();
                 }
-                
+
                 const touch = e.touches[0];
                 if (!touch) return;
-                
+
                 const rect = joystickBase.getBoundingClientRect();
                 joystickCenter.x = rect.left + rect.width / 2;
                 joystickCenter.y = rect.top + rect.height / 2;
                 joystickTouchId = touch.identifier;
                 joystickActive = true;
-                
+
+                // Process initial touch position immediately
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                const maxDist = rect.width / 2 - 25;
+
+                let deltaX = touch.clientX - centerX;
+                let deltaY = touch.clientY - centerY;
+                const dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+                if (dist > maxDist) {
+                    deltaX = (deltaX / dist) * maxDist;
+                    deltaY = (deltaY / dist) * maxDist;
+                }
+
+                joystickOffset.x = deltaX;
+                joystickOffset.y = deltaY;
+
+                joystickStick.style.transform = `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px))`;
+
+                // Update virtual keys based on initial position
+                const threshold = 20;
+                mobileKeys['KeyW'] = deltaY < -threshold;
+                mobileKeys['KeyS'] = deltaY > threshold;
+                mobileKeys['KeyA'] = deltaX < -threshold;
+                mobileKeys['KeyD'] = deltaX > threshold;
+
                 // Create global handler for this touch (handles touches that move outside joystick)
                 globalJoystickTouchHandler = (moveEvent) => {
                     if (!joystickActive || joystickTouchId === null) return;
