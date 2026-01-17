@@ -456,12 +456,13 @@
 
         /* Mobile Controls - Hidden on desktop */
         #mobile-controls {
-            position: absolute;
+            position: fixed;
+            top: 0;
             bottom: 0;
             left: 0;
             right: 0;
             display: none;
-            z-index: 20;
+            z-index: 9999;
             pointer-events: none;
         }
 
@@ -474,6 +475,7 @@
             width: 150px;
             height: 150px;
             pointer-events: all;
+            z-index: 10000;
         }
 
         /* Action Buttons - Hidden on desktop */
@@ -485,6 +487,7 @@
             flex-direction: column;
             gap: 15px;
             pointer-events: all;
+            z-index: 10000;
         }
 
         /* Camera Touch Area - Hidden on desktop */
@@ -497,6 +500,7 @@
             bottom: 180px;
             pointer-events: all;
             touch-action: none;
+            z-index: 9998;
         }
 
         @media (max-width: 768px) {
