@@ -446,15 +446,15 @@
             // Scene
             scene = new THREE.Scene();
 
-            // Gradient background (purple to dark)
+            // Gradient background (daylight sky)
             const canvas = document.createElement('canvas');
             canvas.width = 512;
             canvas.height = 512;
             const ctx = canvas.getContext('2d');
             const gradient = ctx.createLinearGradient(0, 0, 0, 512);
-            gradient.addColorStop(0, '#4a0e4e');
-            gradient.addColorStop(0.5, '#2d1b4e');
-            gradient.addColorStop(1, '#0a0a0a');
+            gradient.addColorStop(0, '#87CEEB'); // Sky blue
+            gradient.addColorStop(0.6, '#B0E0E6'); // Powder blue
+            gradient.addColorStop(1, '#E0F6FF'); // Very light blue
             ctx.fillStyle = gradient;
             ctx.fillRect(0, 0, 512, 512);
 
@@ -505,19 +505,19 @@
         }
 
         function createGround() {
-            // Road base
+            // Road base (gray asphalt)
             const roadGeo = new THREE.PlaneGeometry(2000, 150);
-            const roadMat = new THREE.MeshBasicMaterial({ color: 0x0d0d0d });
+            const roadMat = new THREE.MeshBasicMaterial({ color: 0x4a4a4a });
             const road = new THREE.Mesh(roadGeo, roadMat);
             road.position.set(0, GROUND_Y, -10);
             scene.add(road);
 
-            // Road edge glow
-            const edgeGeo1 = new THREE.PlaneGeometry(2000, 8);
+            // Road edge lines (white)
+            const edgeGeo1 = new THREE.PlaneGeometry(2000, 6);
             const edgeMat1 = new THREE.MeshBasicMaterial({
-                color: 0x9b30ff,
+                color: 0xffffff,
                 transparent: true,
-                opacity: 0.6
+                opacity: 0.9
             });
             const edge1 = new THREE.Mesh(edgeGeo1, edgeMat1);
             edge1.position.set(0, GROUND_Y + 75, -8);
@@ -527,36 +527,36 @@
             edge2.position.set(0, GROUND_Y - 75, -8);
             scene.add(edge2);
 
-            // Road stripes (animated)
+            // Road stripes (white dashed lines)
             for (let i = -1000; i < 1000; i += 100) {
                 const stripeGeo = new THREE.PlaneGeometry(60, 6);
-                const stripeMat = new THREE.MeshBasicMaterial({ color: 0xffd93d });
+                const stripeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
                 const stripe = new THREE.Mesh(stripeGeo, stripeMat);
                 stripe.position.set(i, GROUND_Y, -9);
                 stripe.userData.scrollSpeed = SCROLL_SPEED;
                 scene.add(stripe);
             }
 
-            // Center line (purple glow)
+            // Center line (yellow)
             const lineGeo = new THREE.PlaneGeometry(2000, 4);
             const lineMat = new THREE.MeshBasicMaterial({
-                color: 0xff00ff,
+                color: 0xffff00,
                 transparent: true,
-                opacity: 0.8
+                opacity: 0.9
             });
             const line = new THREE.Mesh(lineGeo, lineMat);
             line.position.set(0, GROUND_Y + 75, -8.5);
             scene.add(line);
 
-            // Road texture pattern
+            // Road texture pattern (darker spots on asphalt)
             for (let i = -1000; i < 1000; i += 40) {
                 for (let j = -60; j < 60; j += 30) {
                     if (Math.abs(j) > 10 && Math.random() > 0.7) {
                         const dotGeo = new THREE.PlaneGeometry(3, 3);
                         const dotMat = new THREE.MeshBasicMaterial({
-                            color: 0x2a2a2a,
+                            color: 0x3a3a3a,
                             transparent: true,
-                            opacity: 0.5
+                            opacity: 0.6
                         });
                         const dot = new THREE.Mesh(dotGeo, dotMat);
                         dot.position.set(i, GROUND_Y + j, -9.5);
@@ -567,50 +567,81 @@
         }
 
         function createBackground() {
-            // Stars in the background
-            for (let i = 0; i < 80; i++) {
-                const starSize = 2 + Math.random() * 3;
-                const starGeo = new THREE.CircleGeometry(starSize, 6);
-                const starMat = new THREE.MeshBasicMaterial({
-                    color: Math.random() > 0.5 ? 0xffffff : 0xffffaa,
-                    transparent: true,
-                    opacity: 0.6 + Math.random() * 0.4
-                });
-                const star = new THREE.Mesh(starGeo, starMat);
-                star.position.set(
+            // Sun
+            const sunGeo = new THREE.CircleGeometry(60, 32);
+            const sunMat = new THREE.MeshBasicMaterial({
+                color: 0xffff00,
+                transparent: true,
+                opacity: 0.8
+            });
+            const sun = new THREE.Mesh(sunGeo, sunMat);
+            sun.position.set(400, 250, -150);
+            scene.add(sun);
+
+            // Sun glow
+            const sunGlowGeo = new THREE.CircleGeometry(80, 32);
+            const sunGlowMat = new THREE.MeshBasicMaterial({
+                color: 0xffdd44,
+                transparent: true,
+                opacity: 0.3
+            });
+            const sunGlow = new THREE.Mesh(sunGlowGeo, sunGlowMat);
+            sunGlow.position.set(400, 250, -151);
+            scene.add(sunGlow);
+
+            // Clouds
+            for (let i = 0; i < 15; i++) {
+                const cloudGroup = new THREE.Group();
+
+                // Create fluffy cloud with multiple circles
+                for (let c = 0; c < 4; c++) {
+                    const cloudSize = 20 + Math.random() * 25;
+                    const cloudGeo = new THREE.CircleGeometry(cloudSize, 16);
+                    const cloudMat = new THREE.MeshBasicMaterial({
+                        color: 0xffffff,
+                        transparent: true,
+                        opacity: 0.7
+                    });
+                    const cloudPart = new THREE.Mesh(cloudGeo, cloudMat);
+                    cloudPart.position.set(c * 30 - 45, Math.random() * 10 - 5, 0);
+                    cloudGroup.add(cloudPart);
+                }
+
+                cloudGroup.position.set(
                     -600 + Math.random() * 1200,
-                    -200 + Math.random() * 600,
-                    -100
+                    100 + Math.random() * 200,
+                    -120 - Math.random() * 30
                 );
-                scene.add(star);
+                scene.add(cloudGroup);
             }
 
-            // Background buildings with windows
+            // Background buildings with windows (daytime colors)
             for (let i = 0; i < 10; i++) {
                 const width = 80 + Math.random() * 60;
                 const height = 150 + Math.random() * 200;
 
                 const building = new THREE.Group();
 
-                // Building body
+                // Building body (light colors for daytime)
+                const buildingColors = [0x8b9dc3, 0xa8b8d8, 0xc9d4e8, 0xb0c4de];
                 const buildingGeo = new THREE.PlaneGeometry(width, height);
                 const buildingMat = new THREE.MeshBasicMaterial({
-                    color: 0x1a0f2e,
-                    opacity: 0.5,
+                    color: buildingColors[Math.floor(Math.random() * buildingColors.length)],
+                    opacity: 0.6,
                     transparent: true
                 });
                 const buildingMesh = new THREE.Mesh(buildingGeo, buildingMat);
                 building.add(buildingMesh);
 
-                // Add windows to background buildings
+                // Add windows to background buildings (darker for daytime)
                 const numWindows = Math.floor(height / 30);
                 for (let w = 0; w < numWindows; w++) {
                     if (Math.random() > 0.6) {
                         const windowGeo = new THREE.PlaneGeometry(width * 0.6, 8);
                         const windowMat = new THREE.MeshBasicMaterial({
-                            color: 0xffd93d,
+                            color: 0x4a5a6a,
                             transparent: true,
-                            opacity: 0.3
+                            opacity: 0.5
                         });
                         const windowMesh = new THREE.Mesh(windowGeo, windowMat);
                         windowMesh.position.set(0, -height/2 + w * 30 + 15, 0.1);
@@ -632,12 +663,12 @@
             bulk.position.set(-200, bulkY, 0);
             scene.add(bulk);
 
-            // Add glow effect behind Bulk
+            // Add glow effect behind Bulk (lighter for daytime)
             const glowGeo = new THREE.CircleGeometry(80, 32);
             const glowMat = new THREE.MeshBasicMaterial({
-                color: 0x9b30ff,
+                color: 0xffdd88,
                 transparent: true,
-                opacity: 0.3
+                opacity: 0.4
             });
             const glow = new THREE.Mesh(glowGeo, glowMat);
             glow.position.z = -5;
@@ -862,22 +893,25 @@
                 obstacle.position.set(600, GROUND_Y + height / 2 + 75, 0);
                 obstacle.userData = { type: 'building', scored: false, destroyed: false, height: height };
 
-                // Main building body
+                // Main building body (bright colors for daytime)
+                const buildingColors = [0x6a8caf, 0x8faadc, 0x7fb3d5, 0xa8c5e2];
                 const bodyGeo = new THREE.PlaneGeometry(width, height);
-                const bodyMat = new THREE.MeshBasicMaterial({ color: 0x1a0f2e });
+                const bodyMat = new THREE.MeshBasicMaterial({
+                    color: buildingColors[Math.floor(Math.random() * buildingColors.length)]
+                });
                 const body = new THREE.Mesh(bodyGeo, bodyMat);
                 obstacle.add(body);
 
-                // Building outline
+                // Building outline (darker blue-gray)
                 const outlineGeo = new THREE.PlaneGeometry(width + 3, height + 3);
-                const outlineMat = new THREE.MeshBasicMaterial({ color: 0x4a2b7c });
+                const outlineMat = new THREE.MeshBasicMaterial({ color: 0x4a5a70 });
                 const outline = new THREE.Mesh(outlineGeo, outlineMat);
                 outline.position.z = -0.1;
                 obstacle.add(outline);
 
                 // Rooftop details
                 const roofGeo = new THREE.PlaneGeometry(width + 2, 15);
-                const roofMat = new THREE.MeshBasicMaterial({ color: 0x2d1b4e });
+                const roofMat = new THREE.MeshBasicMaterial({ color: 0x5a6a80 });
                 const roof = new THREE.Mesh(roofGeo, roofMat);
                 roof.position.set(0, height / 2 - 7.5, 0.1);
                 obstacle.add(roof);
@@ -912,11 +946,10 @@
 
                 for (let row = 0; row < windowRows; row++) {
                     for (let col = 0; col < windowCols; col++) {
-                        // Randomly lit windows
-                        const isLit = Math.random() > 0.4;
+                        // Daytime windows (reflecting sky)
                         const windowGeo = new THREE.PlaneGeometry(10, 14);
                         const windowMat = new THREE.MeshBasicMaterial({
-                            color: isLit ? 0xffd93d : 0x0a0a0a
+                            color: Math.random() > 0.5 ? 0x87ceeb : 0x5a8aaa
                         });
                         const window = new THREE.Mesh(windowGeo, windowMat);
 
@@ -926,9 +959,9 @@
                         window.position.set(xPos, yPos, 0.1);
                         obstacle.add(window);
 
-                        // Window frames
+                        // Window frames (white for daytime)
                         const frameGeo = new THREE.PlaneGeometry(11, 15);
-                        const frameMat = new THREE.MeshBasicMaterial({ color: 0x2a2a2a });
+                        const frameMat = new THREE.MeshBasicMaterial({ color: 0xddeeff });
                         const frame = new THREE.Mesh(frameGeo, frameMat);
                         frame.position.set(xPos, yPos, 0.09);
                         obstacle.add(frame);
