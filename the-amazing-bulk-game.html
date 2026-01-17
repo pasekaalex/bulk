@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>THE AMAZING BULK - The Video Game</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Bangers&family=Permanent+Marker&family=Press+Start+2P&display=swap');
@@ -494,7 +494,7 @@
             top: 0;
             left: 0;
             right: 0;
-            bottom: 200px;
+            bottom: calc(220px + env(safe-area-inset-bottom, 20px));
             pointer-events: all;
             touch-action: none;
         }
@@ -506,14 +506,16 @@
 
             #joystick-container {
                 display: block;
-                bottom: 120px; /* Higher up on screen */
-                left: 20px;
+                bottom: calc(140px + env(safe-area-inset-bottom, 20px));
+                left: max(20px, env(safe-area-inset-left, 20px));
                 width: 150px;
                 height: 150px;
             }
 
             #action-buttons {
                 display: flex;
+                bottom: calc(120px + env(safe-area-inset-bottom, 20px));
+                right: max(20px, env(safe-area-inset-right, 20px));
             }
 
             #camera-touch-area {
@@ -695,8 +697,8 @@
             #joystick-container {
                 width: 140px;
                 height: 140px;
-                bottom: 100px; /* Higher up on smaller screens too */
-                left: 15px;
+                bottom: calc(120px + env(safe-area-inset-bottom, 20px));
+                left: max(15px, env(safe-area-inset-left, 15px));
             }
 
             #joystick-base {
@@ -716,8 +718,8 @@
             }
 
             #action-buttons {
-                bottom: 15px;
-                right: 15px;
+                bottom: calc(100px + env(safe-area-inset-bottom, 20px));
+                right: max(15px, env(safe-area-inset-right, 15px));
                 gap: 12px;
             }
 
@@ -771,7 +773,7 @@
             }
 
             #camera-touch-area {
-                bottom: 180px;
+                bottom: calc(200px + env(safe-area-inset-bottom, 20px));
             }
 
             #combo-count {
