@@ -16,16 +16,43 @@
             touch-action: none;
             -webkit-user-select: none;
             user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
         }
 
         #game-container {
-            width: 100vw;
-            height: 100vh;
             position: relative;
+            width: min(90vw, 1200px);
+            height: min(80vh, 700px);
+            background: #000;
+            border: 12px solid #9b30ff;
+            border-radius: 20px;
+            box-shadow:
+                0 0 30px #9b30ff,
+                inset 0 0 20px rgba(155, 48, 255, 0.3);
+            overflow: hidden;
+        }
+
+        #game-container::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 30px;
+            background: linear-gradient(90deg, #9b30ff, #ff00ff, #9b30ff);
+            border-radius: 0 0 10px 10px;
+            z-index: 200;
+            box-shadow: 0 5px 15px rgba(155, 48, 255, 0.5);
         }
 
         canvas {
             display: block;
+            width: 100%;
+            height: 100%;
         }
 
         #title-screen {
@@ -44,7 +71,7 @@
 
         .title-main {
             font-family: 'Bangers', cursive;
-            font-size: clamp(3rem, 10vw, 6rem);
+            font-size: clamp(2.5rem, 8vw, 5rem);
             color: #9b30ff;
             text-shadow: 0 0 20px #ff00ff, 4px 4px 0 #000;
             letter-spacing: 0.1em;
@@ -57,15 +84,15 @@
         }
 
         .subtitle {
-            font-size: clamp(0.8rem, 2vw, 1.2rem);
+            font-size: clamp(0.7rem, 2vw, 1rem);
             color: #ffd93d;
-            margin-top: 20px;
+            margin-top: 15px;
         }
 
         .instructions {
-            font-size: 0.5rem;
+            font-size: 0.45rem;
             color: #fff;
-            margin-top: 30px;
+            margin-top: 25px;
             text-align: center;
             line-height: 2.5;
             max-width: 90%;
@@ -73,14 +100,14 @@
 
         .instructions .highlight {
             color: #39FF14;
-            font-size: 0.6rem;
+            font-size: 0.55rem;
         }
 
         .start-btn {
-            margin-top: 40px;
-            padding: 20px 60px;
+            margin-top: 30px;
+            padding: 15px 50px;
             font-family: 'Bangers', cursive;
-            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            font-size: clamp(1.2rem, 4vw, 2rem);
             background: linear-gradient(180deg, #9b30ff 0%, #6b0099 100%);
             color: #fff;
             border: 4px solid #ff00ff;
@@ -105,7 +132,7 @@
             left: 20px;
             right: 20px;
             color: #fff;
-            font-size: 14px;
+            font-size: 12px;
             text-shadow: 2px 2px 0 #000;
             z-index: 50;
             pointer-events: none;
@@ -121,14 +148,14 @@
         }
 
         #score {
-            font-size: 32px;
+            font-size: 28px;
             color: #ffd93d;
             text-shadow: 0 0 10px #ffd93d, 3px 3px 0 #000;
         }
 
         #high-score {
             margin-top: 5px;
-            font-size: 12px;
+            font-size: 10px;
             color: #9b30ff;
         }
 
@@ -137,14 +164,14 @@
         }
 
         #rage-meter-label {
-            font-size: 10px;
+            font-size: 9px;
             color: #ff00ff;
             margin-bottom: 5px;
         }
 
         #rage-meter {
-            width: 150px;
-            height: 20px;
+            width: 130px;
+            height: 18px;
             background: rgba(0, 0, 0, 0.7);
             border: 2px solid #9b30ff;
             border-radius: 10px;
@@ -185,17 +212,17 @@
 
         .game-over-title {
             font-family: 'Bangers', cursive;
-            font-size: clamp(2.5rem, 8vw, 5rem);
+            font-size: clamp(2rem, 7vw, 4rem);
             color: #ff0000;
             text-shadow: 0 0 20px #ff0000, 4px 4px 0 #000;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
 
         .final-score, .high-score-display {
-            font-size: clamp(1.2rem, 3vw, 2rem);
+            font-size: clamp(1rem, 3vw, 1.8rem);
             color: #ffd93d;
             text-shadow: 0 0 10px #ffd93d, 2px 2px 0 #000;
-            margin: 10px 0;
+            margin: 8px 0;
         }
 
         .high-score-display {
@@ -204,10 +231,10 @@
         }
 
         .restart-btn {
-            margin-top: 30px;
-            padding: 15px 50px;
+            margin-top: 25px;
+            padding: 12px 40px;
             font-family: 'Bangers', cursive;
-            font-size: clamp(1.2rem, 3vw, 2rem);
+            font-size: clamp(1rem, 3vw, 1.8rem);
             background: linear-gradient(180deg, #39FF14 0%, #2a9e0f 100%);
             color: #000;
             border: 4px solid #39FF14;
@@ -222,9 +249,9 @@
         .restart-btn:active { transform: scale(0.95); }
 
         .back-link {
-            margin-top: 20px;
-            padding: 10px 30px;
-            font-size: 0.8rem;
+            margin-top: 15px;
+            padding: 8px 25px;
+            font-size: 0.7rem;
             color: #9b30ff;
             text-decoration: none;
             border: 2px solid #9b30ff;
@@ -239,27 +266,14 @@
         }
 
         @media (max-width: 768px) {
+            #game-container {
+                width: 95vw;
+                height: 85vh;
+                border-width: 8px;
+            }
+
             .title-main {
-                font-size: clamp(2.5rem, 8vw, 4rem);
-            }
-
-            .instructions {
-                font-size: 0.45rem;
-                padding: 0 20px;
-            }
-
-            #score {
-                font-size: 28px;
-            }
-
-            #rage-meter {
-                width: 120px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .title-main {
-                font-size: 2rem;
+                font-size: clamp(2rem, 7vw, 3.5rem);
             }
 
             #score {
@@ -268,6 +282,24 @@
 
             #rage-meter {
                 width: 100px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #game-container {
+                border-width: 6px;
+            }
+
+            .title-main {
+                font-size: 1.8rem;
+            }
+
+            #score {
+                font-size: 20px;
+            }
+
+            #rage-meter {
+                width: 80px;
                 height: 15px;
             }
         }
@@ -331,11 +363,11 @@
         // Physics - 2D side scroller
         const GRAVITY = 0.6;
         const JUMP_STRENGTH = -12;
-        const SCROLL_SPEED = 5;
-        const GROUND_Y = 50;
+        const SCROLL_SPEED = 3; // Slower movement
+        const GROUND_Y = -250; // Lower ground position
 
         // Game state
-        let bulkY = 300;
+        let bulkY = GROUND_Y + 50; // Start on ground
         let bulkVelocity = 0;
         let bulkRotation = 0;
         let obstacles = [];
@@ -348,15 +380,18 @@
 
         // === INITIALIZATION ===
         function init() {
+            const container = document.getElementById('game-container');
+
             // Scene
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x1a0a2e);
 
             // Camera - Orthographic for 2D look
-            const aspect = window.innerWidth / window.innerHeight;
+            const aspect = container.clientWidth / container.clientHeight;
+            const viewSize = 400;
             camera = new THREE.OrthographicCamera(
-                -400 * aspect, 400 * aspect,
-                400, -400,
+                -viewSize * aspect, viewSize * aspect,
+                viewSize, -viewSize,
                 0.1, 1000
             );
             camera.position.z = 500;
@@ -364,8 +399,8 @@
 
             // Renderer
             renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            document.getElementById('game-container').appendChild(renderer.domElement);
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            container.appendChild(renderer.domElement);
 
             // Lights
             const ambient = new THREE.AmbientLight(0xffffff, 0.6);
@@ -396,7 +431,7 @@
 
         function createGround() {
             // Road
-            const roadGeo = new THREE.PlaneGeometry(2000, 100);
+            const roadGeo = new THREE.PlaneGeometry(2000, 150);
             const roadMat = new THREE.MeshBasicMaterial({ color: 0x1a1a1a });
             const road = new THREE.Mesh(roadGeo, roadMat);
             road.position.set(0, GROUND_Y, -10);
@@ -415,7 +450,7 @@
             const lineGeo = new THREE.PlaneGeometry(2000, 3);
             const lineMat = new THREE.MeshBasicMaterial({ color: 0x9b30ff });
             const line = new THREE.Mesh(lineGeo, lineMat);
-            line.position.set(0, GROUND_Y + 50, -9);
+            line.position.set(0, GROUND_Y + 75, -9);
             scene.add(line);
         }
 
@@ -433,7 +468,7 @@
                 const building = new THREE.Mesh(buildingGeo, buildingMat);
                 building.position.set(
                     -500 + i * 120,
-                    GROUND_Y + height / 2 + 50,
+                    GROUND_Y + height / 2 + 75,
                     -50
                 );
                 scene.add(building);
@@ -535,13 +570,17 @@
         }
 
         function onWindowResize() {
-            const aspect = window.innerWidth / window.innerHeight;
-            camera.left = -400 * aspect;
-            camera.right = 400 * aspect;
-            camera.top = 400;
-            camera.bottom = -400;
+            const container = document.getElementById('game-container');
+            const aspect = container.clientWidth / container.clientHeight;
+            const viewSize = 400;
+
+            camera.left = -viewSize * aspect;
+            camera.right = viewSize * aspect;
+            camera.top = viewSize;
+            camera.bottom = -viewSize;
             camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
+
+            renderer.setSize(container.clientWidth, container.clientHeight);
         }
 
         // === GAME LOGIC ===
@@ -558,22 +597,27 @@
             bulkY += bulkVelocity;
             bulk.position.y = bulkY;
 
-            // Ground collision
-            if (bulkY <= GROUND_Y + 100) {
-                bulkY = GROUND_Y + 100;
+            // Ground collision - LAND SAFELY, don't end game
+            if (bulkY <= GROUND_Y + 50) {
+                bulkY = GROUND_Y + 50;
                 bulkVelocity = 0;
-                endGame();
+                bulkRotation = 0; // Reset rotation when on ground
             }
 
-            // Ceiling
-            if (bulkY > 700) {
-                bulkY = 700;
+            // Ceiling - just stop movement
+            if (bulkY > 350) {
+                bulkY = 350;
                 bulkVelocity = 0;
             }
 
             // Rotation based on velocity (physics-based tilt)
-            const targetRotation = bulkVelocity * 0.04; // Tilt up when jumping, down when falling
-            bulkRotation += (targetRotation - bulkRotation) * 0.1; // Smooth interpolation
+            if (bulkY > GROUND_Y + 50) { // Only rotate when airborne
+                const targetRotation = bulkVelocity * 0.04;
+                bulkRotation += (targetRotation - bulkRotation) * 0.1;
+            } else {
+                // Smoothly return to 0 rotation when on ground
+                bulkRotation += (0 - bulkRotation) * 0.2;
+            }
 
             if (bulkModel) {
                 bulkModel.rotation.z = bulkRotation;
@@ -615,7 +659,7 @@
                             scene.remove(obs);
                             obstacles.splice(i, 1);
                         } else {
-                            // Game over
+                            // Game over - hit obstacle
                             endGame();
                         }
                     }
@@ -639,7 +683,7 @@
                 const obstacleGeo = new THREE.PlaneGeometry(width, height);
                 const obstacleMat = new THREE.MeshBasicMaterial({ color: 0x2d1b4e });
                 const obstacle = new THREE.Mesh(obstacleGeo, obstacleMat);
-                obstacle.position.set(600, GROUND_Y + height / 2 + 50, 0);
+                obstacle.position.set(600, GROUND_Y + height / 2 + 75, 0);
                 obstacle.userData = { type: 'building', scored: false, destroyed: false, height: height };
                 scene.add(obstacle);
                 obstacles.push(obstacle);
@@ -664,7 +708,7 @@
                     color: colors[Math.floor(Math.random() * colors.length)]
                 });
                 const obstacle = new THREE.Mesh(obstacleGeo, obstacleMat);
-                obstacle.position.set(600, GROUND_Y + height / 2 + 50, 0);
+                obstacle.position.set(600, GROUND_Y + height / 2 + 75, 0);
                 obstacle.userData = { type: 'car', scored: false, destroyed: false, height: height };
                 scene.add(obstacle);
                 obstacles.push(obstacle);
@@ -691,7 +735,7 @@
                 color: 0x9b30ff
             });
             const powerUp = new THREE.Mesh(powerUpGeo, powerUpMat);
-            powerUp.position.set(600, 200 + Math.random() * 300, 5);
+            powerUp.position.set(600, GROUND_Y + 150 + Math.random() * 200, 5);
             powerUp.userData = { collected: false, pulse: 0 };
             scene.add(powerUp);
             powerUps.push(powerUp);
@@ -846,7 +890,7 @@
             gameStarted = true;
             gameOver = false;
             score = 0;
-            bulkY = 300;
+            bulkY = GROUND_Y + 50; // Start on ground
             bulkVelocity = 0;
             bulkRotation = 0;
             obstacleSpawnTimer = 0;
