@@ -803,7 +803,7 @@
 
             // Ceiling - fly too high = GAME OVER (flew out of orbit!)
             if (bulkY > MAX_HEIGHT) {
-                endGame();
+                endGame('flew');
                 return;
             }
 
@@ -869,7 +869,7 @@
                             obstacles.splice(i, 1);
                         } else {
                             // Game over - hit obstacle
-                            endGame();
+                            endGame('crashed');
                         }
                     }
                 }
@@ -1399,11 +1399,19 @@
             updateRageMeter();
         }
 
-        function endGame() {
+        function endGame(reason = 'crashed') {
             if (gameOver) return;
 
             gameOver = true;
             playSound('gameOver');
+
+            // Change title based on how they died
+            const gameOverTitle = document.querySelector('.game-over-title');
+            if (reason === 'flew') {
+                gameOverTitle.textContent = 'BULK FLEW AWAY!';
+            } else {
+                gameOverTitle.textContent = 'BULK FELL!';
+            }
 
             document.getElementById('final-score').textContent = 'SCORE: ' + score;
             document.getElementById('high-score-display').textContent = 'BEST: ' + highScore;
