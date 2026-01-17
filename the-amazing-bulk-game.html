@@ -510,9 +510,9 @@
 
             #joystick-container {
                 display: block;
-                bottom: auto;
-                top: 50%;
-                transform: translateY(-50%);
+                bottom: 40px;
+                top: auto;
+                transform: none;
                 left: 20px;
                 width: 150px;
                 height: 150px;
@@ -520,9 +520,9 @@
 
             #action-buttons {
                 display: flex;
-                bottom: auto;
-                top: 50%;
-                transform: translateY(-50%);
+                bottom: 40px;
+                top: auto;
+                transform: none;
                 right: 20px;
             }
 
@@ -705,9 +705,9 @@
             #joystick-container {
                 width: 140px;
                 height: 140px;
-                bottom: auto;
-                top: 50%;
-                transform: translateY(-50%);
+                bottom: 30px;
+                top: auto;
+                transform: none;
                 left: 15px;
             }
 
@@ -728,9 +728,9 @@
             }
 
             #action-buttons {
-                bottom: auto;
-                top: 50%;
-                transform: translateY(-50%);
+                bottom: 30px;
+                top: auto;
+                transform: none;
                 right: 15px;
                 gap: 12px;
             }
@@ -1109,12 +1109,22 @@
 
                 joystickStick.style.transform = `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px))`;
 
-                // Update virtual keys based on initial position
-                const threshold = 20;
-                mobileKeys['KeyW'] = deltaY < -threshold;
-                mobileKeys['KeyS'] = deltaY > threshold;
-                mobileKeys['KeyA'] = deltaX < -threshold;
-                mobileKeys['KeyD'] = deltaX > threshold;
+                // Update virtual keys based on initial position with dead zone
+                const threshold = 15;
+                const deadZone = 5; // Small center dead zone
+
+                if (Math.abs(deltaX) < deadZone && Math.abs(deltaY) < deadZone) {
+                    // In dead zone - no movement
+                    mobileKeys['KeyW'] = false;
+                    mobileKeys['KeyS'] = false;
+                    mobileKeys['KeyA'] = false;
+                    mobileKeys['KeyD'] = false;
+                } else {
+                    mobileKeys['KeyW'] = deltaY < -threshold;
+                    mobileKeys['KeyS'] = deltaY > threshold;
+                    mobileKeys['KeyA'] = deltaX < -threshold;
+                    mobileKeys['KeyD'] = deltaX > threshold;
+                }
 
                 // Create global handler for this touch (handles touches that move outside joystick)
                 globalJoystickTouchHandler = (moveEvent) => {
@@ -1148,12 +1158,22 @@
 
                     joystickStick.style.transform = `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px))`;
 
-                    // Update virtual keys based on joystick position
-                    const threshold = 20;
-                    mobileKeys['KeyW'] = deltaY < -threshold;
-                    mobileKeys['KeyS'] = deltaY > threshold;
-                    mobileKeys['KeyA'] = deltaX < -threshold;
-                    mobileKeys['KeyD'] = deltaX > threshold;
+                    // Update virtual keys based on joystick position with dead zone
+                    const threshold = 15;
+                    const deadZone = 5; // Small center dead zone
+
+                    if (Math.abs(deltaX) < deadZone && Math.abs(deltaY) < deadZone) {
+                        // In dead zone - no movement
+                        mobileKeys['KeyW'] = false;
+                        mobileKeys['KeyS'] = false;
+                        mobileKeys['KeyA'] = false;
+                        mobileKeys['KeyD'] = false;
+                    } else {
+                        mobileKeys['KeyW'] = deltaY < -threshold;
+                        mobileKeys['KeyS'] = deltaY > threshold;
+                        mobileKeys['KeyA'] = deltaX < -threshold;
+                        mobileKeys['KeyD'] = deltaX > threshold;
+                    }
                 };
                 
                 globalJoystickEndHandler = (endEvent) => {
