@@ -16,17 +16,19 @@
         body {
             background: linear-gradient(135deg, #1a0a2e 0%, #2d1b4e 50%, #1a0a2e 100%);
             font-family: 'Press Start 2P', monospace;
-            overflow: hidden;
+            overflow-x: hidden;
+            overflow-y: auto;
             width: 100vw;
-            height: 100vh;
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 20px 0;
         }
 
         #game-container {
             width: min(90vw, 500px);
-            height: min(90vh, 700px);
+            max-height: 90vh;
             background: #0d0d0d;
             border: 8px solid #9b30ff;
             border-radius: 30px;
