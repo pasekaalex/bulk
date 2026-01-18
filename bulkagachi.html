@@ -517,7 +517,7 @@
     <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/js/loaders/GLTFLoader.js"></script>
     <script>
         // Game State
-        let scene, camera, renderer, bulk, bulkModel, mixer, animations = {};
+        let scene, camera, renderer, bulk, bulkModel;
         let hunger = 100;
         let happiness = 100;
         let cleanliness = 100;
@@ -528,7 +528,6 @@
         let isSleeping = false;
         let isDead = false;
         let totalCareActions = 0;
-        let clock = new THREE.Clock();
 
         // Audio Context for sound effects
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -639,47 +638,9 @@
             scene.add(bulk);
 
             const loader = new THREE.GLTFLoader();
-            loader.load('rigged_bulk.glb',
+            loader.load('bulk.glb',
                 (gltf) => {
                     bulkModel = gltf.scene;
-
-                    // Check for animations
-                    console.log('Model loaded! Checking for animations...');
-                    console.log('Animations found:', gltf.animations.length);
-
-                    if (gltf.animations && gltf.animations.length > 0) {
-                        // Rigged model with animations!
-                        mixer = new THREE.AnimationMixer(bulkModel);
-
-                        // Store all animations
-                        gltf.animations.forEach((clip) => {
-                            console.log('Animation clip:', clip.name);
-                            animations[clip.name] = mixer.clipAction(clip);
-                        });
-
-                        // Play idle animation if available
-                        if (animations['Idle'] || animations['idle'] || animations['Armature|idle']) {
-                            const idleAnim = animations['Idle'] || animations['idle'] || animations['Armature|idle'];
-                            idleAnim.play();
-                            console.log('Playing idle animation');
-                        } else if (gltf.animations.length > 0) {
-                            // Play first animation as default
-                            const firstAnim = mixer.clipAction(gltf.animations[0]);
-                            firstAnim.play();
-                            console.log('Playing first animation:', gltf.animations[0].name);
-                        }
-                    } else {
-                        console.log('No animations found - model is rigged but has no baked animations');
-                    }
-
-                    // Check for bones/armature
-                    let hasBones = false;
-                    bulkModel.traverse((child) => {
-                        if (child.isBone || child.type === 'Bone') {
-                            hasBones = true;
-                        }
-                    });
-                    console.log('Has bones/armature:', hasBones);
 
                     // Scale model
                     const box = new THREE.Box3().setFromObject(bulkModel);
@@ -692,27 +653,8 @@
                 },
                 undefined,
                 (error) => {
-                    console.log('Error loading rigged model:', error);
-                    console.log('Trying fallback to old bulk.glb...');
-
-                    // Try old model as fallback
-                    loader.load('bulk.glb',
-                        (gltf) => {
-                            bulkModel = gltf.scene;
-                            const box = new THREE.Box3().setFromObject(bulkModel);
-                            const size = box.getSize(new THREE.Vector3());
-                            const maxDim = Math.max(size.x, size.y, size.z);
-                            const scale = 2 / maxDim;
-                            bulkModel.scale.set(scale, scale, scale);
-                            bulk.add(bulkModel);
-                            console.log('Loaded old bulk.glb as fallback');
-                        },
-                        undefined,
-                        (error2) => {
-                            console.log('Both models failed, using fallback cube');
-                            createFallbackBulk();
-                        }
-                    );
+                    console.log('Error loading model:', error);
+                    createFallbackBulk();
                 }
             );
 
@@ -761,15 +703,8 @@
         function animate() {
             requestAnimationFrame(animate);
 
-            const delta = clock.getDelta();
-
-            // Update animation mixer if it exists
-            if (mixer) {
-                mixer.update(delta);
-            }
-
-            // Idle animation - gentle bobbing with mood variation (only if no baked animations)
-            if (bulk && !isDead && !mixer) {
+            // Idle animation - gentle bobbing with mood variation
+            if (bulk && !isDead) {
                 const avgStats = (hunger + happiness + cleanliness) / 3;
 
                 // Different animation when sleeping
