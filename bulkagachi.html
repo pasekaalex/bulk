@@ -96,6 +96,13 @@
             height: 100%;
             transition: width 0.5s ease;
             border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(0.4rem, 1.5vw, 0.5rem);
+            font-weight: bold;
+            color: #000;
+            text-shadow: 0 0 3px rgba(255,255,255,0.8);
         }
 
         .stat-bar.hunger {
@@ -111,6 +118,15 @@
         .stat-bar.cleanliness {
             background: linear-gradient(90deg, #00ffff, #0088ff);
             box-shadow: 0 0 10px #00ffff;
+        }
+
+        .stat-bar.low {
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
 
         #actions {
@@ -244,6 +260,61 @@
         .shake {
             animation: shake 0.5s ease;
         }
+
+        @keyframes spin {
+            0% { transform: rotateY(0deg); }
+            100% { transform: rotateY(360deg); }
+        }
+
+        @keyframes jump {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-30px) scale(1.1); }
+        }
+
+        .particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 100;
+            animation: particleFade 1s ease-out forwards;
+        }
+
+        @keyframes particleFade {
+            0% {
+                opacity: 1;
+                transform: translate(0, 0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--tx), var(--ty)) scale(0);
+            }
+        }
+
+        #home-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 3px solid #9b30ff;
+            border-radius: 12px;
+            padding: 8px 12px;
+            color: #fff;
+            font-size: clamp(0.5rem, 2vw, 0.6rem);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            z-index: 10;
+            transition: all 0.3s;
+            text-shadow: 0 0 5px #9b30ff;
+        }
+
+        #home-btn:hover {
+            background: rgba(155, 48, 255, 0.3);
+            transform: scale(1.05);
+        }
     </style>
 </head>
 <body>
@@ -251,6 +322,10 @@
         <div id="title">🎮 BULKAGACHI 🎮</div>
 
         <div id="scene-container">
+            <a href="index.html" id="home-btn">
+                <span>🏠</span>
+                <span>HOME</span>
+            </a>
             <div id="mood-indicator">
                 <span id="mood-emoji">😊</span>
                 <span id="mood-text">HAPPY</span>
@@ -305,6 +380,9 @@
         let cleanliness = 100;
         let lastUpdateTime = Date.now();
 
+        // Audio Context for sound effects
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
         // Load saved state
         function loadState() {
             const saved = localStorage.getItem('bulkagachi');
@@ -322,6 +400,24 @@
                 hunger = Math.max(0, hunger - minutesPassed * 2);
                 happiness = Math.max(0, happiness - minutesPassed * 1.5);
                 cleanliness = Math.max(0, cleanliness - minutesPassed * 1);
+
+                // Show welcome back message
+                if (minutesPassed > 1) {
+                    setTimeout(() => {
+                        if (minutesPassed < 60) {
+                            showMessage(`WELCOME BACK! YOU WERE GONE FOR ${Math.round(minutesPassed)} MIN! 👋`);
+                        } else if (minutesPassed < 1440) {
+                            showMessage(`WELCOME BACK! YOU WERE GONE FOR ${Math.round(minutesPassed / 60)} HOURS! 👋`);
+                        } else {
+                            showMessage(`WELCOME BACK! YOU WERE GONE FOR ${Math.round(minutesPassed / 1440)} DAYS! 👋`);
+                        }
+                    }, 1000);
+                }
+            } else {
+                // First time playing
+                setTimeout(() => {
+                    showMessage("HELLO! I'M BULK! TAKE CARE OF ME! 💜");
+                }, 1000);
             }
         }
 
@@ -421,10 +517,36 @@
         function animate() {
             requestAnimationFrame(animate);
 
-            // Idle animation - gentle bobbing
+            // Idle animation - gentle bobbing with mood variation
             if (bulk) {
-                bulk.position.y = Math.sin(Date.now() * 0.001) * 0.1;
+                const avgStats = (hunger + happiness + cleanliness) / 3;
+                const bobbingSpeed = avgStats > 50 ? 0.001 : 0.0005; // Slower when sad
+                const bobbingAmount = avgStats > 50 ? 0.1 : 0.05; // Less movement when sad
+
+                bulk.position.y = Math.sin(Date.now() * bobbingSpeed) * bobbingAmount;
                 bulk.rotation.y = Math.sin(Date.now() * 0.0005) * 0.2;
+
+                // Change Bulk's color based on mood
+                if (bulkModel && bulkModel.traverse) {
+                    bulkModel.traverse((child) => {
+                        if (child.isMesh && child.material) {
+                            const material = child.material;
+                            if (avgStats > 70) {
+                                material.emissive = new THREE.Color(0x9b30ff); // Happy purple glow
+                                material.emissiveIntensity = 0.3;
+                            } else if (avgStats > 40) {
+                                material.emissive = new THREE.Color(0x6a0dad); // Neutral purple
+                                material.emissiveIntensity = 0.1;
+                            } else if (avgStats > 20) {
+                                material.emissive = new THREE.Color(0x4a0080); // Sad dark purple
+                                material.emissiveIntensity = 0.05;
+                            } else {
+                                material.emissive = new THREE.Color(0x2d004d); // Miserable very dark
+                                material.emissiveIntensity = 0.02;
+                            }
+                        }
+                    });
+                }
             }
 
             renderer.render(scene, camera);
@@ -440,29 +562,114 @@
             saveState();
         }, 10000); // Every 10 seconds
 
+        // Sound Effects
+        function playSound(type) {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+
+            if (type === 'feed') {
+                oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(600, audioContext.currentTime + 0.1);
+            } else if (type === 'play') {
+                oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(800, audioContext.currentTime + 0.15);
+            } else if (type === 'clean') {
+                oscillator.frequency.setValueAtTime(500, audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(700, audioContext.currentTime + 0.12);
+            }
+
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.2);
+        }
+
+        // Particle Effects
+        function createParticles(color, count = 20) {
+            const container = document.getElementById('scene-container');
+            const rect = container.getBoundingClientRect();
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+
+            for (let i = 0; i < count; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.backgroundColor = color;
+                particle.style.left = centerX + 'px';
+                particle.style.top = centerY + 'px';
+
+                const angle = (Math.PI * 2 * i) / count;
+                const distance = 50 + Math.random() * 100;
+                const tx = Math.cos(angle) * distance;
+                const ty = Math.sin(angle) * distance;
+
+                particle.style.setProperty('--tx', tx + 'px');
+                particle.style.setProperty('--ty', ty + 'px');
+
+                container.appendChild(particle);
+
+                setTimeout(() => particle.remove(), 1000);
+            }
+        }
+
         // Actions
         function feedBulk() {
+            const messages = [
+                "YUM! PURPLE SCHMEG! 🥤",
+                "DELICIOUS! *SLURP* 🥤",
+                "MORE SCHMEG PLZ! 🥤",
+                "SO TASTY! 🥤",
+                "BULK LOVES SCHMEG! 🥤"
+            ];
+
             hunger = Math.min(100, hunger + 30);
             happiness = Math.min(100, happiness + 10);
-            showMessage("YUM! PURPLE SCHMEG! 🥤");
-            playHappyAnimation();
+            showMessage(messages[Math.floor(Math.random() * messages.length)]);
+            playSound('feed');
+            createParticles('#ff00ff', 25);
+            playJumpAnimation();
             updateUI();
             saveState();
         }
 
         function playWithBulk() {
+            const messages = [
+                "WHEEE! FUN TIME! 🎮",
+                "BEST GAME EVER! 🎮",
+                "PLAY MORE! PLAY MORE! 🎮",
+                "THIS IS AWESOME! 🎮",
+                "BULK IS HAVING FUN! 🎮"
+            ];
+
             happiness = Math.min(100, happiness + 40);
             hunger = Math.max(0, hunger - 5);
-            showMessage("WHEEE! FUN TIME! 🎮");
-            playHappyAnimation();
+            showMessage(messages[Math.floor(Math.random() * messages.length)]);
+            playSound('play');
+            createParticles('#ffd700', 30);
+            playSpinAnimation();
             updateUI();
             saveState();
         }
 
         function cleanBulk() {
+            const messages = [
+                "SO FRESH! SO CLEAN! 🧼",
+                "SPARKLE SPARKLE! ✨🧼",
+                "SQUEAKY CLEAN! 🧼",
+                "FRESH AS A DAISY! 🧼",
+                "BULK IS SHINY! ✨🧼"
+            ];
+
             cleanliness = Math.min(100, cleanliness + 50);
             happiness = Math.min(100, happiness + 5);
-            showMessage("SO FRESH! SO CLEAN! 🧼");
+            showMessage(messages[Math.floor(Math.random() * messages.length)]);
+            playSound('clean');
+            createParticles('#00ffff', 25);
             playHappyAnimation();
             updateUI();
             saveState();
@@ -470,28 +677,128 @@
 
         // Animations
         function playHappyAnimation() {
-            if (bulk) {
-                bulk.classList.remove('bounce');
-                void bulk.offsetWidth; // Trigger reflow
-                bulk.classList.add('bounce');
-                setTimeout(() => bulk.classList.remove('bounce'), 500);
+            if (bulkModel) {
+                const startY = bulk.position.y;
+                let time = 0;
+                const duration = 500;
+
+                function bounce() {
+                    time += 16;
+                    const progress = time / duration;
+                    const bounceHeight = Math.sin(progress * Math.PI) * 0.3;
+                    bulk.position.y = startY + bounceHeight;
+
+                    if (time < duration) {
+                        requestAnimationFrame(bounce);
+                    } else {
+                        bulk.position.y = startY;
+                    }
+                }
+                bounce();
+            }
+        }
+
+        function playJumpAnimation() {
+            if (bulkModel) {
+                const startY = bulk.position.y;
+                let time = 0;
+                const duration = 600;
+
+                function jump() {
+                    time += 16;
+                    const progress = time / duration;
+                    const jumpHeight = Math.sin(progress * Math.PI) * 0.5;
+                    const scale = 1 + Math.sin(progress * Math.PI) * 0.1;
+
+                    bulk.position.y = startY + jumpHeight;
+                    bulk.scale.set(scale, scale, scale);
+
+                    if (time < duration) {
+                        requestAnimationFrame(jump);
+                    } else {
+                        bulk.position.y = startY;
+                        bulk.scale.set(1, 1, 1);
+                    }
+                }
+                jump();
+            }
+        }
+
+        function playSpinAnimation() {
+            if (bulkModel) {
+                let time = 0;
+                const duration = 800;
+                const startRotation = bulk.rotation.y;
+
+                function spin() {
+                    time += 16;
+                    const progress = time / duration;
+                    bulk.rotation.y = startRotation + (progress * Math.PI * 2);
+
+                    if (time < duration) {
+                        requestAnimationFrame(spin);
+                    } else {
+                        bulk.rotation.y = startRotation;
+                    }
+                }
+                spin();
             }
         }
 
         function playSadAnimation() {
-            if (bulk) {
-                bulk.classList.remove('shake');
-                void bulk.offsetWidth;
-                bulk.classList.add('shake');
-                setTimeout(() => bulk.classList.remove('shake'), 500);
+            if (bulkModel) {
+                let time = 0;
+                const duration = 500;
+
+                function shake() {
+                    time += 16;
+                    const progress = time / duration;
+                    const shakeAmount = Math.sin(progress * Math.PI * 8) * 0.1;
+                    bulk.position.x = shakeAmount;
+
+                    if (time < duration) {
+                        requestAnimationFrame(shake);
+                    } else {
+                        bulk.position.x = 0;
+                    }
+                }
+                shake();
             }
         }
 
         // UI Updates
         function updateUI() {
-            document.getElementById('hunger-bar').style.width = hunger + '%';
-            document.getElementById('happiness-bar').style.width = happiness + '%';
-            document.getElementById('cleanliness-bar').style.width = cleanliness + '%';
+            const hungerBar = document.getElementById('hunger-bar');
+            const happinessBar = document.getElementById('happiness-bar');
+            const cleanlinessBar = document.getElementById('cleanliness-bar');
+
+            hungerBar.style.width = hunger + '%';
+            happinessBar.style.width = happiness + '%';
+            cleanlinessBar.style.width = cleanliness + '%';
+
+            // Show percentages
+            hungerBar.textContent = Math.round(hunger) + '%';
+            happinessBar.textContent = Math.round(happiness) + '%';
+            cleanlinessBar.textContent = Math.round(cleanliness) + '%';
+
+            // Add pulsing effect to low stats
+            hungerBar.classList.toggle('low', hunger < 30);
+            happinessBar.classList.toggle('low', happiness < 30);
+            cleanlinessBar.classList.toggle('low', cleanliness < 30);
+
+            // Warnings for critical stats
+            if (hunger < 20 || happiness < 20 || cleanliness < 20) {
+                if (hunger < 20 && Math.random() < 0.1) {
+                    showMessage("BULK IS STARVING! 😢");
+                    playSadAnimation();
+                } else if (happiness < 20 && Math.random() < 0.1) {
+                    showMessage("BULK IS SAD! 😭");
+                    playSadAnimation();
+                } else if (cleanliness < 20 && Math.random() < 0.1) {
+                    showMessage("BULK IS DIRTY! 🤢");
+                    playSadAnimation();
+                }
+            }
 
             updateMood();
         }
