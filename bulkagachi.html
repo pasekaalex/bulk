@@ -315,6 +315,135 @@
             background: rgba(155, 48, 255, 0.3);
             transform: scale(1.05);
         }
+
+        #age-counter {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 3px solid #ffd700;
+            border-radius: 12px;
+            padding: 8px 12px;
+            color: #ffd700;
+            font-size: clamp(0.4rem, 1.8vw, 0.5rem);
+            text-shadow: 0 0 5px #ffd700;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .floating-emoji {
+            position: absolute;
+            font-size: 2rem;
+            pointer-events: none;
+            z-index: 50;
+            animation: floatUp 2s ease-out forwards;
+        }
+
+        @keyframes floatUp {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(0.5);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-150px) scale(1.2);
+            }
+        }
+
+        #combo-indicator {
+            position: absolute;
+            top: 60px;
+            right: 10px;
+            background: rgba(255, 215, 0, 0.95);
+            border: 3px solid #ff00ff;
+            border-radius: 15px;
+            padding: 8px 15px;
+            color: #000;
+            font-size: clamp(0.5rem, 2vw, 0.6rem);
+            text-shadow: 0 0 5px rgba(255,255,255,0.8);
+            z-index: 10;
+            font-weight: bold;
+            display: none;
+            animation: comboPulse 0.5s ease-in-out infinite;
+        }
+
+        @keyframes comboPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        #growth-stage {
+            position: absolute;
+            top: 60px;
+            left: 10px;
+            background: rgba(155, 48, 255, 0.95);
+            border: 3px solid #ff00ff;
+            border-radius: 15px;
+            padding: 8px 12px;
+            color: #fff;
+            font-size: clamp(0.4rem, 1.8vw, 0.5rem);
+            text-shadow: 0 0 5px #9b30ff;
+            z-index: 10;
+        }
+
+        .sleep-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 20, 0.7);
+            z-index: 5;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+        }
+
+        .sleep-overlay.active {
+            display: flex;
+        }
+
+        #revival-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 200;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        #revival-screen.active {
+            display: flex;
+        }
+
+        .revival-btn {
+            background: linear-gradient(135deg, #ff00ff, #9b30ff);
+            border: 3px solid #ffd700;
+            border-radius: 15px;
+            padding: 15px 30px;
+            color: #fff;
+            font-family: 'Press Start 2P', monospace;
+            font-size: clamp(0.6rem, 2.5vw, 0.8rem);
+            cursor: pointer;
+            text-shadow: 2px 2px 0 #000;
+            box-shadow: 0 4px 0 #6a0dad, 0 0 20px rgba(255, 0, 255, 0.5);
+            transition: all 0.1s;
+        }
+
+        .revival-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #6a0dad, 0 0 10px rgba(255, 0, 255, 0.5);
+        }
     </style>
 </head>
 <body>
@@ -329,6 +458,20 @@
             <div id="mood-indicator">
                 <span id="mood-emoji">😊</span>
                 <span id="mood-text">HAPPY</span>
+            </div>
+            <div id="combo-indicator">🔥 COMBO x<span id="combo-count">0</span></div>
+            <div id="growth-stage">BABY 🍼</div>
+            <div id="age-counter">
+                <span>AGE</span>
+                <span id="age-display">0d 0h</span>
+            </div>
+            <div class="sleep-overlay" id="sleep-overlay">
+                💤
+            </div>
+            <div id="revival-screen">
+                <div style="font-size: clamp(1.5rem, 5vw, 3rem); text-align: center;">😭</div>
+                <div style="font-size: clamp(0.6rem, 2.5vw, 1rem); color: #ff00ff; text-align: center; max-width: 80%;">BULK FAINTED!</div>
+                <button class="revival-btn" onclick="reviveBulk()">REVIVE ✨</button>
             </div>
             <div id="message"></div>
         </div>
@@ -379,6 +522,12 @@
         let happiness = 100;
         let cleanliness = 100;
         let lastUpdateTime = Date.now();
+        let birthTime = Date.now();
+        let comboCount = 0;
+        let lastActionTime = 0;
+        let isSleeping = false;
+        let isDead = false;
+        let totalCareActions = 0;
 
         // Audio Context for sound effects
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -388,21 +537,32 @@
             const saved = localStorage.getItem('bulkagachi');
             if (saved) {
                 const state = JSON.parse(saved);
-                hunger = state.hunger;
-                happiness = state.happiness;
-                cleanliness = state.cleanliness;
-                lastUpdateTime = state.lastUpdateTime;
+                hunger = state.hunger || 100;
+                happiness = state.happiness || 100;
+                cleanliness = state.cleanliness || 100;
+                lastUpdateTime = state.lastUpdateTime || Date.now();
+                birthTime = state.birthTime || Date.now();
+                totalCareActions = state.totalCareActions || 0;
+                isDead = state.isDead || false;
 
                 // Calculate decay since last visit
                 const timePassed = (Date.now() - lastUpdateTime) / 1000; // seconds
                 const minutesPassed = timePassed / 60;
 
-                hunger = Math.max(0, hunger - minutesPassed * 2);
-                happiness = Math.max(0, happiness - minutesPassed * 1.5);
-                cleanliness = Math.max(0, cleanliness - minutesPassed * 1);
+                if (!isDead) {
+                    hunger = Math.max(0, hunger - minutesPassed * 2);
+                    happiness = Math.max(0, happiness - minutesPassed * 1.5);
+                    cleanliness = Math.max(0, cleanliness - minutesPassed * 1);
+                }
+
+                // Check if all stats are 0
+                if (hunger === 0 && happiness === 0 && cleanliness === 0 && !isDead) {
+                    isDead = true;
+                    showRevivalScreen();
+                }
 
                 // Show welcome back message
-                if (minutesPassed > 1) {
+                if (minutesPassed > 1 && !isDead) {
                     setTimeout(() => {
                         if (minutesPassed < 60) {
                             showMessage(`WELCOME BACK! YOU WERE GONE FOR ${Math.round(minutesPassed)} MIN! 👋`);
@@ -415,6 +575,7 @@
                 }
             } else {
                 // First time playing
+                birthTime = Date.now();
                 setTimeout(() => {
                     showMessage("HELLO! I'M BULK! TAKE CARE OF ME! 💜");
                 }, 1000);
@@ -426,7 +587,10 @@
                 hunger,
                 happiness,
                 cleanliness,
-                lastUpdateTime: Date.now()
+                lastUpdateTime: Date.now(),
+                birthTime,
+                totalCareActions,
+                isDead
             };
             localStorage.setItem('bulkagachi', JSON.stringify(state));
         }
@@ -503,7 +667,29 @@
 
             loadState();
             updateUI();
+            updateAge();
+            updateGrowthStage();
+            checkSleepTime();
+            updateBackground();
             animate();
+
+            // Add click interaction with Bulk
+            renderer.domElement.addEventListener('click', (e) => {
+                if (isDead || isSleeping) return;
+
+                const rect = renderer.domElement.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                // Simple check if clicked near center (where Bulk is)
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                const distance = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
+
+                if (distance < 150) {
+                    petBulk(x, y);
+                }
+            });
         }
 
         function createFallbackBulk() {
@@ -518,20 +704,34 @@
             requestAnimationFrame(animate);
 
             // Idle animation - gentle bobbing with mood variation
-            if (bulk) {
+            if (bulk && !isDead) {
                 const avgStats = (hunger + happiness + cleanliness) / 3;
-                const bobbingSpeed = avgStats > 50 ? 0.001 : 0.0005; // Slower when sad
-                const bobbingAmount = avgStats > 50 ? 0.1 : 0.05; // Less movement when sad
 
-                bulk.position.y = Math.sin(Date.now() * bobbingSpeed) * bobbingAmount;
-                bulk.rotation.y = Math.sin(Date.now() * 0.0005) * 0.2;
+                // Different animation when sleeping
+                if (isSleeping) {
+                    bulk.position.y = Math.sin(Date.now() * 0.0003) * 0.03; // Very slow, small movement
+                    bulk.rotation.y = 0; // No rotation when sleeping
+                } else {
+                    const bobbingSpeed = avgStats > 50 ? 0.001 : 0.0005; // Slower when sad
+                    const bobbingAmount = avgStats > 50 ? 0.1 : 0.05; // Less movement when sad
+
+                    bulk.position.y = Math.sin(Date.now() * bobbingSpeed) * bobbingAmount;
+                    bulk.rotation.y = Math.sin(Date.now() * 0.0005) * 0.2;
+                }
 
                 // Change Bulk's color based on mood
                 if (bulkModel && bulkModel.traverse) {
                     bulkModel.traverse((child) => {
                         if (child.isMesh && child.material) {
                             const material = child.material;
-                            if (avgStats > 70) {
+
+                            if (isSleeping) {
+                                material.emissive = new THREE.Color(0x1a0a2e); // Dark when sleeping
+                                material.emissiveIntensity = 0.05;
+                            } else if (isDead) {
+                                material.emissive = new THREE.Color(0x000000); // Black when dead
+                                material.emissiveIntensity = 0;
+                            } else if (avgStats > 70) {
                                 material.emissive = new THREE.Color(0x9b30ff); // Happy purple glow
                                 material.emissiveIntensity = 0.3;
                             } else if (avgStats > 40) {
@@ -552,15 +752,187 @@
             renderer.render(scene, camera);
         }
 
+        // Pet Bulk interaction
+        function petBulk(x, y) {
+            happiness = Math.min(100, happiness + 5);
+            playSound('play');
+            playHappyAnimation();
+            createFloatingEmoji('💜', x, y);
+            showMessage("BULK LOVES PETS! 💜");
+            updateCombo();
+            updateUI();
+            saveState();
+        }
+
+        // Floating emoji effect
+        function createFloatingEmoji(emoji, x, y) {
+            const floater = document.createElement('div');
+            floater.className = 'floating-emoji';
+            floater.textContent = emoji;
+            floater.style.left = x + 'px';
+            floater.style.top = y + 'px';
+            document.getElementById('scene-container').appendChild(floater);
+
+            setTimeout(() => floater.remove(), 2000);
+        }
+
+        // Combo system
+        function updateCombo() {
+            const now = Date.now();
+            const timeSinceLastAction = now - lastActionTime;
+
+            if (timeSinceLastAction < 5000) { // 5 seconds window
+                comboCount++;
+            } else {
+                comboCount = 1;
+            }
+
+            lastActionTime = now;
+            totalCareActions++;
+
+            const comboIndicator = document.getElementById('combo-indicator');
+            const comboCountDisplay = document.getElementById('combo-count');
+
+            if (comboCount > 3) {
+                comboCountDisplay.textContent = comboCount;
+                comboIndicator.style.display = 'block';
+
+                // Bonus rewards for combos
+                if (comboCount === 5) {
+                    showMessage("🔥 COMBO x5! BONUS HAPPINESS! 🔥");
+                    happiness = Math.min(100, happiness + 10);
+                } else if (comboCount === 10) {
+                    showMessage("⭐ COMBO x10! MEGA BONUS! ⭐");
+                    happiness = Math.min(100, happiness + 20);
+                    hunger = Math.min(100, hunger + 10);
+                    cleanliness = Math.min(100, cleanliness + 10);
+                } else if (comboCount > 10 && comboCount % 5 === 0) {
+                    showMessage(`🌟 AMAZING! x${comboCount} COMBO! 🌟`);
+                }
+            } else {
+                comboIndicator.style.display = 'none';
+            }
+
+            // Reset combo after 5 seconds of inactivity
+            setTimeout(() => {
+                if (Date.now() - lastActionTime >= 5000) {
+                    comboCount = 0;
+                    comboIndicator.style.display = 'none';
+                }
+            }, 5000);
+        }
+
+        // Age tracking
+        function updateAge() {
+            const ageInMs = Date.now() - birthTime;
+            const days = Math.floor(ageInMs / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((ageInMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((ageInMs % (1000 * 60 * 60)) / (1000 * 60));
+
+            const ageDisplay = document.getElementById('age-display');
+            if (days > 0) {
+                ageDisplay.textContent = `${days}d ${hours}h`;
+            } else if (hours > 0) {
+                ageDisplay.textContent = `${hours}h ${minutes}m`;
+            } else {
+                ageDisplay.textContent = `${minutes}m`;
+            }
+        }
+
+        // Growth stages
+        function updateGrowthStage() {
+            const ageInHours = (Date.now() - birthTime) / (1000 * 60 * 60);
+            const stageDisplay = document.getElementById('growth-stage');
+
+            if (ageInHours < 1) {
+                stageDisplay.textContent = 'BABY 🍼';
+            } else if (ageInHours < 24) {
+                stageDisplay.textContent = 'CHILD 👶';
+            } else if (ageInHours < 72) {
+                stageDisplay.textContent = 'TEEN 🧒';
+            } else {
+                stageDisplay.textContent = 'ADULT 💪';
+            }
+        }
+
+        // Sleep mode (night time)
+        function checkSleepTime() {
+            const hour = new Date().getHours();
+            const sleepOverlay = document.getElementById('sleep-overlay');
+
+            // Sleep between 10 PM and 6 AM
+            if (hour >= 22 || hour < 6) {
+                isSleeping = true;
+                sleepOverlay.classList.add('active');
+            } else {
+                isSleeping = false;
+                sleepOverlay.classList.remove('active');
+            }
+        }
+
+        // Day/night background
+        function updateBackground() {
+            const hour = new Date().getHours();
+            const sceneContainer = document.getElementById('scene-container');
+
+            if (hour >= 6 && hour < 12) {
+                // Morning
+                scene.background = new THREE.Color(0x2a2a3a);
+            } else if (hour >= 12 && hour < 18) {
+                // Afternoon
+                scene.background = new THREE.Color(0x1a1a2a);
+            } else if (hour >= 18 && hour < 22) {
+                // Evening
+                scene.background = new THREE.Color(0x15152a);
+            } else {
+                // Night
+                scene.background = new THREE.Color(0x0a0a1a);
+            }
+        }
+
+        // Revival system
+        function showRevivalScreen() {
+            document.getElementById('revival-screen').classList.add('active');
+        }
+
+        function reviveBulk() {
+            isDead = false;
+            hunger = 50;
+            happiness = 50;
+            cleanliness = 50;
+            document.getElementById('revival-screen').classList.remove('active');
+            showMessage("BULK IS BACK! TAKE BETTER CARE! 💚");
+            playSound('play');
+            createParticles('#00ff00', 40);
+            updateUI();
+            saveState();
+        }
+
         // Update stats over time
         setInterval(() => {
+            if (isDead || isSleeping) return;
+
             hunger = Math.max(0, hunger - 0.5);
             happiness = Math.max(0, happiness - 0.3);
             cleanliness = Math.max(0, cleanliness - 0.2);
 
+            // Check for death
+            if (hunger === 0 && happiness === 0 && cleanliness === 0) {
+                isDead = true;
+                showRevivalScreen();
+            }
+
             updateUI();
             saveState();
         }, 10000); // Every 10 seconds
+
+        // Update age every minute
+        setInterval(() => {
+            updateAge();
+            updateGrowthStage();
+            checkSleepTime();
+            updateBackground();
+        }, 60000); // Every minute
 
         // Sound Effects
         function playSound(type) {
@@ -619,6 +991,11 @@
 
         // Actions
         function feedBulk() {
+            if (isDead || isSleeping) {
+                if (isSleeping) showMessage("SHHH! BULK IS SLEEPING! 💤");
+                return;
+            }
+
             const messages = [
                 "YUM! PURPLE SCHMEG! 🥤",
                 "DELICIOUS! *SLURP* 🥤",
@@ -633,11 +1010,17 @@
             playSound('feed');
             createParticles('#ff00ff', 25);
             playJumpAnimation();
+            updateCombo();
             updateUI();
             saveState();
         }
 
         function playWithBulk() {
+            if (isDead || isSleeping) {
+                if (isSleeping) showMessage("SHHH! BULK IS SLEEPING! 💤");
+                return;
+            }
+
             const messages = [
                 "WHEEE! FUN TIME! 🎮",
                 "BEST GAME EVER! 🎮",
@@ -652,11 +1035,17 @@
             playSound('play');
             createParticles('#ffd700', 30);
             playSpinAnimation();
+            updateCombo();
             updateUI();
             saveState();
         }
 
         function cleanBulk() {
+            if (isDead || isSleeping) {
+                if (isSleeping) showMessage("SHHH! BULK IS SLEEPING! 💤");
+                return;
+            }
+
             const messages = [
                 "SO FRESH! SO CLEAN! 🧼",
                 "SPARKLE SPARKLE! ✨🧼",
@@ -671,6 +1060,7 @@
             playSound('clean');
             createParticles('#00ffff', 25);
             playHappyAnimation();
+            updateCombo();
             updateUI();
             saveState();
         }
