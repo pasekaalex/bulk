@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BULKAGACHI - Virtual Pet</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a0a2e 0%, #2d1b4e 50%, #1a0a2e 100%);
+            font-family: 'Press Start 2P', monospace;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #game-container {
+            width: min(90vw, 500px);
+            height: min(90vh, 700px);
+            background: #0d0d0d;
+            border: 8px solid #9b30ff;
+            border-radius: 30px;
+            box-shadow: 0 0 40px rgba(155, 48, 255, 0.8), inset 0 0 30px rgba(155, 48, 255, 0.2);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #title {
+            background: linear-gradient(135deg, #9b30ff, #ff00ff);
+            padding: 15px;
+            text-align: center;
+            color: #fff;
+            font-size: clamp(0.8rem, 4vw, 1.2rem);
+            text-shadow: 2px 2px 0 #000;
+            border-bottom: 4px solid #ff00ff;
+        }
+
+        #scene-container {
+            flex: 1;
+            position: relative;
+            background: #1a1a1a;
+            overflow: hidden;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        #stats {
+            background: #0a0a0a;
+            padding: 15px;
+            border-top: 4px solid #9b30ff;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .stat-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stat-label {
+            color: #9b30ff;
+            font-size: clamp(0.4rem, 2vw, 0.6rem);
+            width: 80px;
+            text-shadow: 0 0 5px #9b30ff;
+        }
+
+        .stat-bar-container {
+            flex: 1;
+            height: 20px;
+            background: #1a1a1a;
+            border: 2px solid #9b30ff;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .stat-bar {
+            height: 100%;
+            transition: width 0.5s ease;
+            border-radius: 8px;
+        }
+
+        .stat-bar.hunger {
+            background: linear-gradient(90deg, #ff00ff, #9b30ff);
+            box-shadow: 0 0 10px #ff00ff;
+        }
+
+        .stat-bar.happiness {
+            background: linear-gradient(90deg, #ffd700, #ffff00);
+            box-shadow: 0 0 10px #ffd700;
+        }
+
+        .stat-bar.cleanliness {
+            background: linear-gradient(90deg, #00ffff, #0088ff);
+            box-shadow: 0 0 10px #00ffff;
+        }
+
+        #actions {
+            background: #0a0a0a;
+            padding: 15px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            border-top: 2px solid #9b30ff;
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, #9b30ff, #6a0dad);
+            border: 3px solid #ff00ff;
+            border-radius: 15px;
+            padding: 15px 10px;
+            color: #fff;
+            font-family: 'Press Start 2P', monospace;
+            font-size: clamp(0.5rem, 2vw, 0.7rem);
+            cursor: pointer;
+            text-shadow: 2px 2px 0 #000;
+            box-shadow: 0 4px 0 #4a0dad, 0 0 20px rgba(155, 48, 255, 0.5);
+            transition: all 0.1s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .action-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #4a0dad, 0 0 10px rgba(155, 48, 255, 0.5);
+        }
+
+        .action-btn .emoji {
+            font-size: clamp(1.5rem, 6vw, 2rem);
+            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
+        }
+
+        #mood-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 3px solid #9b30ff;
+            border-radius: 15px;
+            padding: 10px 15px;
+            color: #fff;
+            font-size: clamp(0.6rem, 2.5vw, 0.8rem);
+            text-shadow: 0 0 5px #9b30ff;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #mood-emoji {
+            font-size: clamp(1.5rem, 5vw, 2rem);
+        }
+
+        #message {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(155, 48, 255, 0.95);
+            border: 3px solid #ff00ff;
+            border-radius: 15px;
+            padding: 10px 20px;
+            color: #fff;
+            font-size: clamp(0.5rem, 2vw, 0.7rem);
+            text-align: center;
+            z-index: 10;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            max-width: 80%;
+            text-shadow: 2px 2px 0 #000;
+        }
+
+        #message.show {
+            opacity: 1;
+        }
+
+        @media (max-width: 480px) {
+            #game-container {
+                border-width: 6px;
+                border-radius: 20px;
+            }
+
+            #title {
+                padding: 10px;
+            }
+
+            #stats {
+                padding: 10px;
+                gap: 8px;
+            }
+
+            .stat-label {
+                width: 60px;
+            }
+
+            #actions {
+                padding: 10px;
+                gap: 8px;
+            }
+
+            .action-btn {
+                padding: 10px 5px;
+            }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .bounce {
+            animation: bounce 0.5s ease;
+        }
+
+        .shake {
+            animation: shake 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="title">🎮 BULKAGACHI 🎮</div>
+
+        <div id="scene-container">
+            <div id="mood-indicator">
+                <span id="mood-emoji">😊</span>
+                <span id="mood-text">HAPPY</span>
+            </div>
+            <div id="message"></div>
+        </div>
+
+        <div id="stats">
+            <div class="stat-row">
+                <div class="stat-label">HUNGER</div>
+                <div class="stat-bar-container">
+                    <div class="stat-bar hunger" id="hunger-bar" style="width: 100%"></div>
+                </div>
+            </div>
+            <div class="stat-row">
+                <div class="stat-label">HAPPY</div>
+                <div class="stat-bar-container">
+                    <div class="stat-bar happiness" id="happiness-bar" style="width: 100%"></div>
+                </div>
+            </div>
+            <div class="stat-row">
+                <div class="stat-label">CLEAN</div>
+                <div class="stat-bar-container">
+                    <div class="stat-bar cleanliness" id="cleanliness-bar" style="width: 100%"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="actions">
+            <button class="action-btn" onclick="feedBulk()">
+                <span class="emoji">🥤</span>
+                <span>SCHMEG</span>
+            </button>
+            <button class="action-btn" onclick="playWithBulk()">
+                <span class="emoji">🎮</span>
+                <span>PLAY</span>
+            </button>
+            <button class="action-btn" onclick="cleanBulk()">
+                <span class="emoji">🧼</span>
+                <span>CLEAN</span>
+            </button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/js/loaders/GLTFLoader.js"></script>
+    <script>
+        // Game State
+        let scene, camera, renderer, bulk, bulkModel;
+        let hunger = 100;
+        let happiness = 100;
+        let cleanliness = 100;
+        let lastUpdateTime = Date.now();
+
+        // Load saved state
+        function loadState() {
+            const saved = localStorage.getItem('bulkagachi');
+            if (saved) {
+                const state = JSON.parse(saved);
+                hunger = state.hunger;
+                happiness = state.happiness;
+                cleanliness = state.cleanliness;
+                lastUpdateTime = state.lastUpdateTime;
+
+                // Calculate decay since last visit
+                const timePassed = (Date.now() - lastUpdateTime) / 1000; // seconds
+                const minutesPassed = timePassed / 60;
+
+                hunger = Math.max(0, hunger - minutesPassed * 2);
+                happiness = Math.max(0, happiness - minutesPassed * 1.5);
+                cleanliness = Math.max(0, cleanliness - minutesPassed * 1);
+            }
+        }
+
+        function saveState() {
+            const state = {
+                hunger,
+                happiness,
+                cleanliness,
+                lastUpdateTime: Date.now()
+            };
+            localStorage.setItem('bulkagachi', JSON.stringify(state));
+        }
+
+        // Initialize Three.js
+        function init() {
+            const container = document.getElementById('scene-container');
+
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x1a1a1a);
+
+            camera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.1, 1000);
+            camera.position.set(0, 1.5, 3);
+            camera.lookAt(0, 1, 0);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            container.appendChild(renderer.domElement);
+
+            // Lighting
+            const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambient);
+
+            const light1 = new THREE.DirectionalLight(0x9b30ff, 0.8);
+            light1.position.set(5, 5, 5);
+            scene.add(light1);
+
+            const light2 = new THREE.DirectionalLight(0xff00ff, 0.5);
+            light2.position.set(-5, 3, -5);
+            scene.add(light2);
+
+            // Ground
+            const groundGeo = new THREE.CircleGeometry(3, 32);
+            const groundMat = new THREE.MeshStandardMaterial({
+                color: 0x2d1b4e,
+                roughness: 0.8
+            });
+            const ground = new THREE.Mesh(groundGeo, groundMat);
+            ground.rotation.x = -Math.PI / 2;
+            scene.add(ground);
+
+            // Load Bulk model
+            bulk = new THREE.Group();
+            bulk.position.set(0, 0, 0);
+            scene.add(bulk);
+
+            const loader = new THREE.GLTFLoader();
+            loader.load('bulk.glb',
+                (gltf) => {
+                    bulkModel = gltf.scene;
+
+                    // Scale model
+                    const box = new THREE.Box3().setFromObject(bulkModel);
+                    const size = box.getSize(new THREE.Vector3());
+                    const maxDim = Math.max(size.x, size.y, size.z);
+                    const scale = 2 / maxDim;
+                    bulkModel.scale.set(scale, scale, scale);
+
+                    bulk.add(bulkModel);
+                },
+                undefined,
+                (error) => {
+                    console.log('Error loading model:', error);
+                    createFallbackBulk();
+                }
+            );
+
+            // Handle resize
+            window.addEventListener('resize', () => {
+                camera.aspect = container.clientWidth / container.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(container.clientWidth, container.clientHeight);
+            });
+
+            loadState();
+            updateUI();
+            animate();
+        }
+
+        function createFallbackBulk() {
+            const geo = new THREE.BoxGeometry(1, 1.5, 0.8);
+            const mat = new THREE.MeshStandardMaterial({ color: 0x9b30ff });
+            bulkModel = new THREE.Mesh(geo, mat);
+            bulk.add(bulkModel);
+        }
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Idle animation - gentle bobbing
+            if (bulk) {
+                bulk.position.y = Math.sin(Date.now() * 0.001) * 0.1;
+                bulk.rotation.y = Math.sin(Date.now() * 0.0005) * 0.2;
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        // Update stats over time
+        setInterval(() => {
+            hunger = Math.max(0, hunger - 0.5);
+            happiness = Math.max(0, happiness - 0.3);
+            cleanliness = Math.max(0, cleanliness - 0.2);
+
+            updateUI();
+            saveState();
+        }, 10000); // Every 10 seconds
+
+        // Actions
+        function feedBulk() {
+            hunger = Math.min(100, hunger + 30);
+            happiness = Math.min(100, happiness + 10);
+            showMessage("YUM! PURPLE SCHMEG! 🥤");
+            playHappyAnimation();
+            updateUI();
+            saveState();
+        }
+
+        function playWithBulk() {
+            happiness = Math.min(100, happiness + 40);
+            hunger = Math.max(0, hunger - 5);
+            showMessage("WHEEE! FUN TIME! 🎮");
+            playHappyAnimation();
+            updateUI();
+            saveState();
+        }
+
+        function cleanBulk() {
+            cleanliness = Math.min(100, cleanliness + 50);
+            happiness = Math.min(100, happiness + 5);
+            showMessage("SO FRESH! SO CLEAN! 🧼");
+            playHappyAnimation();
+            updateUI();
+            saveState();
+        }
+
+        // Animations
+        function playHappyAnimation() {
+            if (bulk) {
+                bulk.classList.remove('bounce');
+                void bulk.offsetWidth; // Trigger reflow
+                bulk.classList.add('bounce');
+                setTimeout(() => bulk.classList.remove('bounce'), 500);
+            }
+        }
+
+        function playSadAnimation() {
+            if (bulk) {
+                bulk.classList.remove('shake');
+                void bulk.offsetWidth;
+                bulk.classList.add('shake');
+                setTimeout(() => bulk.classList.remove('shake'), 500);
+            }
+        }
+
+        // UI Updates
+        function updateUI() {
+            document.getElementById('hunger-bar').style.width = hunger + '%';
+            document.getElementById('happiness-bar').style.width = happiness + '%';
+            document.getElementById('cleanliness-bar').style.width = cleanliness + '%';
+
+            updateMood();
+        }
+
+        function updateMood() {
+            const avgStats = (hunger + happiness + cleanliness) / 3;
+            const moodEmoji = document.getElementById('mood-emoji');
+            const moodText = document.getElementById('mood-text');
+
+            if (avgStats > 70) {
+                moodEmoji.textContent = '😊';
+                moodText.textContent = 'HAPPY';
+            } else if (avgStats > 40) {
+                moodEmoji.textContent = '😐';
+                moodText.textContent = 'OKAY';
+            } else if (avgStats > 20) {
+                moodEmoji.textContent = '😢';
+                moodText.textContent = 'SAD';
+            } else {
+                moodEmoji.textContent = '😭';
+                moodText.textContent = 'MISERABLE';
+            }
+        }
+
+        function showMessage(text) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.classList.add('show');
+            setTimeout(() => msg.classList.remove('show'), 2000);
+        }
+
+        // Initialize game
+        init();
+    </script>
+</body>
+</html>
