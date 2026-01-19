@@ -28,7 +28,7 @@
 
         #game-container {
             width: min(90vw, 500px);
-            max-height: 90vh;
+            height: min(90vh, 700px);
             background: #0d0d0d;
             border: 8px solid #9b30ff;
             border-radius: 30px;
@@ -47,10 +47,12 @@
             font-size: clamp(0.8rem, 4vw, 1.2rem);
             text-shadow: 2px 2px 0 #000;
             border-bottom: 4px solid #ff00ff;
+            flex-shrink: 0;
         }
 
         #scene-container {
             flex: 1;
+            min-height: 0;
             position: relative;
             background: #1a1a1a;
             overflow: hidden;
@@ -69,6 +71,7 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
+            flex-shrink: 0;
         }
 
         .stat-row {
