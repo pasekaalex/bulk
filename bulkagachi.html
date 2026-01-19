@@ -518,9 +518,17 @@
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     <script>
+        // Check if Three.js loaded
+        if (typeof THREE === 'undefined') {
+            console.error('THREE.js failed to load!');
+            alert('Failed to load 3D library. Please check your internet connection.');
+        } else {
+            console.log('THREE.js loaded successfully, version:', THREE.REVISION);
+        }
+
         // Game State
         let scene, camera, renderer, bulk, bulkModel;
         let hunger = 100;
@@ -603,6 +611,7 @@
         // Initialize Three.js
         function init() {
             const container = document.getElementById('scene-container');
+            console.log('Container dimensions:', container.clientWidth, container.clientHeight);
 
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x1a1a1a);
@@ -613,7 +622,9 @@
 
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(container.clientWidth, container.clientHeight);
+            console.log('Canvas created with size:', renderer.domElement.width, renderer.domElement.height);
             container.appendChild(renderer.domElement);
+            console.log('Canvas appended to container');
 
             // Lighting
             const ambient = new THREE.AmbientLight(0xffffff, 0.6);
@@ -643,8 +654,10 @@
             scene.add(bulk);
 
             const loader = new THREE.GLTFLoader();
+            console.log('Loading bulk.glb model...');
             loader.load('bulk.glb',
                 (gltf) => {
+                    console.log('Model loaded successfully!');
                     bulkModel = gltf.scene;
 
                     // Scale model
@@ -655,10 +668,13 @@
                     bulkModel.scale.set(scale, scale, scale);
 
                     bulk.add(bulkModel);
+                    console.log('Model added to scene');
                 },
-                undefined,
+                (progress) => {
+                    console.log('Loading progress:', (progress.loaded / progress.total * 100).toFixed(2) + '%');
+                },
                 (error) => {
-                    console.log('Error loading model:', error);
+                    console.error('Error loading model:', error);
                     createFallbackBulk();
                 }
             );
@@ -698,10 +714,12 @@
         }
 
         function createFallbackBulk() {
+            console.log('Creating fallback Bulk model (purple box)');
             const geo = new THREE.BoxGeometry(1, 1.5, 0.8);
             const mat = new THREE.MeshStandardMaterial({ color: 0x9b30ff });
             bulkModel = new THREE.Mesh(geo, mat);
             bulk.add(bulkModel);
+            console.log('Fallback model added to scene');
         }
 
         // Animation loop
