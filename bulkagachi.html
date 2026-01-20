@@ -449,6 +449,251 @@
             box-shadow: 0 0 0 #6a0dad, 0 0 10px rgba(255, 215, 0, 0.5);
         }
 
+        #settings-btn {
+            position: absolute;
+            top: 10px;
+            right: 70px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 3px solid #9b30ff;
+            border-radius: 12px;
+            padding: 8px 12px;
+            color: #fff;
+            font-size: clamp(0.5rem, 2vw, 0.6rem);
+            cursor: pointer;
+            z-index: 10;
+            transition: all 0.3s;
+        }
+
+        #settings-btn:hover {
+            background: rgba(155, 48, 255, 0.3);
+            transform: scale(1.05);
+        }
+
+        #food-menu {
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            background: rgba(0, 0, 0, 0.95);
+            border: 3px solid #ff00ff;
+            border-radius: 15px;
+            padding: 10px;
+            display: none;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 100;
+            margin-bottom: 10px;
+        }
+
+        #food-menu.active {
+            display: flex;
+        }
+
+        .food-item {
+            background: linear-gradient(135deg, #9b30ff, #6a0dad);
+            border: 2px solid #ff00ff;
+            border-radius: 10px;
+            padding: 8px 12px;
+            color: #fff;
+            font-family: 'Press Start 2P', monospace;
+            font-size: clamp(0.4rem, 1.8vw, 0.5rem);
+            cursor: pointer;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .food-item:hover {
+            background: linear-gradient(135deg, #ff00ff, #9b30ff);
+            transform: scale(1.05);
+        }
+
+        .food-emoji {
+            font-size: 1.5rem;
+        }
+
+        #weather-effect {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 4;
+        }
+
+        .raindrop {
+            position: absolute;
+            width: 2px;
+            height: 20px;
+            background: linear-gradient(to bottom, transparent, rgba(135, 206, 250, 0.6));
+            animation: rain 1s linear infinite;
+        }
+
+        @keyframes rain {
+            0% {
+                transform: translateY(-100px);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(500px);
+                opacity: 0;
+            }
+        }
+
+        .snowflake {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: white;
+            border-radius: 50%;
+            animation: snow 4s linear infinite;
+            opacity: 0.8;
+        }
+
+        @keyframes snow {
+            0% {
+                transform: translateY(-100px) translateX(0);
+            }
+            100% {
+                transform: translateY(500px) translateX(50px);
+            }
+        }
+
+        #settings-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 150;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        #settings-modal.active {
+            display: flex;
+        }
+
+        .setting-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: #fff;
+            font-size: clamp(0.5rem, 2vw, 0.6rem);
+        }
+
+        .toggle-btn {
+            width: 60px;
+            height: 30px;
+            background: #555;
+            border-radius: 15px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle-btn.active {
+            background: #9b30ff;
+        }
+
+        .toggle-slider {
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            transition: left 0.3s;
+        }
+
+        .toggle-btn.active .toggle-slider {
+            left: 33px;
+        }
+
+        #event-notification {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 215, 0, 0.98);
+            border: 4px solid #ff00ff;
+            border-radius: 20px;
+            padding: 20px;
+            color: #000;
+            font-size: clamp(0.6rem, 2.5vw, 0.8rem);
+            text-align: center;
+            z-index: 200;
+            display: none;
+            max-width: 80%;
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.8);
+            animation: eventPop 0.3s ease-out;
+        }
+
+        @keyframes eventPop {
+            0% { transform: translate(-50%, -50%) scale(0); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+
+        #event-notification.active {
+            display: block;
+        }
+
+        #memory-game-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            max-width: 400px;
+            margin: 20px auto;
+        }
+
+        .memory-card {
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, #9b30ff, #6a0dad);
+            border: 3px solid #ff00ff;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .memory-card.flipped {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+        }
+
+        .memory-card.matched {
+            background: linear-gradient(135deg, #00ff00, #00aa00);
+            border-color: #00ff00;
+        }
+
+        .memory-card .card-back {
+            display: block;
+        }
+
+        .memory-card .card-front {
+            display: none;
+        }
+
+        .memory-card.flipped .card-back {
+            display: none;
+        }
+
+        .memory-card.flipped .card-front {
+            display: block;
+        }
+
         .ambient-particle {
             position: absolute;
             pointer-events: none;
@@ -654,10 +899,12 @@
                 <span>🏠</span>
                 <span>HOME</span>
             </a>
+            <button id="settings-btn" onclick="showSettings()">⚙️</button>
             <div id="mood-indicator">
                 <span id="mood-emoji">😊</span>
                 <span id="mood-text">HAPPY</span>
             </div>
+            <div id="weather-effect"></div>
             <div id="combo-indicator">🔥 COMBO x<span id="combo-count">0</span></div>
             <div id="growth-stage">BABY 🍼</div>
             <div id="age-counter">
@@ -675,9 +922,13 @@
                 <button class="revival-btn" onclick="reviveBulk()">REVIVE ✨</button>
             </div>
             <div id="minigame-modal">
-                <div style="font-size: clamp(1rem, 4vw, 1.5rem); color: #ffd700; text-align: center;">QUICK CLICK!</div>
+                <div style="font-size: clamp(1rem, 4vw, 1.5rem); color: #ffd700; text-align: center;">
+                    <span id="game-title">QUICK CLICK!</span>
+                </div>
                 <div style="font-size: clamp(0.5rem, 2vw, 0.7rem); color: #9b30ff; text-align: center;">Score: <span id="game-score">0</span></div>
-                <div style="font-size: clamp(0.5rem, 2vw, 0.7rem); color: #ff00ff; text-align: center;">Time: <span id="game-time">10</span>s</div>
+                <div style="font-size: clamp(0.5rem, 2vw, 0.7rem); color: #ff00ff; text-align: center;">
+                    <span id="game-timer-label">Time: </span><span id="game-time">10</span>s
+                </div>
                 <div id="game-area" style="width: 100%; height: 300px; position: relative;"></div>
                 <button class="close-modal-btn" onclick="closeMiniGame()">CLOSE</button>
             </div>
@@ -686,6 +937,29 @@
                 <div id="achievements-list"></div>
                 <button class="close-modal-btn" onclick="closeAchievements()">CLOSE</button>
             </div>
+            <div id="settings-modal">
+                <div style="font-size: clamp(1rem, 4vw, 1.5rem); color: #ffd700; margin-bottom: 20px;">⚙️ SETTINGS ⚙️</div>
+                <div class="setting-row">
+                    <span>SOUND EFFECTS</span>
+                    <div class="toggle-btn active" id="sound-toggle" onclick="toggleSound()">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+                <div class="setting-row">
+                    <span>WEATHER EFFECTS</span>
+                    <div class="toggle-btn active" id="weather-toggle" onclick="toggleWeather()">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+                <div class="setting-row">
+                    <span>PARTICLES</span>
+                    <div class="toggle-btn active" id="particles-toggle" onclick="toggleParticles()">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+                <button class="close-modal-btn" onclick="closeSettings()">CLOSE</button>
+            </div>
+            <div id="event-notification"></div>
             <div id="message"></div>
         </div>
 
@@ -711,9 +985,27 @@
         </div>
 
         <div id="actions">
-            <button class="action-btn" onclick="feedBulk()">
-                <span class="emoji">🥤</span>
-                <span>SCHMEG</span>
+            <button class="action-btn" onclick="toggleFoodMenu()" style="position: relative;">
+                <div id="food-menu">
+                    <div class="food-item" onclick="event.stopPropagation(); feedBulk('schmeg')">
+                        <span class="food-emoji">🥤</span>
+                        <span>SCHMEG +30</span>
+                    </div>
+                    <div class="food-item" onclick="event.stopPropagation(); feedBulk('protein')">
+                        <span class="food-emoji">🥩</span>
+                        <span>PROTEIN +40</span>
+                    </div>
+                    <div class="food-item" onclick="event.stopPropagation(); feedBulk('snack')">
+                        <span class="food-emoji">🍪</span>
+                        <span>SNACK +20</span>
+                    </div>
+                    <div class="food-item" onclick="event.stopPropagation(); feedBulk('feast')">
+                        <span class="food-emoji">🍕</span>
+                        <span>FEAST +50</span>
+                    </div>
+                </div>
+                <span class="emoji">🍴</span>
+                <span>FEED</span>
             </button>
             <button class="action-btn" onclick="playWithBulk()">
                 <span class="emoji">🎮</span>
@@ -752,6 +1044,12 @@
         let achievements = {};
         let miniGameScore = 0;
         let miniGameActive = false;
+        let soundEnabled = true;
+        let weatherEnabled = true;
+        let particlesEnabled = true;
+        let currentWeather = 'clear';
+        let lastEventTime = Date.now();
+        let currentGameMode = 'click'; // 'click' or 'memory'
 
         // Audio Context for sound effects
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -1210,6 +1508,8 @@
 
         // Sound Effects
         function playSound(type) {
+            if (!soundEnabled) return;
+
             const oscillator = audioContext.createOscillator();
             const gainNode = audioContext.createGain();
 
@@ -1237,6 +1537,8 @@
 
         // Particle Effects
         function createParticles(color, count = 20) {
+            if (!particlesEnabled) return;
+
             const container = document.getElementById('scene-container');
             const rect = container.getBoundingClientRect();
             const centerX = rect.width / 2;
@@ -1263,26 +1565,55 @@
             }
         }
 
+        // Food Menu
+        function toggleFoodMenu() {
+            const menu = document.getElementById('food-menu');
+            menu.classList.toggle('active');
+        }
+
         // Actions
-        function feedBulk() {
+        function feedBulk(foodType = 'schmeg') {
             if (isDead || isSleeping) {
                 if (isSleeping) showMessage("SHHH! BULK IS SLEEPING! 💤");
                 return;
             }
 
-            const messages = [
-                "YUM! PURPLE SCHMEG! 🥤",
-                "DELICIOUS! *SLURP* 🥤",
-                "MORE SCHMEG PLZ! 🥤",
-                "SO TASTY! 🥤",
-                "BULK LOVES SCHMEG! 🥤"
-            ];
+            // Close food menu
+            document.getElementById('food-menu').classList.remove('active');
 
-            hunger = Math.min(100, hunger + 30);
-            happiness = Math.min(100, happiness + 10);
-            showMessage(messages[Math.floor(Math.random() * messages.length)]);
+            const foods = {
+                schmeg: {
+                    hunger: 30,
+                    happiness: 10,
+                    messages: ["YUM! PURPLE SCHMEG! 🥤", "DELICIOUS! *SLURP* 🥤", "MORE SCHMEG PLZ! 🥤", "SO TASTY! 🥤", "BULK LOVES SCHMEG! 🥤"],
+                    color: '#ff00ff'
+                },
+                protein: {
+                    hunger: 40,
+                    happiness: 15,
+                    messages: ["PROTEIN POWER! 🥩", "GAINS! BULK GETTING SWOLE! 🥩", "MEATY GOODNESS! 🥩", "SO FILLING! 🥩"],
+                    color: '#ff0000'
+                },
+                snack: {
+                    hunger: 20,
+                    happiness: 20,
+                    messages: ["SWEET TREAT! 🍪", "YUMMY SNACK! 🍪", "MORE COOKIES! 🍪", "DELICIOUS! 🍪"],
+                    color: '#ffa500'
+                },
+                feast: {
+                    hunger: 50,
+                    happiness: 25,
+                    messages: ["FEAST TIME! 🍕", "HUGE MEAL! SO GOOD! 🍕", "BEST MEAL EVER! 🍕", "BULK IS STUFFED! 🍕"],
+                    color: '#ffff00'
+                }
+            };
+
+            const food = foods[foodType] || foods.schmeg;
+            hunger = Math.min(100, hunger + food.hunger);
+            happiness = Math.min(100, happiness + food.happiness);
+            showMessage(food.messages[Math.floor(Math.random() * food.messages.length)]);
             playSound('feed');
-            createParticles('#ff00ff', 25);
+            createParticles(food.color, 25);
             playJumpAnimation();
             updateCombo();
             updateUI();
@@ -1567,34 +1898,49 @@
         function startMiniGame() {
             if (isSleeping || isDead) return;
 
+            // Alternate between game modes
+            currentGameMode = currentGameMode === 'click' ? 'memory' : 'click';
+
             miniGameActive = true;
             miniGameScore = 0;
-            let timeLeft = 10;
 
             const modal = document.getElementById('minigame-modal');
             const gameArea = document.getElementById('game-area');
             const scoreDisplay = document.getElementById('game-score');
             const timeDisplay = document.getElementById('game-time');
+            const titleDisplay = document.getElementById('game-title');
+            const timerLabel = document.getElementById('game-timer-label');
 
             modal.classList.add('active');
             gameArea.innerHTML = '';
             scoreDisplay.textContent = '0';
-            timeDisplay.textContent = '10';
 
-            // Spawn targets
-            gameInterval = setInterval(() => {
-                spawnTarget();
-            }, 800);
+            if (currentGameMode === 'click') {
+                titleDisplay.textContent = 'QUICK CLICK!';
+                timerLabel.textContent = 'Time: ';
+                let timeLeft = 10;
+                timeDisplay.textContent = '10';
 
-            // Countdown timer
-            gameTimeout = setInterval(() => {
-                timeLeft--;
-                timeDisplay.textContent = timeLeft;
+                // Spawn targets
+                gameInterval = setInterval(() => {
+                    spawnTarget();
+                }, 800);
 
-                if (timeLeft <= 0) {
-                    endMiniGame();
-                }
-            }, 1000);
+                // Countdown timer
+                gameTimeout = setInterval(() => {
+                    timeLeft--;
+                    timeDisplay.textContent = timeLeft;
+
+                    if (timeLeft <= 0) {
+                        endMiniGame();
+                    }
+                }, 1000);
+            } else {
+                titleDisplay.textContent = 'MEMORY MATCH!';
+                timerLabel.textContent = 'Pairs: ';
+                timeDisplay.textContent = '0/8';
+                startMemoryGame();
+            }
         }
 
         function spawnTarget() {
@@ -1663,6 +2009,227 @@
             document.getElementById('minigame-modal').classList.remove('active');
         }
 
+        // Memory Game
+        let memoryCards = [];
+        let flippedCards = [];
+        let matchedPairs = 0;
+
+        function startMemoryGame() {
+            const emojis = ['💜', '🥤', '⭐', '🎮', '🍕', '✨', '🎯', '💖'];
+            const cardPairs = [...emojis, ...emojis].sort(() => Math.random() - 0.5);
+
+            matchedPairs = 0;
+            flippedCards = [];
+
+            const gameArea = document.getElementById('game-area');
+            gameArea.innerHTML = '<div id="memory-game-grid"></div>';
+            const grid = document.getElementById('memory-game-grid');
+
+            cardPairs.forEach((emoji, index) => {
+                const card = document.createElement('div');
+                card.className = 'memory-card';
+                card.dataset.emoji = emoji;
+                card.dataset.index = index;
+                card.innerHTML = `
+                    <span class="card-back">?</span>
+                    <span class="card-front">${emoji}</span>
+                `;
+                card.onclick = () => flipCard(card);
+                grid.appendChild(card);
+            });
+        }
+
+        function flipCard(card) {
+            if (flippedCards.length >= 2 || card.classList.contains('flipped') || card.classList.contains('matched')) {
+                return;
+            }
+
+            card.classList.add('flipped');
+            flippedCards.push(card);
+            playSound('play');
+
+            if (flippedCards.length === 2) {
+                setTimeout(checkMatch, 600);
+            }
+        }
+
+        function checkMatch() {
+            const [card1, card2] = flippedCards;
+
+            if (card1.dataset.emoji === card2.dataset.emoji) {
+                card1.classList.add('matched');
+                card2.classList.add('matched');
+                matchedPairs++;
+                miniGameScore++;
+                document.getElementById('game-score').textContent = miniGameScore;
+                document.getElementById('game-time').textContent = `${matchedPairs}/8`;
+
+                if (matchedPairs === 8) {
+                    setTimeout(() => endMiniGame(), 500);
+                }
+            } else {
+                card1.classList.remove('flipped');
+                card2.classList.remove('flipped');
+            }
+
+            flippedCards = [];
+        }
+
+        // Settings
+        function showSettings() {
+            document.getElementById('settings-modal').classList.add('active');
+        }
+
+        function closeSettings() {
+            document.getElementById('settings-modal').classList.remove('active');
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            document.getElementById('sound-toggle').classList.toggle('active');
+            saveState();
+        }
+
+        function toggleWeather() {
+            weatherEnabled = !weatherEnabled;
+            document.getElementById('weather-toggle').classList.toggle('active');
+            if (!weatherEnabled) {
+                document.getElementById('weather-effect').innerHTML = '';
+            }
+            saveState();
+        }
+
+        function toggleParticles() {
+            particlesEnabled = !particlesEnabled;
+            document.getElementById('particles-toggle').classList.toggle('active');
+            saveState();
+        }
+
+        // Weather Effects
+        function updateWeatherEffects() {
+            if (!weatherEnabled) return;
+
+            const weatherContainer = document.getElementById('weather-effect');
+            const hour = new Date().getHours();
+
+            // Determine weather based on time and randomness
+            let newWeather = 'clear';
+            if (hour >= 6 && hour < 9 && Math.random() < 0.3) {
+                newWeather = 'rain';
+            } else if (hour >= 18 && hour < 21 && Math.random() < 0.2) {
+                newWeather = 'snow';
+            }
+
+            if (newWeather !== currentWeather) {
+                currentWeather = newWeather;
+                weatherContainer.innerHTML = '';
+
+                if (currentWeather === 'rain') {
+                    for (let i = 0; i < 20; i++) {
+                        const drop = document.createElement('div');
+                        drop.className = 'raindrop';
+                        drop.style.left = Math.random() * 100 + '%';
+                        drop.style.animationDelay = Math.random() * 1 + 's';
+                        weatherContainer.appendChild(drop);
+                    }
+                } else if (currentWeather === 'snow') {
+                    for (let i = 0; i < 15; i++) {
+                        const flake = document.createElement('div');
+                        flake.className = 'snowflake';
+                        flake.textContent = '❄️';
+                        flake.style.left = Math.random() * 100 + '%';
+                        flake.style.animationDelay = Math.random() * 4 + 's';
+                        flake.style.fontSize = (Math.random() * 1 + 0.5) + 'rem';
+                        weatherContainer.appendChild(flake);
+                    }
+                }
+            }
+        }
+
+        // Random Events
+        const specialEvents = [
+            {
+                id: 'treasure',
+                chance: 0.05,
+                title: '🎁 TREASURE FOUND!',
+                message: 'BULK FOUND A TREASURE! ALL STATS +20!',
+                effect: () => {
+                    hunger = Math.min(100, hunger + 20);
+                    happiness = Math.min(100, happiness + 20);
+                    cleanliness = Math.min(100, cleanliness + 20);
+                }
+            },
+            {
+                id: 'rainbow',
+                chance: 0.03,
+                title: '🌈 RAINBOW APPEARED!',
+                message: 'A BEAUTIFUL RAINBOW! BULK IS INSPIRED! +30 HAPPINESS!',
+                effect: () => {
+                    happiness = Math.min(100, happiness + 30);
+                    createParticles('#ff0000', 20);
+                    createParticles('#ffd700', 20);
+                    createParticles('#00ff00', 20);
+                    createParticles('#0000ff', 20);
+                    createParticles('#ff00ff', 20);
+                }
+            },
+            {
+                id: 'visitor',
+                chance: 0.04,
+                title: '👋 FRIEND VISITED!',
+                message: 'A FRIEND CAME TO VISIT! BULK IS HAPPY! +25 HAPPINESS!',
+                effect: () => {
+                    happiness = Math.min(100, happiness + 25);
+                    playJumpAnimation();
+                }
+            },
+            {
+                id: 'energy',
+                chance: 0.06,
+                title: '⚡ ENERGY BURST!',
+                message: 'BULK FEELS ENERGIZED! +15 TO ALL STATS!',
+                effect: () => {
+                    hunger = Math.min(100, hunger + 15);
+                    happiness = Math.min(100, happiness + 15);
+                    cleanliness = Math.min(100, cleanliness + 15);
+                    playSpinAnimation();
+                }
+            }
+        ];
+
+        function checkRandomEvents() {
+            if (isDead || isSleeping || miniGameActive) return;
+
+            const timeSinceLastEvent = Date.now() - lastEventTime;
+            if (timeSinceLastEvent < 300000) return; // 5 minutes minimum between events
+
+            for (const event of specialEvents) {
+                if (Math.random() < event.chance) {
+                    triggerEvent(event);
+                    lastEventTime = Date.now();
+                    break;
+                }
+            }
+        }
+
+        function triggerEvent(event) {
+            const notification = document.getElementById('event-notification');
+            notification.innerHTML = `
+                <div style="font-size: 2rem; margin-bottom: 10px;">${event.title}</div>
+                <div>${event.message}</div>
+            `;
+            notification.classList.add('active');
+
+            event.effect();
+            playSound('play');
+            updateUI();
+            saveState();
+
+            setTimeout(() => {
+                notification.classList.remove('active');
+            }, 3000);
+        }
+
         // Ambient Particles
         function createAmbientParticles() {
             if (isDead || isSleeping) return;
@@ -1725,6 +2292,15 @@
                 totalCareActions = state.totalCareActions || 0;
                 isDead = state.isDead || false;
                 achievements = state.achievements || {};
+                soundEnabled = state.soundEnabled !== undefined ? state.soundEnabled : true;
+                weatherEnabled = state.weatherEnabled !== undefined ? state.weatherEnabled : true;
+                particlesEnabled = state.particlesEnabled !== undefined ? state.particlesEnabled : true;
+                lastEventTime = state.lastEventTime || Date.now();
+
+                // Update UI toggles
+                if (!soundEnabled) document.getElementById('sound-toggle').classList.remove('active');
+                if (!weatherEnabled) document.getElementById('weather-toggle').classList.remove('active');
+                if (!particlesEnabled) document.getElementById('particles-toggle').classList.remove('active');
 
                 // Calculate decay since last visit
                 const timePassed = (Date.now() - lastUpdateTime) / 1000;
@@ -1754,6 +2330,7 @@
                 }
             } else {
                 birthTime = Date.now();
+                lastEventTime = Date.now();
                 setTimeout(() => {
                     showMessage("HELLO! I'M BULK! TAKE CARE OF ME! 💜");
                 }, 1000);
@@ -1769,7 +2346,11 @@
                 birthTime,
                 totalCareActions,
                 isDead,
-                achievements
+                achievements,
+                soundEnabled,
+                weatherEnabled,
+                particlesEnabled,
+                lastEventTime
             };
             localStorage.setItem('bulkagachi', JSON.stringify(state));
         }
@@ -1782,6 +2363,17 @@
                 checkAchievements();
             }
         }, 3000);
+
+        // Check weather and events periodically
+        setInterval(() => {
+            updateWeatherEffects();
+            checkRandomEvents();
+        }, 60000); // Every minute
+
+        // Initial weather check
+        setTimeout(() => {
+            updateWeatherEffects();
+        }, 2000);
 
         // Initialize game
         init();
