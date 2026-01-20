@@ -872,6 +872,212 @@
             box-shadow: 0 0 15px #ffd700;
         }
 
+        /* Needs Indicators */
+        #needs-container {
+            position: absolute;
+            top: 160px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 20;
+        }
+
+        .need-icon {
+            font-size: 1.5rem;
+            animation: needBounce 1s ease-in-out infinite;
+            display: none;
+            filter: drop-shadow(0 0 5px rgba(255, 0, 0, 0.8));
+        }
+
+        .need-icon.visible {
+            display: block;
+        }
+
+        @keyframes needBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        /* Floating ZZZ during sleep */
+        .sleep-zzz {
+            position: absolute;
+            font-size: 2rem;
+            color: #9b30ff;
+            text-shadow: 0 0 10px #9b30ff;
+            animation: zzzFloat 3s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 8;
+        }
+
+        @keyframes zzzFloat {
+            0% { transform: translateY(0) translateX(0) scale(0.5); opacity: 0; }
+            50% { transform: translateY(-50px) translateX(20px) scale(1); opacity: 1; }
+            100% { transform: translateY(-100px) translateX(40px) scale(0.8); opacity: 0; }
+        }
+
+        /* Emotion Indicators */
+        .emotion-indicator {
+            position: absolute;
+            font-size: 1.2rem;
+            pointer-events: none;
+            z-index: 25;
+            animation: emotionFloat 2s ease-in-out infinite;
+        }
+
+        @keyframes emotionFloat {
+            0%, 100% { transform: translateY(0); opacity: 0.8; }
+            50% { transform: translateY(-5px); opacity: 1; }
+        }
+
+        .tear {
+            color: #00bfff;
+            left: 35%;
+            top: 40%;
+        }
+
+        .sweat {
+            color: #87ceeb;
+            right: 35%;
+            top: 38%;
+        }
+
+        /* Perfect Halo */
+        #perfect-halo {
+            position: absolute;
+            top: 25%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 40px;
+            border: 4px solid #ffd700;
+            border-radius: 50%;
+            box-shadow: 0 0 20px #ffd700, 0 0 40px #ffd700, inset 0 0 20px rgba(255, 215, 0, 0.3);
+            display: none;
+            z-index: 6;
+            animation: haloGlow 2s ease-in-out infinite;
+        }
+
+        #perfect-halo.visible {
+            display: block;
+        }
+
+        @keyframes haloGlow {
+            0%, 100% { box-shadow: 0 0 20px #ffd700, 0 0 40px #ffd700; opacity: 0.8; }
+            50% { box-shadow: 0 0 30px #ffd700, 0 0 60px #ffd700; opacity: 1; }
+        }
+
+        /* Background Stars */
+        .bg-star {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: white;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1;
+            animation: twinkle 2s ease-in-out infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.5); }
+        }
+
+        /* Aura Effect */
+        #bulk-aura {
+            position: absolute;
+            top: 30%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 2;
+            opacity: 0;
+            transition: all 0.5s;
+        }
+
+        #bulk-aura.happy {
+            opacity: 0.4;
+            background: radial-gradient(circle, rgba(155, 48, 255, 0.6) 0%, transparent 70%);
+            animation: auraPulse 2s ease-in-out infinite;
+        }
+
+        #bulk-aura.perfect {
+            opacity: 0.6;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.8) 0%, rgba(255, 0, 255, 0.4) 50%, transparent 70%);
+            animation: auraRainbow 3s ease-in-out infinite;
+        }
+
+        #bulk-aura.sad {
+            opacity: 0.3;
+            background: radial-gradient(circle, rgba(100, 100, 150, 0.4) 0%, transparent 70%);
+        }
+
+        @keyframes auraPulse {
+            0%, 100% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.1); }
+        }
+
+        @keyframes auraRainbow {
+            0%, 100% { transform: translateX(-50%) scale(1); filter: hue-rotate(0deg); }
+            50% { transform: translateX(-50%) scale(1.2); filter: hue-rotate(180deg); }
+        }
+
+        /* Sparkle Trail */
+        .sparkle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            pointer-events: none;
+            z-index: 50;
+            animation: sparkleAnim 0.8s ease-out forwards;
+        }
+
+        @keyframes sparkleAnim {
+            0% { transform: scale(1) rotate(0deg); opacity: 1; }
+            100% { transform: scale(0) rotate(180deg); opacity: 0; }
+        }
+
+        /* Hunger Rumble Effect */
+        .rumble-lines {
+            position: absolute;
+            bottom: 35%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1rem;
+            color: #ff6b6b;
+            display: none;
+            z-index: 25;
+            animation: rumble 0.5s ease-in-out infinite;
+        }
+
+        .rumble-lines.visible {
+            display: block;
+        }
+
+        @keyframes rumble {
+            0%, 100% { transform: translateX(-50%) translateX(-3px); }
+            50% { transform: translateX(-50%) translateX(3px); }
+        }
+
+        /* Floating Hearts when Happy */
+        .floating-heart {
+            position: absolute;
+            font-size: 1.5rem;
+            pointer-events: none;
+            z-index: 30;
+            animation: heartFloat 3s ease-out forwards;
+        }
+
+        @keyframes heartFloat {
+            0% { transform: translateY(0) scale(0); opacity: 1; }
+            50% { transform: translateY(-80px) scale(1.2); opacity: 0.8; }
+            100% { transform: translateY(-150px) scale(0.5); opacity: 0; }
+        }
+
         .ambient-particle {
             position: absolute;
             pointer-events: none;
@@ -1083,6 +1289,14 @@
                 <span id="mood-text">HAPPY</span>
             </div>
             <div id="weather-effect"></div>
+            <div id="bulk-aura"></div>
+            <div id="perfect-halo"></div>
+            <div id="needs-container">
+                <span class="need-icon" id="need-hunger">🍴</span>
+                <span class="need-icon" id="need-happiness">💔</span>
+                <span class="need-icon" id="need-clean">🧼</span>
+            </div>
+            <div class="rumble-lines" id="rumble-lines">〰️〰️〰️</div>
             <div id="combo-indicator">🔥 COMBO x<span id="combo-count">0</span></div>
             <div id="growth-stage">BABY 🍼</div>
             <div id="level-display">
@@ -1688,19 +1902,27 @@
 
         // Update stats over time
         setInterval(() => {
-            if (isDead || isSleeping) return;
+            if (isDead) return;
 
-            hunger = Math.max(0, hunger - 0.5);
-            happiness = Math.max(0, happiness - 0.3);
-            cleanliness = Math.max(0, cleanliness - 0.2);
+            // Much slower decay while sleeping (Bulk is resting!)
+            if (isSleeping) {
+                hunger = Math.max(0, hunger - 0.1); // 5x slower decay
+                happiness = Math.max(0, happiness - 0.05);
+                cleanliness = Math.max(0, cleanliness - 0.02);
+            } else {
+                hunger = Math.max(0, hunger - 0.5);
+                happiness = Math.max(0, happiness - 0.3);
+                cleanliness = Math.max(0, cleanliness - 0.2);
+            }
 
-            // Check for death
-            if (hunger === 0 && happiness === 0 && cleanliness === 0) {
+            // Check for death - but not during sleep!
+            if (!isSleeping && hunger === 0 && happiness === 0 && cleanliness === 0) {
                 isDead = true;
                 showRevivalScreen();
             }
 
             updateUI();
+            updateNeedsIndicators();
             saveState();
         }, 10000); // Every 10 seconds
 
@@ -2664,6 +2886,137 @@
             }, 3000);
         }
 
+        // Visual Effects System
+        function updateNeedsIndicators() {
+            const hungerNeed = document.getElementById('need-hunger');
+            const happyNeed = document.getElementById('need-happiness');
+            const cleanNeed = document.getElementById('need-clean');
+            const rumble = document.getElementById('rumble-lines');
+
+            // Show indicators when stats are low
+            hungerNeed.classList.toggle('visible', hunger < 30);
+            happyNeed.classList.toggle('visible', happiness < 30);
+            cleanNeed.classList.toggle('visible', cleanliness < 30);
+
+            // Show rumble when very hungry
+            rumble.classList.toggle('visible', hunger < 20);
+        }
+
+        function updateAura() {
+            const aura = document.getElementById('bulk-aura');
+            const halo = document.getElementById('perfect-halo');
+            const avgStats = (hunger + happiness + cleanliness) / 3;
+            const isPerfect = hunger === 100 && happiness === 100 && cleanliness === 100;
+
+            // Reset classes
+            aura.className = '';
+
+            if (isPerfect) {
+                aura.classList.add('perfect');
+                halo.classList.add('visible');
+            } else if (avgStats > 70) {
+                aura.classList.add('happy');
+                halo.classList.remove('visible');
+            } else if (avgStats < 30) {
+                aura.classList.add('sad');
+                halo.classList.remove('visible');
+            } else {
+                halo.classList.remove('visible');
+            }
+        }
+
+        function createBackgroundStars() {
+            const container = document.getElementById('scene-container');
+
+            for (let i = 0; i < 20; i++) {
+                const star = document.createElement('div');
+                star.className = 'bg-star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 60 + '%';
+                star.style.animationDelay = Math.random() * 2 + 's';
+                star.style.animationDuration = (2 + Math.random() * 2) + 's';
+                container.appendChild(star);
+            }
+        }
+
+        function createSleepZZZ() {
+            if (!isSleeping) return;
+
+            const container = document.getElementById('scene-container');
+            const zzz = document.createElement('div');
+            zzz.className = 'sleep-zzz';
+            zzz.textContent = 'Z';
+            zzz.style.left = (40 + Math.random() * 20) + '%';
+            zzz.style.top = '35%';
+            zzz.style.animationDelay = Math.random() * 0.5 + 's';
+            container.appendChild(zzz);
+
+            setTimeout(() => zzz.remove(), 3000);
+        }
+
+        function createFloatingHeart() {
+            if (isDead || isSleeping) return;
+            if (happiness < 70) return;
+
+            const container = document.getElementById('scene-container');
+            const heart = document.createElement('div');
+            heart.className = 'floating-heart';
+            heart.textContent = '💜';
+            heart.style.left = (40 + Math.random() * 20) + '%';
+            heart.style.top = '50%';
+            container.appendChild(heart);
+
+            setTimeout(() => heart.remove(), 3000);
+        }
+
+        function createSparkleTrail(x, y) {
+            if (!particlesEnabled) return;
+
+            const container = document.getElementById('scene-container');
+            const sparkleEmojis = ['✨', '⭐', '💫', '🌟'];
+
+            for (let i = 0; i < 3; i++) {
+                const sparkle = document.createElement('div');
+                sparkle.className = 'sparkle';
+                sparkle.textContent = sparkleEmojis[Math.floor(Math.random() * sparkleEmojis.length)];
+                sparkle.style.left = (x + (Math.random() - 0.5) * 30) + 'px';
+                sparkle.style.top = (y + (Math.random() - 0.5) * 30) + 'px';
+                sparkle.style.fontSize = (0.8 + Math.random() * 0.5) + 'rem';
+                container.appendChild(sparkle);
+
+                setTimeout(() => sparkle.remove(), 800);
+            }
+        }
+
+        function showEmotionIndicators() {
+            if (isDead || isSleeping) return;
+
+            const container = document.getElementById('scene-container');
+
+            // Remove old indicators
+            container.querySelectorAll('.emotion-indicator').forEach(e => e.remove());
+
+            // Add tears when sad
+            if (happiness < 25) {
+                const tear = document.createElement('div');
+                tear.className = 'emotion-indicator tear';
+                tear.textContent = '💧';
+                container.appendChild(tear);
+
+                setTimeout(() => tear.remove(), 5000);
+            }
+
+            // Add sweat when dirty
+            if (cleanliness < 25) {
+                const sweat = document.createElement('div');
+                sweat.className = 'emotion-indicator sweat';
+                sweat.textContent = '💦';
+                container.appendChild(sweat);
+
+                setTimeout(() => sweat.remove(), 5000);
+            }
+        }
+
         // Theme System
         function setTheme(themeName) {
             const requiredLevel = {
@@ -2857,9 +3210,16 @@
                 createAmbientParticles();
                 checkStatMilestones();
                 checkAchievements();
+                if (Math.random() < 0.3) createFloatingHeart();
             }
+            if (isSleeping) createSleepZZZ();
             showRandomThought();
+            updateAura();
+            showEmotionIndicators();
         }, 3000);
+
+        // Create background stars on load
+        setTimeout(createBackgroundStars, 1000);
 
         // Check weather and events periodically
         setInterval(() => {
