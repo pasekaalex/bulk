@@ -694,6 +694,184 @@
             display: block;
         }
 
+        /* Dream System */
+        #dream-btn {
+            position: absolute;
+            bottom: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #4169e1, #9370db);
+            border: 3px solid #ffd700;
+            border-radius: 20px;
+            padding: 12px 25px;
+            color: #fff;
+            font-family: 'Press Start 2P', monospace;
+            font-size: clamp(0.5rem, 2vw, 0.7rem);
+            cursor: pointer;
+            z-index: 10;
+            display: none;
+            animation: dreamPulse 2s ease-in-out infinite;
+            text-shadow: 0 0 10px #fff;
+            box-shadow: 0 0 30px rgba(65, 105, 225, 0.8);
+        }
+
+        @keyframes dreamPulse {
+            0%, 100% { transform: translateX(-50%) scale(1); box-shadow: 0 0 30px rgba(65, 105, 225, 0.8); }
+            50% { transform: translateX(-50%) scale(1.05); box-shadow: 0 0 50px rgba(147, 112, 219, 1); }
+        }
+
+        #dream-btn.visible {
+            display: block;
+        }
+
+        .dream-particle {
+            position: absolute;
+            pointer-events: none;
+            z-index: 6;
+            font-size: 1.5rem;
+            animation: dreamFloat 6s ease-in-out infinite;
+        }
+
+        @keyframes dreamFloat {
+            0%, 100% { transform: translateY(0) scale(1); opacity: 0.4; }
+            50% { transform: translateY(-40px) scale(1.2); opacity: 0.8; }
+        }
+
+        /* Level System */
+        #level-display {
+            position: absolute;
+            top: 110px;
+            left: 10px;
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            border: 3px solid #fff;
+            border-radius: 12px;
+            padding: 8px 12px;
+            color: #000;
+            font-size: clamp(0.4rem, 1.8vw, 0.5rem);
+            font-weight: bold;
+            z-index: 10;
+            text-shadow: 0 0 3px rgba(255,255,255,0.8);
+        }
+
+        #xp-bar-container {
+            width: 60px;
+            height: 8px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 4px;
+            margin-top: 4px;
+            overflow: hidden;
+        }
+
+        #xp-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00, #7fff00);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        /* Streak Display */
+        #streak-display {
+            position: absolute;
+            top: 110px;
+            right: 10px;
+            background: linear-gradient(135deg, #ff4500, #ff6347);
+            border: 3px solid #ffd700;
+            border-radius: 12px;
+            padding: 8px 12px;
+            color: #fff;
+            font-size: clamp(0.4rem, 1.8vw, 0.5rem);
+            z-index: 10;
+            text-shadow: 2px 2px 0 #000;
+            display: none;
+        }
+
+        #streak-display.visible {
+            display: block;
+        }
+
+        /* Thought Bubble */
+        #thought-bubble {
+            position: absolute;
+            top: 30%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid #9b30ff;
+            border-radius: 20px;
+            padding: 10px 15px;
+            color: #333;
+            font-size: clamp(0.4rem, 1.8vw, 0.5rem);
+            z-index: 15;
+            max-width: 70%;
+            text-align: center;
+            display: none;
+            animation: thoughtPop 0.3s ease-out;
+        }
+
+        #thought-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 8px solid transparent;
+            border-top-color: #fff;
+        }
+
+        @keyframes thoughtPop {
+            0% { transform: translateX(-50%) scale(0); opacity: 0; }
+            100% { transform: translateX(-50%) scale(1); opacity: 1; }
+        }
+
+        #thought-bubble.visible {
+            display: block;
+        }
+
+        /* Background Themes */
+        .theme-default { background: #1a1a1a; }
+        .theme-sunset { background: linear-gradient(180deg, #ff7e5f 0%, #feb47b 50%, #1a1a1a 100%); }
+        .theme-ocean { background: linear-gradient(180deg, #2193b0 0%, #6dd5ed 50%, #1a1a1a 100%); }
+        .theme-forest { background: linear-gradient(180deg, #134e5e 0%, #71b280 50%, #1a1a1a 100%); }
+        .theme-space { background: linear-gradient(180deg, #0f0c29 0%, #302b63 50%, #24243e 100%); }
+        .theme-candy { background: linear-gradient(180deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%); }
+
+        /* Theme Selector */
+        #theme-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin: 15px 0;
+        }
+
+        .theme-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 3px solid #fff;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .theme-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .theme-btn.locked {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .theme-btn.locked::after {
+            content: '🔒';
+            position: absolute;
+        }
+
+        .theme-btn.selected {
+            border-color: #ffd700;
+            box-shadow: 0 0 15px #ffd700;
+        }
+
         .ambient-particle {
             position: absolute;
             pointer-events: none;
@@ -907,14 +1085,23 @@
             <div id="weather-effect"></div>
             <div id="combo-indicator">🔥 COMBO x<span id="combo-count">0</span></div>
             <div id="growth-stage">BABY 🍼</div>
+            <div id="level-display">
+                <span>LV <span id="level-num">1</span></span>
+                <div id="xp-bar-container">
+                    <div id="xp-bar" style="width: 0%"></div>
+                </div>
+            </div>
+            <div id="streak-display">🔥 <span id="streak-num">0</span> DAY STREAK</div>
             <div id="age-counter">
                 <span>AGE</span>
                 <span id="age-display">0d 0h</span>
             </div>
             <button id="minigame-btn" onclick="startMiniGame()">🎯 PLAY!</button>
             <button id="achievements-btn" onclick="showAchievements()">🏆</button>
+            <div id="thought-bubble"></div>
             <div class="sleep-overlay" id="sleep-overlay">
                 💤
+                <button id="dream-btn" onclick="giveDream()">🌙 SWEET DREAMS</button>
             </div>
             <div id="revival-screen">
                 <div style="font-size: clamp(1.5rem, 5vw, 3rem); text-align: center;">😭</div>
@@ -956,6 +1143,15 @@
                     <div class="toggle-btn active" id="particles-toggle" onclick="toggleParticles()">
                         <div class="toggle-slider"></div>
                     </div>
+                </div>
+                <div style="color: #9b30ff; font-size: clamp(0.5rem, 2vw, 0.6rem); margin-top: 15px;">BACKGROUND THEME</div>
+                <div id="theme-selector">
+                    <div class="theme-btn selected" style="background: #1a1a1a;" onclick="setTheme('default')" title="Default"></div>
+                    <div class="theme-btn" style="background: linear-gradient(135deg, #ff7e5f, #feb47b);" onclick="setTheme('sunset')" title="Sunset"></div>
+                    <div class="theme-btn" style="background: linear-gradient(135deg, #2193b0, #6dd5ed);" onclick="setTheme('ocean')" title="Ocean"></div>
+                    <div class="theme-btn locked" style="background: linear-gradient(135deg, #134e5e, #71b280);" onclick="setTheme('forest')" title="Forest (Lv 5)"></div>
+                    <div class="theme-btn locked" style="background: linear-gradient(135deg, #0f0c29, #302b63);" onclick="setTheme('space')" title="Space (Lv 10)"></div>
+                    <div class="theme-btn locked" style="background: linear-gradient(135deg, #ff9a9e, #fecfef);" onclick="setTheme('candy')" title="Candy (Lv 15)"></div>
                 </div>
                 <button class="close-modal-btn" onclick="closeSettings()">CLOSE</button>
             </div>
@@ -1050,6 +1246,13 @@
         let currentWeather = 'clear';
         let lastEventTime = Date.now();
         let currentGameMode = 'click'; // 'click' or 'memory'
+        let level = 1;
+        let xp = 0;
+        let careStreak = 0;
+        let lastCareDate = null;
+        let dreamBonus = 0;
+        let currentTheme = 'default';
+        let lastThoughtTime = 0;
 
         // Audio Context for sound effects
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -1430,14 +1633,17 @@
         function checkSleepTime() {
             const hour = new Date().getHours();
             const sleepOverlay = document.getElementById('sleep-overlay');
+            const dreamBtn = document.getElementById('dream-btn');
 
             // Sleep between 10 PM and 6 AM
             if (hour >= 22 || hour < 6) {
                 isSleeping = true;
                 sleepOverlay.classList.add('active');
+                dreamBtn.classList.add('visible');
             } else {
                 isSleeping = false;
                 sleepOverlay.classList.remove('active');
+                dreamBtn.classList.remove('visible');
             }
         }
 
@@ -1616,6 +1822,8 @@
             createParticles(food.color, 25);
             playJumpAnimation();
             updateCombo();
+            addXP(10);
+            updateStreak();
             updateUI();
             saveState();
         }
@@ -1641,6 +1849,8 @@
             createParticles('#ffd700', 30);
             playSpinAnimation();
             updateCombo();
+            addXP(12);
+            updateStreak();
             updateUI();
             saveState();
         }
@@ -1666,6 +1876,8 @@
             createParticles('#00ffff', 25);
             playHappyAnimation();
             updateCombo();
+            addXP(8);
+            updateStreak();
             updateUI();
             saveState();
         }
@@ -1836,7 +2048,15 @@
             { id: 'gameWin', icon: '🎯', title: 'Quick Hands', desc: 'Score 20+ in mini-game' },
             { id: 'revival', icon: '✨', title: 'Second Chance', desc: 'Revive Bulk' },
             { id: 'threeDays', icon: '🌟', title: 'Week Warrior', desc: 'Keep Bulk alive for 3 days' },
-            { id: 'allMax', icon: '👑', title: 'Perfection', desc: 'Keep all stats at 100% for 1 hour' }
+            { id: 'allMax', icon: '👑', title: 'Perfection', desc: 'Keep all stats at 100% for 1 hour' },
+            { id: 'dreamGiver', icon: '🌙', title: 'Dream Giver', desc: 'Give Bulk sweet dreams' },
+            { id: 'streak3', icon: '🔥', title: 'On Fire', desc: 'Maintain a 3-day care streak' },
+            { id: 'streak7', icon: '⚡', title: 'Unstoppable', desc: 'Maintain a 7-day care streak' },
+            { id: 'level5', icon: '⭐', title: 'Rising Star', desc: 'Reach Level 5' },
+            { id: 'level10', icon: '🌟', title: 'Superstar', desc: 'Reach Level 10' },
+            { id: 'memoryMaster', icon: '🧠', title: 'Memory Master', desc: 'Win memory game perfectly' },
+            { id: 'allFoods', icon: '🍽️', title: 'Foodie', desc: 'Try all food types' },
+            { id: 'eventLucky', icon: '🍀', title: 'Lucky Star', desc: 'Experience 5 special events' }
         ];
 
         function checkAchievements() {
@@ -1849,6 +2069,10 @@
             if (totalCareActions >= 100 && !achievements.care100) unlockAchievement('care100');
             if (totalCareActions >= 500 && !achievements.care500) unlockAchievement('care500');
             if (ageInDays >= 3 && !achievements.threeDays) unlockAchievement('threeDays');
+            if (careStreak >= 3 && !achievements.streak3) unlockAchievement('streak3');
+            if (careStreak >= 7 && !achievements.streak7) unlockAchievement('streak7');
+            if (level >= 5 && !achievements.level5) unlockAchievement('level5');
+            if (level >= 10 && !achievements.level10) unlockAchievement('level10');
         }
 
         function unlockAchievement(id) {
@@ -2230,6 +2454,257 @@
             }, 3000);
         }
 
+        // Dream System
+        const dreamTypes = [
+            { emoji: '🌈', message: "BULK DREAMED OF RAINBOWS!", bonus: { happiness: 15, hunger: 5 } },
+            { emoji: '🍕', message: "BULK DREAMED OF DELICIOUS FOOD!", bonus: { hunger: 20, happiness: 5 } },
+            { emoji: '🎮', message: "BULK DREAMED OF PLAYING GAMES!", bonus: { happiness: 20 } },
+            { emoji: '💜', message: "BULK DREAMED OF YOU!", bonus: { happiness: 25, hunger: 5, cleanliness: 5 } },
+            { emoji: '🚀', message: "BULK DREAMED OF SPACE ADVENTURE!", bonus: { happiness: 15, cleanliness: 10 } },
+            { emoji: '🏆', message: "BULK DREAMED OF WINNING!", bonus: { happiness: 30 } },
+            { emoji: '🌟', message: "BULK HAD A MAGICAL DREAM!", bonus: { happiness: 20, hunger: 10, cleanliness: 10 } }
+        ];
+
+        function giveDream() {
+            if (!isSleeping) return;
+
+            const dream = dreamTypes[Math.floor(Math.random() * dreamTypes.length)];
+
+            // Apply dream bonuses
+            if (dream.bonus.happiness) happiness = Math.min(100, happiness + dream.bonus.happiness);
+            if (dream.bonus.hunger) hunger = Math.min(100, hunger + dream.bonus.hunger);
+            if (dream.bonus.cleanliness) cleanliness = Math.min(100, cleanliness + dream.bonus.cleanliness);
+
+            // Create dream particles
+            createDreamParticles();
+
+            // Show dream message
+            showMessage(`${dream.emoji} ${dream.message}`);
+            playSound('play');
+
+            // Give XP for caring
+            addXP(15);
+
+            // Achievement
+            if (!achievements.dreamGiver) unlockAchievement('dreamGiver');
+
+            // Hide button temporarily
+            const btn = document.getElementById('dream-btn');
+            btn.classList.remove('visible');
+            setTimeout(() => {
+                if (isSleeping) btn.classList.add('visible');
+            }, 30000); // Can give another dream in 30 seconds
+
+            updateUI();
+            saveState();
+        }
+
+        function createDreamParticles() {
+            const container = document.getElementById('scene-container');
+            const dreamEmojis = ['✨', '⭐', '🌙', '💫', '☁️', '💜'];
+
+            for (let i = 0; i < 8; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'dream-particle';
+                particle.textContent = dreamEmojis[Math.floor(Math.random() * dreamEmojis.length)];
+                particle.style.left = (20 + Math.random() * 60) + '%';
+                particle.style.top = (30 + Math.random() * 40) + '%';
+                particle.style.animationDelay = (Math.random() * 2) + 's';
+                container.appendChild(particle);
+
+                setTimeout(() => particle.remove(), 6000);
+            }
+        }
+
+        // Level & XP System
+        function addXP(amount) {
+            xp += amount;
+            const xpNeeded = getXPForLevel(level);
+
+            while (xp >= xpNeeded) {
+                xp -= xpNeeded;
+                level++;
+                showMessage(`🎉 LEVEL UP! NOW LEVEL ${level}! 🎉`);
+                createParticles('#ffd700', 50);
+                playSound('play');
+
+                // Unlock themes at certain levels
+                updateThemeUnlocks();
+            }
+
+            updateLevelDisplay();
+        }
+
+        function getXPForLevel(lvl) {
+            return 50 + (lvl * 25); // Increases each level
+        }
+
+        function updateLevelDisplay() {
+            document.getElementById('level-num').textContent = level;
+            const xpNeeded = getXPForLevel(level);
+            const xpPercent = (xp / xpNeeded) * 100;
+            document.getElementById('xp-bar').style.width = xpPercent + '%';
+        }
+
+        // Care Streak System
+        function updateStreak() {
+            const today = new Date().toDateString();
+
+            if (lastCareDate === null) {
+                careStreak = 1;
+                lastCareDate = today;
+            } else if (lastCareDate !== today) {
+                const lastDate = new Date(lastCareDate);
+                const todayDate = new Date(today);
+                const diffDays = Math.floor((todayDate - lastDate) / (1000 * 60 * 60 * 24));
+
+                if (diffDays === 1) {
+                    careStreak++;
+                    showMessage(`🔥 ${careStreak} DAY STREAK! KEEP IT UP! 🔥`);
+                } else if (diffDays > 1) {
+                    careStreak = 1;
+                    showMessage("STREAK RESET! START A NEW ONE! 💪");
+                }
+                lastCareDate = today;
+            }
+
+            updateStreakDisplay();
+            saveState();
+        }
+
+        function updateStreakDisplay() {
+            const display = document.getElementById('streak-display');
+            const numSpan = document.getElementById('streak-num');
+
+            if (careStreak > 1) {
+                display.classList.add('visible');
+                numSpan.textContent = careStreak;
+            } else {
+                display.classList.remove('visible');
+            }
+        }
+
+        // Thought Bubble System
+        const thoughts = {
+            happy: [
+                "I LOVE MY LIFE! 💜",
+                "TODAY IS AMAZING!",
+                "YOU'RE THE BEST!",
+                "SO MUCH FUN!",
+                "FEELING GREAT!"
+            ],
+            hungry: [
+                "MY TUMMY RUMBLES...",
+                "FOOD PLEASE?",
+                "SO HUNGRY...",
+                "NEED SCHMEG!"
+            ],
+            sad: [
+                "I'M LONELY...",
+                "PLAY WITH ME?",
+                "FEELING DOWN...",
+                "NEED ATTENTION..."
+            ],
+            dirty: [
+                "I FEEL ICKY...",
+                "NEED A BATH!",
+                "SO DUSTY...",
+                "CLEAN ME PLEASE?"
+            ],
+            sleeping: [
+                "Zzz... 💤",
+                "Dreaming...",
+                "So sleepy...",
+                "Sweet dreams..."
+            ],
+            perfect: [
+                "LIFE IS PERFECT!",
+                "COULDN'T BE BETTER!",
+                "I'M SO LUCKY!",
+                "BEST DAY EVER!"
+            ]
+        };
+
+        function showRandomThought() {
+            if (isDead || miniGameActive) return;
+
+            const now = Date.now();
+            if (now - lastThoughtTime < 30000) return; // 30 second cooldown
+
+            if (Math.random() > 0.3) return; // 30% chance
+
+            let category = 'happy';
+            const avgStats = (hunger + happiness + cleanliness) / 3;
+
+            if (isSleeping) {
+                category = 'sleeping';
+            } else if (hunger === 100 && happiness === 100 && cleanliness === 100) {
+                category = 'perfect';
+            } else if (hunger < 30) {
+                category = 'hungry';
+            } else if (happiness < 30) {
+                category = 'sad';
+            } else if (cleanliness < 30) {
+                category = 'dirty';
+            } else if (avgStats > 60) {
+                category = 'happy';
+            }
+
+            const thoughtList = thoughts[category];
+            const thought = thoughtList[Math.floor(Math.random() * thoughtList.length)];
+
+            const bubble = document.getElementById('thought-bubble');
+            bubble.textContent = thought;
+            bubble.classList.add('visible');
+
+            lastThoughtTime = now;
+
+            setTimeout(() => {
+                bubble.classList.remove('visible');
+            }, 3000);
+        }
+
+        // Theme System
+        function setTheme(themeName) {
+            const requiredLevel = {
+                'default': 1,
+                'sunset': 1,
+                'ocean': 1,
+                'forest': 5,
+                'space': 10,
+                'candy': 15
+            };
+
+            if (level < requiredLevel[themeName]) {
+                showMessage(`UNLOCK AT LEVEL ${requiredLevel[themeName]}! 🔒`);
+                return;
+            }
+
+            currentTheme = themeName;
+
+            // Update scene background
+            const sceneContainer = document.getElementById('scene-container');
+            sceneContainer.className = ''; // Clear classes
+            sceneContainer.classList.add('theme-' + themeName);
+
+            // Update button selection
+            document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('selected'));
+            event.target.classList.add('selected');
+
+            saveState();
+        }
+
+        function updateThemeUnlocks() {
+            const buttons = document.querySelectorAll('.theme-btn');
+            const requiredLevels = [1, 1, 1, 5, 10, 15];
+
+            buttons.forEach((btn, index) => {
+                if (level >= requiredLevels[index]) {
+                    btn.classList.remove('locked');
+                }
+            });
+        }
+
         // Ambient Particles
         function createAmbientParticles() {
             if (isDead || isSleeping) return;
@@ -2296,11 +2771,27 @@
                 weatherEnabled = state.weatherEnabled !== undefined ? state.weatherEnabled : true;
                 particlesEnabled = state.particlesEnabled !== undefined ? state.particlesEnabled : true;
                 lastEventTime = state.lastEventTime || Date.now();
+                level = state.level || 1;
+                xp = state.xp || 0;
+                careStreak = state.careStreak || 0;
+                lastCareDate = state.lastCareDate || null;
+                currentTheme = state.currentTheme || 'default';
 
                 // Update UI toggles
                 if (!soundEnabled) document.getElementById('sound-toggle').classList.remove('active');
                 if (!weatherEnabled) document.getElementById('weather-toggle').classList.remove('active');
                 if (!particlesEnabled) document.getElementById('particles-toggle').classList.remove('active');
+
+                // Update level display
+                updateLevelDisplay();
+                updateStreakDisplay();
+                updateThemeUnlocks();
+
+                // Apply saved theme
+                if (currentTheme !== 'default') {
+                    const sceneContainer = document.getElementById('scene-container');
+                    sceneContainer.classList.add('theme-' + currentTheme);
+                }
 
                 // Calculate decay since last visit
                 const timePassed = (Date.now() - lastUpdateTime) / 1000;
@@ -2350,7 +2841,12 @@
                 soundEnabled,
                 weatherEnabled,
                 particlesEnabled,
-                lastEventTime
+                lastEventTime,
+                level,
+                xp,
+                careStreak,
+                lastCareDate,
+                currentTheme
             };
             localStorage.setItem('bulkagachi', JSON.stringify(state));
         }
@@ -2362,6 +2858,7 @@
                 checkStatMilestones();
                 checkAchievements();
             }
+            showRandomThought();
         }, 3000);
 
         // Check weather and events periodically
