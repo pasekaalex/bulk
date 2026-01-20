@@ -394,6 +394,200 @@
             z-index: 10;
         }
 
+        #minigame-btn {
+            position: absolute;
+            bottom: 60px;
+            right: 10px;
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            border: 3px solid #ffff00;
+            border-radius: 15px;
+            padding: 10px 15px;
+            color: #000;
+            font-family: 'Press Start 2P', monospace;
+            font-size: clamp(0.4rem, 1.8vw, 0.5rem);
+            cursor: pointer;
+            text-shadow: 1px 1px 0 rgba(255,255,255,0.5);
+            z-index: 10;
+            transition: all 0.3s;
+            font-weight: bold;
+            box-shadow: 0 4px 0 #cc6600, 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+
+        #minigame-btn:hover {
+            transform: scale(1.05);
+        }
+
+        #minigame-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #cc6600, 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        #achievements-btn {
+            position: absolute;
+            bottom: 60px;
+            left: 10px;
+            background: linear-gradient(135deg, #ffd700, #ff00ff);
+            border: 3px solid #ffff00;
+            border-radius: 12px;
+            padding: 8px 12px;
+            color: #fff;
+            font-family: 'Press Start 2P', monospace;
+            font-size: clamp(0.4rem, 1.8vw, 0.5rem);
+            cursor: pointer;
+            text-shadow: 2px 2px 0 #000;
+            z-index: 10;
+            transition: all 0.3s;
+            box-shadow: 0 4px 0 #6a0dad, 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+
+        #achievements-btn:hover {
+            transform: scale(1.05);
+        }
+
+        #achievements-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #6a0dad, 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        .ambient-particle {
+            position: absolute;
+            pointer-events: none;
+            z-index: 3;
+            animation: floatAmbient 8s ease-in-out infinite;
+            font-size: 1.5rem;
+        }
+
+        @keyframes floatAmbient {
+            0%, 100% {
+                transform: translateY(0) translateX(0) rotate(0deg);
+                opacity: 0.6;
+            }
+            25% {
+                transform: translateY(-30px) translateX(20px) rotate(90deg);
+                opacity: 0.8;
+            }
+            50% {
+                transform: translateY(-60px) translateX(-20px) rotate(180deg);
+                opacity: 0.6;
+            }
+            75% {
+                transform: translateY(-30px) translateX(20px) rotate(270deg);
+                opacity: 0.8;
+            }
+        }
+
+        #minigame-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 150;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        #minigame-modal.active {
+            display: flex;
+        }
+
+        .game-target {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #ff00ff, #ffd700);
+            border: 4px solid #fff;
+            border-radius: 50%;
+            cursor: pointer;
+            position: absolute;
+            transition: all 0.2s;
+            box-shadow: 0 0 30px rgba(255, 0, 255, 0.8);
+            animation: targetPulse 0.5s ease-in-out infinite;
+        }
+
+        @keyframes targetPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .game-target:hover {
+            transform: scale(1.2);
+        }
+
+        #achievements-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 150;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        #achievements-modal.active {
+            display: flex;
+        }
+
+        .achievement {
+            background: rgba(155, 48, 255, 0.3);
+            border: 3px solid #9b30ff;
+            border-radius: 12px;
+            padding: 12px;
+            margin: 8px 0;
+            width: 90%;
+            max-width: 400px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .achievement.unlocked {
+            background: rgba(255, 215, 0, 0.3);
+            border-color: #ffd700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+
+        .achievement-icon {
+            font-size: 2rem;
+        }
+
+        .achievement-info {
+            flex: 1;
+        }
+
+        .achievement-title {
+            color: #ffd700;
+            font-size: clamp(0.5rem, 2vw, 0.6rem);
+            margin-bottom: 4px;
+        }
+
+        .achievement-desc {
+            color: #9b30ff;
+            font-size: clamp(0.4rem, 1.5vw, 0.5rem);
+        }
+
+        .close-modal-btn {
+            background: linear-gradient(135deg, #ff00ff, #9b30ff);
+            border: 3px solid #ffd700;
+            border-radius: 12px;
+            padding: 12px 24px;
+            color: #fff;
+            font-family: 'Press Start 2P', monospace;
+            font-size: clamp(0.5rem, 2vw, 0.6rem);
+            cursor: pointer;
+            text-shadow: 2px 2px 0 #000;
+            margin-top: 15px;
+        }
+
         .sleep-overlay {
             position: absolute;
             top: 0;
@@ -470,6 +664,8 @@
                 <span>AGE</span>
                 <span id="age-display">0d 0h</span>
             </div>
+            <button id="minigame-btn" onclick="startMiniGame()">🎯 PLAY!</button>
+            <button id="achievements-btn" onclick="showAchievements()">🏆</button>
             <div class="sleep-overlay" id="sleep-overlay">
                 💤
             </div>
@@ -477,6 +673,18 @@
                 <div style="font-size: clamp(1.5rem, 5vw, 3rem); text-align: center;">😭</div>
                 <div style="font-size: clamp(0.6rem, 2.5vw, 1rem); color: #ff00ff; text-align: center; max-width: 80%;">BULK FAINTED!</div>
                 <button class="revival-btn" onclick="reviveBulk()">REVIVE ✨</button>
+            </div>
+            <div id="minigame-modal">
+                <div style="font-size: clamp(1rem, 4vw, 1.5rem); color: #ffd700; text-align: center;">QUICK CLICK!</div>
+                <div style="font-size: clamp(0.5rem, 2vw, 0.7rem); color: #9b30ff; text-align: center;">Score: <span id="game-score">0</span></div>
+                <div style="font-size: clamp(0.5rem, 2vw, 0.7rem); color: #ff00ff; text-align: center;">Time: <span id="game-time">10</span>s</div>
+                <div id="game-area" style="width: 100%; height: 300px; position: relative;"></div>
+                <button class="close-modal-btn" onclick="closeMiniGame()">CLOSE</button>
+            </div>
+            <div id="achievements-modal">
+                <div style="font-size: clamp(1rem, 4vw, 1.5rem); color: #ffd700; margin-bottom: 20px;">🏆 ACHIEVEMENTS 🏆</div>
+                <div id="achievements-list"></div>
+                <button class="close-modal-btn" onclick="closeAchievements()">CLOSE</button>
             </div>
             <div id="message"></div>
         </div>
@@ -541,6 +749,9 @@
         let isSleeping = false;
         let isDead = false;
         let totalCareActions = 0;
+        let achievements = {};
+        let miniGameScore = 0;
+        let miniGameActive = false;
 
         // Audio Context for sound effects
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -648,9 +859,21 @@
             ground.rotation.x = -Math.PI / 2;
             scene.add(ground);
 
+            // Shadow under Bulk
+            const shadowGeo = new THREE.CircleGeometry(0.6, 32);
+            const shadowMat = new THREE.MeshBasicMaterial({
+                color: 0x000000,
+                transparent: true,
+                opacity: 0.3
+            });
+            const shadow = new THREE.Mesh(shadowGeo, shadowMat);
+            shadow.rotation.x = -Math.PI / 2;
+            shadow.position.y = 0.01;
+            scene.add(shadow);
+
             // Load Bulk model
             bulk = new THREE.Group();
-            bulk.position.set(0, 0, 0);
+            bulk.position.set(0, 0.4, 0);
             scene.add(bulk);
 
             const loader = new THREE.GLTFLoader();
@@ -729,17 +952,29 @@
             // Idle animation - gentle bobbing with mood variation
             if (bulk && !isDead) {
                 const avgStats = (hunger + happiness + cleanliness) / 3;
+                const baseHeight = 0.4; // Base floating height
 
                 // Different animation when sleeping
                 if (isSleeping) {
-                    bulk.position.y = Math.sin(Date.now() * 0.0003) * 0.03; // Very slow, small movement
+                    bulk.position.y = baseHeight + Math.sin(Date.now() * 0.0003) * 0.03; // Very slow, small movement
                     bulk.rotation.y = 0; // No rotation when sleeping
                 } else {
                     const bobbingSpeed = avgStats > 50 ? 0.001 : 0.0005; // Slower when sad
                     const bobbingAmount = avgStats > 50 ? 0.1 : 0.05; // Less movement when sad
 
-                    bulk.position.y = Math.sin(Date.now() * bobbingSpeed) * bobbingAmount;
+                    // Extra bounce when perfect care
+                    const perfectBonus = (hunger === 100 && happiness === 100 && cleanliness === 100) ? 0.05 : 0;
+
+                    bulk.position.y = baseHeight + Math.sin(Date.now() * bobbingSpeed) * (bobbingAmount + perfectBonus);
                     bulk.rotation.y = Math.sin(Date.now() * 0.0005) * 0.2;
+
+                    // Slight scale pulse when very happy
+                    if (avgStats > 80) {
+                        const scale = 1 + Math.sin(Date.now() * 0.001) * 0.02;
+                        bulk.scale.set(scale, scale, scale);
+                    } else {
+                        bulk.scale.set(1, 1, 1);
+                    }
                 }
             }
 
@@ -757,7 +992,19 @@
                             material.emissiveIntensity = 0;
                         } else {
                             const avgStats = (hunger + happiness + cleanliness) / 3;
-                            if (avgStats > 70) {
+
+                            // Perfect care - rainbow glow effect!
+                            if (hunger === 100 && happiness === 100 && cleanliness === 100) {
+                                const time = Date.now() * 0.001;
+                                const r = Math.sin(time * 2) * 0.5 + 0.5;
+                                const g = Math.sin(time * 2 + 2) * 0.5 + 0.5;
+                                const b = Math.sin(time * 2 + 4) * 0.5 + 0.5;
+                                material.emissive = new THREE.Color(r, g, b);
+                                material.emissiveIntensity = 0.5;
+                            } else if (avgStats > 80) {
+                                material.emissive = new THREE.Color(0xff00ff); // Bright magenta when very happy
+                                material.emissiveIntensity = 0.4;
+                            } else if (avgStats > 70) {
                                 material.emissive = new THREE.Color(0x9b30ff); // Happy purple glow
                                 material.emissiveIntensity = 0.3;
                             } else if (avgStats > 40) {
@@ -930,6 +1177,7 @@
             showMessage("BULK IS BACK! TAKE BETTER CARE! 💚");
             playSound('play');
             createParticles('#00ff00', 40);
+            if (!achievements.revival) unlockAchievement('revival');
             updateUI();
             saveState();
         }
@@ -1245,6 +1493,295 @@
             msg.classList.add('show');
             setTimeout(() => msg.classList.remove('show'), 2000);
         }
+
+        // Achievements System
+        const achievementsList = [
+            { id: 'firstFeed', icon: '🥤', title: 'First Meal', desc: 'Feed Bulk for the first time' },
+            { id: 'combo10', icon: '🔥', title: 'Combo Master', desc: 'Reach a 10x combo' },
+            { id: 'perfectCare', icon: '💯', title: 'Perfect Care', desc: 'Get all stats to 100%' },
+            { id: 'oneDay', icon: '🎂', title: 'First Birthday', desc: 'Keep Bulk alive for 1 day' },
+            { id: 'care100', icon: '❤️', title: 'Dedicated Carer', desc: 'Perform 100 care actions' },
+            { id: 'care500', icon: '💪', title: 'Super Parent', desc: 'Perform 500 care actions' },
+            { id: 'gameWin', icon: '🎯', title: 'Quick Hands', desc: 'Score 20+ in mini-game' },
+            { id: 'revival', icon: '✨', title: 'Second Chance', desc: 'Revive Bulk' },
+            { id: 'threeDays', icon: '🌟', title: 'Week Warrior', desc: 'Keep Bulk alive for 3 days' },
+            { id: 'allMax', icon: '👑', title: 'Perfection', desc: 'Keep all stats at 100% for 1 hour' }
+        ];
+
+        function checkAchievements() {
+            const ageInDays = (Date.now() - birthTime) / (1000 * 60 * 60 * 24);
+
+            if (totalCareActions >= 1 && !achievements.firstFeed) unlockAchievement('firstFeed');
+            if (comboCount >= 10 && !achievements.combo10) unlockAchievement('combo10');
+            if (hunger === 100 && happiness === 100 && cleanliness === 100 && !achievements.perfectCare) unlockAchievement('perfectCare');
+            if (ageInDays >= 1 && !achievements.oneDay) unlockAchievement('oneDay');
+            if (totalCareActions >= 100 && !achievements.care100) unlockAchievement('care100');
+            if (totalCareActions >= 500 && !achievements.care500) unlockAchievement('care500');
+            if (ageInDays >= 3 && !achievements.threeDays) unlockAchievement('threeDays');
+        }
+
+        function unlockAchievement(id) {
+            achievements[id] = true;
+            const achievement = achievementsList.find(a => a.id === id);
+            if (achievement) {
+                showMessage(`🏆 ACHIEVEMENT: ${achievement.title}! 🏆`);
+                playSound('play');
+                createParticles('#ffd700', 50);
+                // Flash gold border
+                document.getElementById('game-container').style.borderColor = '#ffd700';
+                setTimeout(() => {
+                    document.getElementById('game-container').style.borderColor = '#9b30ff';
+                }, 500);
+            }
+            saveState();
+        }
+
+        function showAchievements() {
+            const modal = document.getElementById('achievements-modal');
+            const list = document.getElementById('achievements-list');
+            list.innerHTML = '';
+
+            achievementsList.forEach(achievement => {
+                const div = document.createElement('div');
+                div.className = 'achievement' + (achievements[achievement.id] ? ' unlocked' : '');
+                div.innerHTML = `
+                    <div class="achievement-icon">${achievements[achievement.id] ? achievement.icon : '🔒'}</div>
+                    <div class="achievement-info">
+                        <div class="achievement-title">${achievement.title}</div>
+                        <div class="achievement-desc">${achievement.desc}</div>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+
+            modal.classList.add('active');
+        }
+
+        function closeAchievements() {
+            document.getElementById('achievements-modal').classList.remove('active');
+        }
+
+        // Mini-Game
+        let gameInterval, gameTimeout;
+
+        function startMiniGame() {
+            if (isSleeping || isDead) return;
+
+            miniGameActive = true;
+            miniGameScore = 0;
+            let timeLeft = 10;
+
+            const modal = document.getElementById('minigame-modal');
+            const gameArea = document.getElementById('game-area');
+            const scoreDisplay = document.getElementById('game-score');
+            const timeDisplay = document.getElementById('game-time');
+
+            modal.classList.add('active');
+            gameArea.innerHTML = '';
+            scoreDisplay.textContent = '0';
+            timeDisplay.textContent = '10';
+
+            // Spawn targets
+            gameInterval = setInterval(() => {
+                spawnTarget();
+            }, 800);
+
+            // Countdown timer
+            gameTimeout = setInterval(() => {
+                timeLeft--;
+                timeDisplay.textContent = timeLeft;
+
+                if (timeLeft <= 0) {
+                    endMiniGame();
+                }
+            }, 1000);
+        }
+
+        function spawnTarget() {
+            const gameArea = document.getElementById('game-area');
+            const target = document.createElement('div');
+            target.className = 'game-target';
+
+            const maxX = gameArea.clientWidth - 80;
+            const maxY = gameArea.clientHeight - 80;
+            target.style.left = Math.random() * maxX + 'px';
+            target.style.top = Math.random() * maxY + 'px';
+
+            target.onclick = () => {
+                miniGameScore++;
+                document.getElementById('game-score').textContent = miniGameScore;
+                playSound('play');
+                target.remove();
+            };
+
+            gameArea.appendChild(target);
+
+            // Remove after 1.5 seconds if not clicked
+            setTimeout(() => {
+                if (target.parentNode) target.remove();
+            }, 1500);
+        }
+
+        function endMiniGame() {
+            clearInterval(gameInterval);
+            clearInterval(gameTimeout);
+
+            const gameArea = document.getElementById('game-area');
+            gameArea.innerHTML = `
+                <div style="text-align: center; color: #ffd700; font-size: clamp(1rem, 4vw, 1.5rem);">
+                    GAME OVER!<br>
+                    Score: ${miniGameScore}
+                </div>
+            `;
+
+            // Reward based on score
+            if (miniGameScore >= 20) {
+                happiness = Math.min(100, happiness + 30);
+                showMessage("AMAZING! +30 HAPPINESS! 🎯");
+                if (!achievements.gameWin) unlockAchievement('gameWin');
+            } else if (miniGameScore >= 10) {
+                happiness = Math.min(100, happiness + 20);
+                showMessage("GREAT JOB! +20 HAPPINESS! 🎯");
+            } else if (miniGameScore >= 5) {
+                happiness = Math.min(100, happiness + 10);
+                showMessage("NICE TRY! +10 HAPPINESS! 🎯");
+            }
+
+            updateUI();
+            saveState();
+            miniGameActive = false;
+
+            setTimeout(() => {
+                document.getElementById('minigame-modal').classList.remove('active');
+            }, 2000);
+        }
+
+        function closeMiniGame() {
+            if (gameInterval) clearInterval(gameInterval);
+            if (gameTimeout) clearInterval(gameTimeout);
+            miniGameActive = false;
+            document.getElementById('minigame-modal').classList.remove('active');
+        }
+
+        // Ambient Particles
+        function createAmbientParticles() {
+            if (isDead || isSleeping) return;
+
+            const avgStats = (hunger + happiness + cleanliness) / 3;
+            if (avgStats < 50) return; // Only show when Bulk is happy
+
+            const container = document.getElementById('scene-container');
+            const particle = document.createElement('div');
+            particle.className = 'ambient-particle';
+
+            // Choose emoji based on mood
+            const emojis = avgStats > 80 ? ['✨', '⭐', '💫', '💜', '💖'] : ['✨', '⭐'];
+            particle.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+
+            particle.style.left = Math.random() * 80 + 10 + '%';
+            particle.style.top = Math.random() * 80 + 10 + '%';
+            particle.style.animationDelay = Math.random() * 4 + 's';
+
+            container.appendChild(particle);
+
+            setTimeout(() => particle.remove(), 8000);
+        }
+
+        // Stat Milestone Celebrations
+        let lastPerfectCheck = false;
+        function checkStatMilestones() {
+            const isPerfect = hunger === 100 && happiness === 100 && cleanliness === 100;
+
+            // Big celebration when reaching perfect stats
+            if (isPerfect && !lastPerfectCheck) {
+                showMessage("🎉 PERFECT CARE! BULK IS SO HAPPY! 🎉");
+                createParticles('#ffd700', 80);
+                createParticles('#ff00ff', 60);
+                createParticles('#00ffff', 40);
+                playJumpAnimation();
+            }
+
+            lastPerfectCheck = isPerfect;
+
+            // Small sparkles for individual max stats
+            if (hunger === 100 || happiness === 100 || cleanliness === 100) {
+                if (Math.random() < 0.05) {
+                    createParticles('#ffd700', 30);
+                }
+            }
+        }
+
+        // Enhanced save/load with achievements
+        const originalLoadState = loadState;
+        function loadState() {
+            const saved = localStorage.getItem('bulkagachi');
+            if (saved) {
+                const state = JSON.parse(saved);
+                hunger = state.hunger || 100;
+                happiness = state.happiness || 100;
+                cleanliness = state.cleanliness || 100;
+                lastUpdateTime = state.lastUpdateTime || Date.now();
+                birthTime = state.birthTime || Date.now();
+                totalCareActions = state.totalCareActions || 0;
+                isDead = state.isDead || false;
+                achievements = state.achievements || {};
+
+                // Calculate decay since last visit
+                const timePassed = (Date.now() - lastUpdateTime) / 1000;
+                const minutesPassed = timePassed / 60;
+
+                if (!isDead) {
+                    hunger = Math.max(0, hunger - minutesPassed * 2);
+                    happiness = Math.max(0, happiness - minutesPassed * 1.5);
+                    cleanliness = Math.max(0, cleanliness - minutesPassed * 1);
+                }
+
+                if (hunger === 0 && happiness === 0 && cleanliness === 0 && !isDead) {
+                    isDead = true;
+                    showRevivalScreen();
+                }
+
+                if (minutesPassed > 1 && !isDead) {
+                    setTimeout(() => {
+                        if (minutesPassed < 60) {
+                            showMessage(`WELCOME BACK! YOU WERE GONE FOR ${Math.round(minutesPassed)} MIN! 👋`);
+                        } else if (minutesPassed < 1440) {
+                            showMessage(`WELCOME BACK! YOU WERE GONE FOR ${Math.round(minutesPassed / 60)} HOURS! 👋`);
+                        } else {
+                            showMessage(`WELCOME BACK! YOU WERE GONE FOR ${Math.round(minutesPassed / 1440)} DAYS! 👋`);
+                        }
+                    }, 1000);
+                }
+            } else {
+                birthTime = Date.now();
+                setTimeout(() => {
+                    showMessage("HELLO! I'M BULK! TAKE CARE OF ME! 💜");
+                }, 1000);
+            }
+        }
+
+        function saveState() {
+            const state = {
+                hunger,
+                happiness,
+                cleanliness,
+                lastUpdateTime: Date.now(),
+                birthTime,
+                totalCareActions,
+                isDead,
+                achievements
+            };
+            localStorage.setItem('bulkagachi', JSON.stringify(state));
+        }
+
+        // Add ambient particles periodically
+        setInterval(() => {
+            if (!isDead && !isSleeping && !miniGameActive) {
+                createAmbientParticles();
+                checkStatMilestones();
+                checkAchievements();
+            }
+        }, 3000);
 
         // Initialize game
         init();
