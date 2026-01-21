@@ -984,6 +984,255 @@
             50% { opacity: 1; transform: scale(1.5); }
         }
 
+        /* Coin Display */
+        #coin-display {
+            position: absolute;
+            top: 10px;
+            left: 120px;
+            background: linear-gradient(135deg, #ffd700, #ffaa00);
+            border: 3px solid #fff;
+            border-radius: 20px;
+            padding: 8px 15px;
+            color: #000;
+            font-size: clamp(0.5rem, 2vw, 0.6rem);
+            font-weight: bold;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+        }
+
+        #coin-display .coin-icon {
+            font-size: 1.2rem;
+        }
+
+        /* Shop Button */
+        #shop-btn {
+            position: absolute;
+            bottom: 100px;
+            left: 10px;
+            background: linear-gradient(135deg, #ff69b4, #ff1493);
+            border: 3px solid #ffd700;
+            border-radius: 12px;
+            padding: 8px 12px;
+            color: #fff;
+            font-family: 'Press Start 2P', monospace;
+            font-size: clamp(0.4rem, 1.8vw, 0.5rem);
+            cursor: pointer;
+            text-shadow: 2px 2px 0 #000;
+            z-index: 10;
+            transition: all 0.3s;
+            box-shadow: 0 4px 0 #c71585, 0 0 20px rgba(255, 105, 180, 0.5);
+        }
+
+        #shop-btn:hover {
+            transform: scale(1.05);
+        }
+
+        #shop-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #c71585, 0 0 10px rgba(255, 105, 180, 0.5);
+        }
+
+        /* Shop Modal */
+        #shop-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 150;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        #shop-modal.active {
+            display: flex;
+        }
+
+        .shop-item {
+            background: linear-gradient(135deg, #9b30ff, #6a0dad);
+            border: 3px solid #ff00ff;
+            border-radius: 15px;
+            padding: 15px;
+            margin: 8px 0;
+            width: 90%;
+            max-width: 350px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .shop-item:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 20px rgba(255, 0, 255, 0.5);
+        }
+
+        .shop-item.owned {
+            background: linear-gradient(135deg, #228b22, #32cd32);
+            border-color: #00ff00;
+        }
+
+        .shop-item.equipped {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            border-color: #fff;
+            box-shadow: 0 0 25px rgba(255, 215, 0, 0.8);
+        }
+
+        .shop-item-icon {
+            font-size: 2rem;
+        }
+
+        .shop-item-info {
+            flex: 1;
+        }
+
+        .shop-item-name {
+            color: #fff;
+            font-size: clamp(0.5rem, 2vw, 0.6rem);
+            margin-bottom: 4px;
+        }
+
+        .shop-item-price {
+            color: #ffd700;
+            font-size: clamp(0.4rem, 1.5vw, 0.5rem);
+        }
+
+        /* Accessory Display */
+        #accessory-display {
+            position: absolute;
+            top: 22%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2rem;
+            z-index: 7;
+            pointer-events: none;
+            animation: accessoryBob 2s ease-in-out infinite;
+        }
+
+        @keyframes accessoryBob {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-5px); }
+        }
+
+        /* Poop System */
+        #poop-container {
+            position: absolute;
+            bottom: 20%;
+            left: 25%;
+            display: flex;
+            gap: 10px;
+            z-index: 5;
+        }
+
+        .poop {
+            font-size: 1.5rem;
+            animation: poopAppear 0.5s ease-out, poopWiggle 2s ease-in-out infinite;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .poop:hover {
+            transform: scale(1.2);
+        }
+
+        @keyframes poopAppear {
+            0% { transform: scale(0) rotate(-180deg); opacity: 0; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        @keyframes poopWiggle {
+            0%, 100% { transform: rotate(-5deg); }
+            50% { transform: rotate(5deg); }
+        }
+
+        /* Stink Lines */
+        .stink-lines {
+            position: absolute;
+            bottom: 25%;
+            left: 30%;
+            font-size: 1rem;
+            color: #90ee90;
+            opacity: 0.7;
+            z-index: 4;
+            animation: stinkFloat 1.5s ease-in-out infinite;
+            display: none;
+        }
+
+        .stink-lines.visible {
+            display: block;
+        }
+
+        @keyframes stinkFloat {
+            0%, 100% { transform: translateY(0) rotate(-10deg); opacity: 0.3; }
+            50% { transform: translateY(-15px) rotate(10deg); opacity: 0.8; }
+        }
+
+        /* Dance Button */
+        #dance-btn {
+            position: absolute;
+            bottom: 100px;
+            right: 10px;
+            background: linear-gradient(135deg, #00ced1, #20b2aa);
+            border: 3px solid #7fffd4;
+            border-radius: 12px;
+            padding: 8px 12px;
+            color: #fff;
+            font-family: 'Press Start 2P', monospace;
+            font-size: clamp(0.4rem, 1.8vw, 0.5rem);
+            cursor: pointer;
+            text-shadow: 2px 2px 0 #000;
+            z-index: 10;
+            transition: all 0.3s;
+            box-shadow: 0 4px 0 #008b8b, 0 0 20px rgba(0, 206, 209, 0.5);
+        }
+
+        #dance-btn:hover {
+            transform: scale(1.05);
+        }
+
+        #dance-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #008b8b, 0 0 10px rgba(0, 206, 209, 0.5);
+        }
+
+        /* Tickle Effect */
+        .tickle-text {
+            position: absolute;
+            font-size: 1rem;
+            color: #ff69b4;
+            text-shadow: 0 0 10px #ff69b4;
+            pointer-events: none;
+            z-index: 100;
+            animation: tickleFloat 1s ease-out forwards;
+        }
+
+        @keyframes tickleFloat {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-50px) scale(0.5); opacity: 0; }
+        }
+
+        /* Flying Coin Animation */
+        .flying-coin {
+            position: absolute;
+            font-size: 1.5rem;
+            pointer-events: none;
+            z-index: 100;
+            animation: coinFly 1s ease-out forwards;
+        }
+
+        @keyframes coinFly {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-100px) scale(0.3); opacity: 0; }
+        }
+
         /* Aura Effect */
         #bulk-aura {
             position: absolute;
@@ -1289,6 +1538,13 @@
                 <span id="mood-text">HAPPY</span>
             </div>
             <div id="weather-effect"></div>
+            <div id="coin-display">
+                <span class="coin-icon">🪙</span>
+                <span id="coin-count">0</span>
+            </div>
+            <div id="accessory-display"></div>
+            <div id="poop-container"></div>
+            <div class="stink-lines" id="stink-lines">~💨~</div>
             <div id="bulk-aura"></div>
             <div id="perfect-halo"></div>
             <div id="needs-container">
@@ -1312,6 +1568,8 @@
             </div>
             <button id="minigame-btn" onclick="startMiniGame()">🎯 PLAY!</button>
             <button id="achievements-btn" onclick="showAchievements()">🏆</button>
+            <button id="shop-btn" onclick="showShop()">🛒 SHOP</button>
+            <button id="dance-btn" onclick="makeBulkDance()">💃 DANCE</button>
             <div id="thought-bubble"></div>
             <div class="sleep-overlay" id="sleep-overlay">
                 💤
@@ -1368,6 +1626,12 @@
                     <div class="theme-btn locked" style="background: linear-gradient(135deg, #ff9a9e, #fecfef);" onclick="setTheme('candy')" title="Candy (Lv 15)"></div>
                 </div>
                 <button class="close-modal-btn" onclick="closeSettings()">CLOSE</button>
+            </div>
+            <div id="shop-modal">
+                <div style="font-size: clamp(1rem, 4vw, 1.5rem); color: #ffd700; margin-bottom: 10px;">🛒 BULK SHOP 🛒</div>
+                <div style="font-size: clamp(0.5rem, 2vw, 0.6rem); color: #ff69b4; margin-bottom: 20px;">Your coins: <span id="shop-coins">0</span> 🪙</div>
+                <div id="shop-items"></div>
+                <button class="close-modal-btn" onclick="closeShop()">CLOSE</button>
             </div>
             <div id="event-notification"></div>
             <div id="message"></div>
@@ -1467,6 +1731,12 @@
         let dreamBonus = 0;
         let currentTheme = 'default';
         let lastThoughtTime = 0;
+        let coins = 0;
+        let ownedAccessories = [];
+        let equippedAccessory = null;
+        let poopCount = 0;
+        let lastPoopTime = Date.now();
+        let isDancing = false;
 
         // Audio Context for sound effects
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -1738,18 +2008,6 @@
             }
 
             renderer.render(scene, camera);
-        }
-
-        // Pet Bulk interaction
-        function petBulk(x, y) {
-            happiness = Math.min(100, happiness + 5);
-            playSound('play');
-            playHappyAnimation();
-            createFloatingEmoji('💜', x, y);
-            showMessage("BULK LOVES PETS! 💜");
-            updateCombo();
-            updateUI();
-            saveState();
         }
 
         // Floating emoji effect
@@ -2045,6 +2303,7 @@
             playJumpAnimation();
             updateCombo();
             addXP(10);
+            addCoins(3);
             updateStreak();
             updateUI();
             saveState();
@@ -2072,6 +2331,7 @@
             playSpinAnimation();
             updateCombo();
             addXP(12);
+            addCoins(5);
             updateStreak();
             updateUI();
             saveState();
@@ -2099,6 +2359,7 @@
             playHappyAnimation();
             updateCombo();
             addXP(8);
+            addCoins(4);
             updateStreak();
             updateUI();
             saveState();
@@ -3129,6 +3390,11 @@
                 careStreak = state.careStreak || 0;
                 lastCareDate = state.lastCareDate || null;
                 currentTheme = state.currentTheme || 'default';
+                coins = state.coins || 0;
+                ownedAccessories = state.ownedAccessories || [];
+                equippedAccessory = state.equippedAccessory || null;
+                poopCount = state.poopCount || 0;
+                lastPoopTime = state.lastPoopTime || Date.now();
 
                 // Update UI toggles
                 if (!soundEnabled) document.getElementById('sound-toggle').classList.remove('active');
@@ -3139,6 +3405,20 @@
                 updateLevelDisplay();
                 updateStreakDisplay();
                 updateThemeUnlocks();
+                updateCoinDisplay();
+                updateAccessoryDisplay();
+
+                // Restore poops if any
+                const poopContainer = document.getElementById('poop-container');
+                poopContainer.innerHTML = '';
+                for (let i = 0; i < poopCount; i++) {
+                    const poop = document.createElement('div');
+                    poop.className = 'poop';
+                    poop.textContent = '💩';
+                    poop.onclick = () => cleanPoop(poop);
+                    poopContainer.appendChild(poop);
+                }
+                updateStinkLines();
 
                 // Apply saved theme
                 if (currentTheme !== 'default') {
@@ -3199,9 +3479,301 @@
                 xp,
                 careStreak,
                 lastCareDate,
-                currentTheme
+                currentTheme,
+                coins,
+                ownedAccessories,
+                equippedAccessory,
+                poopCount,
+                lastPoopTime
             };
             localStorage.setItem('bulkagachi', JSON.stringify(state));
+        }
+
+        // Coin System
+        function addCoins(amount) {
+            coins += amount;
+            updateCoinDisplay();
+
+            // Create flying coin animation
+            const container = document.getElementById('scene-container');
+            const coin = document.createElement('div');
+            coin.className = 'flying-coin';
+            coin.textContent = '🪙';
+            coin.style.left = '50%';
+            coin.style.top = '50%';
+            container.appendChild(coin);
+            setTimeout(() => coin.remove(), 1000);
+
+            saveState();
+        }
+
+        function updateCoinDisplay() {
+            document.getElementById('coin-count').textContent = coins;
+            const shopCoins = document.getElementById('shop-coins');
+            if (shopCoins) shopCoins.textContent = coins;
+        }
+
+        // Shop System
+        const shopItems = [
+            { id: 'crown', icon: '👑', name: 'Royal Crown', price: 100, desc: 'For the king of pets!' },
+            { id: 'hat', icon: '🎩', name: 'Top Hat', price: 50, desc: 'Very distinguished!' },
+            { id: 'bow', icon: '🎀', name: 'Cute Bow', price: 30, desc: 'So adorable!' },
+            { id: 'glasses', icon: '🕶️', name: 'Cool Shades', price: 40, desc: 'Too cool for school!' },
+            { id: 'halo', icon: '😇', name: 'Angel Halo', price: 75, desc: 'Pure and innocent!' },
+            { id: 'party', icon: '🎉', name: 'Party Hat', price: 25, desc: 'Party time!' },
+            { id: 'flower', icon: '🌸', name: 'Flower Crown', price: 60, desc: 'Spring vibes!' },
+            { id: 'star', icon: '⭐', name: 'Star Headband', price: 80, desc: 'You are a star!' },
+            { id: 'wizard', icon: '🧙', name: 'Wizard Hat', price: 90, desc: 'Magical powers!' },
+            { id: 'chef', icon: '👨‍🍳', name: 'Chef Hat', price: 45, desc: 'Master chef Bulk!' }
+        ];
+
+        function showShop() {
+            const modal = document.getElementById('shop-modal');
+            const itemsContainer = document.getElementById('shop-items');
+            itemsContainer.innerHTML = '';
+
+            document.getElementById('shop-coins').textContent = coins;
+
+            shopItems.forEach(item => {
+                const div = document.createElement('div');
+                const owned = ownedAccessories.includes(item.id);
+                const equipped = equippedAccessory === item.id;
+
+                div.className = 'shop-item' + (equipped ? ' equipped' : (owned ? ' owned' : ''));
+                div.innerHTML = `
+                    <div class="shop-item-icon">${item.icon}</div>
+                    <div class="shop-item-info">
+                        <div class="shop-item-name">${item.name}</div>
+                        <div class="shop-item-price">${owned ? (equipped ? '✓ EQUIPPED' : 'OWNED - TAP TO EQUIP') : item.price + ' 🪙'}</div>
+                    </div>
+                `;
+                div.onclick = () => handleShopItem(item);
+                itemsContainer.appendChild(div);
+            });
+
+            modal.classList.add('active');
+        }
+
+        function closeShop() {
+            document.getElementById('shop-modal').classList.remove('active');
+        }
+
+        function handleShopItem(item) {
+            if (ownedAccessories.includes(item.id)) {
+                // Already owned - toggle equip
+                if (equippedAccessory === item.id) {
+                    equippedAccessory = null;
+                    showMessage("ACCESSORY REMOVED! 👋");
+                } else {
+                    equippedAccessory = item.id;
+                    showMessage(`${item.icon} EQUIPPED! LOOKING GOOD! ✨`);
+                }
+                updateAccessoryDisplay();
+                showShop(); // Refresh shop display
+                saveState();
+            } else if (coins >= item.price) {
+                // Buy item
+                coins -= item.price;
+                ownedAccessories.push(item.id);
+                equippedAccessory = item.id;
+                updateCoinDisplay();
+                updateAccessoryDisplay();
+                showMessage(`BOUGHT ${item.name}! ${item.icon}`);
+                playSound('play');
+                createParticles('#ffd700', 30);
+                showShop(); // Refresh shop display
+                saveState();
+            } else {
+                showMessage("NOT ENOUGH COINS! 💸");
+                playSadAnimation();
+            }
+        }
+
+        function updateAccessoryDisplay() {
+            const display = document.getElementById('accessory-display');
+            if (equippedAccessory) {
+                const item = shopItems.find(i => i.id === equippedAccessory);
+                display.textContent = item ? item.icon : '';
+            } else {
+                display.textContent = '';
+            }
+        }
+
+        // Poop System
+        function checkForPoop() {
+            if (isDead || isSleeping) return;
+
+            const timeSinceLastPoop = Date.now() - lastPoopTime;
+            const poopChance = timeSinceLastPoop > 120000 ? 0.1 : 0.02; // Higher chance after 2 minutes
+
+            if (Math.random() < poopChance && poopCount < 3) {
+                addPoop();
+            }
+
+            updateStinkLines();
+        }
+
+        function addPoop() {
+            poopCount++;
+            lastPoopTime = Date.now();
+
+            const container = document.getElementById('poop-container');
+            const poop = document.createElement('div');
+            poop.className = 'poop';
+            poop.textContent = '💩';
+            poop.onclick = () => cleanPoop(poop);
+            container.appendChild(poop);
+
+            // Reduce cleanliness when poop appears
+            cleanliness = Math.max(0, cleanliness - 10);
+            updateUI();
+
+            if (poopCount === 1) {
+                showMessage("UH OH... BULK MADE A MESS! 💩");
+            } else if (poopCount >= 3) {
+                showMessage("SO MUCH POOP! PLEASE CLEAN! 😫");
+            }
+
+            saveState();
+        }
+
+        function cleanPoop(poopElement) {
+            poopElement.style.animation = 'poopAppear 0.3s ease-out reverse';
+            setTimeout(() => {
+                poopElement.remove();
+                poopCount--;
+
+                // Reward for cleaning
+                cleanliness = Math.min(100, cleanliness + 5);
+                addCoins(2);
+                addXP(3);
+
+                playSound('clean');
+                createParticles('#00ffff', 10);
+                showMessage("POOP CLEANED! +2 🪙");
+
+                updateStinkLines();
+                updateUI();
+                saveState();
+            }, 300);
+        }
+
+        function updateStinkLines() {
+            const stink = document.getElementById('stink-lines');
+            stink.classList.toggle('visible', poopCount >= 2);
+        }
+
+        // Dance System
+        function makeBulkDance() {
+            if (isDead || isSleeping || isDancing) return;
+
+            isDancing = true;
+            happiness = Math.min(100, happiness + 10);
+            addXP(5);
+            addCoins(1);
+
+            showMessage("💃 DANCE PARTY! 🕺");
+            playSound('play');
+
+            // Dance animation sequence
+            let danceStep = 0;
+            const danceInterval = setInterval(() => {
+                if (danceStep >= 8) {
+                    clearInterval(danceInterval);
+                    isDancing = false;
+                    bulk.rotation.y = 0;
+                    bulk.position.x = 0;
+                    bulk.scale.set(1, 1, 1);
+                    return;
+                }
+
+                // Various dance moves
+                switch(danceStep % 4) {
+                    case 0: // Spin
+                        bulk.rotation.y += Math.PI / 2;
+                        createParticles('#ff00ff', 5);
+                        break;
+                    case 1: // Jump
+                        bulk.position.y = 0.4 + 0.3;
+                        setTimeout(() => { if (bulk) bulk.position.y = 0.4; }, 150);
+                        break;
+                    case 2: // Side step
+                        bulk.position.x = (danceStep % 2 === 0) ? 0.3 : -0.3;
+                        break;
+                    case 3: // Wiggle
+                        bulk.scale.set(1.1, 0.9, 1);
+                        setTimeout(() => { if (bulk) bulk.scale.set(0.9, 1.1, 1); }, 100);
+                        setTimeout(() => { if (bulk) bulk.scale.set(1, 1, 1); }, 200);
+                        break;
+                }
+
+                danceStep++;
+            }, 300);
+
+            // Create dance floor effect
+            for (let i = 0; i < 20; i++) {
+                setTimeout(() => {
+                    if (isDancing) {
+                        const colors = ['#ff00ff', '#00ffff', '#ffd700', '#ff69b4', '#7fff00'];
+                        createParticles(colors[Math.floor(Math.random() * colors.length)], 5);
+                    }
+                }, i * 150);
+            }
+
+            updateUI();
+            saveState();
+        }
+
+        // Enhanced pet/tickle interaction
+        function petBulk(x, y) {
+            if (Math.random() < 0.3) {
+                // Tickle!
+                tickleBulk(x, y);
+            } else {
+                // Normal pet
+                happiness = Math.min(100, happiness + 5);
+                addCoins(1);
+                playSound('play');
+                playHappyAnimation();
+                createFloatingEmoji('💜', x, y);
+                showMessage("BULK LOVES PETS! 💜");
+            }
+            updateCombo();
+            addXP(2);
+            updateUI();
+            saveState();
+        }
+
+        function tickleBulk(x, y) {
+            happiness = Math.min(100, happiness + 8);
+            addCoins(2);
+
+            // Create tickle text
+            const container = document.getElementById('scene-container');
+            const tickleTexts = ['Hehe!', 'Tee hee!', 'Ha ha!', 'Stop it!', 'Hahaha!'];
+            const text = document.createElement('div');
+            text.className = 'tickle-text';
+            text.textContent = tickleTexts[Math.floor(Math.random() * tickleTexts.length)];
+            text.style.left = x + 'px';
+            text.style.top = y + 'px';
+            container.appendChild(text);
+            setTimeout(() => text.remove(), 1000);
+
+            // Wiggle animation
+            let wiggleCount = 0;
+            const wiggleInterval = setInterval(() => {
+                if (wiggleCount >= 6) {
+                    clearInterval(wiggleInterval);
+                    bulk.position.x = 0;
+                    return;
+                }
+                bulk.position.x = (wiggleCount % 2 === 0) ? 0.1 : -0.1;
+                wiggleCount++;
+            }, 50);
+
+            playSound('play');
+            createFloatingEmoji('😆', x, y);
+            showMessage("BULK IS TICKLISH! 😂");
         }
 
         // Add ambient particles periodically
@@ -3216,6 +3788,7 @@
             showRandomThought();
             updateAura();
             showEmotionIndicators();
+            checkForPoop();
         }, 3000);
 
         // Create background stars on load
