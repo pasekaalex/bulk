@@ -1320,6 +1320,324 @@
             transition: width 0.3s;
         }
 
+        /* Sickness System */
+        #sick-indicator {
+            position: absolute;
+            top: 32%;
+            right: 35%;
+            font-size: 1.5rem;
+            z-index: 26;
+            display: none;
+            animation: sickPulse 1s ease-in-out infinite;
+        }
+
+        #sick-indicator.visible {
+            display: block;
+        }
+
+        @keyframes sickPulse {
+            0%, 100% { transform: scale(1) rotate(-5deg); opacity: 0.8; }
+            50% { transform: scale(1.2) rotate(5deg); opacity: 1; }
+        }
+
+        #medicine-btn {
+            position: absolute;
+            bottom: 140px;
+            right: 10px;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
+            border: 3px solid #fff;
+            border-radius: 12px;
+            padding: 8px 12px;
+            color: #fff;
+            font-family: 'Press Start 2P', monospace;
+            font-size: clamp(0.4rem, 1.8vw, 0.5rem);
+            cursor: pointer;
+            text-shadow: 2px 2px 0 #000;
+            z-index: 10;
+            display: none;
+            animation: medicineGlow 1s ease-in-out infinite;
+            box-shadow: 0 4px 0 #cc4444, 0 0 20px rgba(255, 107, 107, 0.5);
+        }
+
+        #medicine-btn.visible {
+            display: block;
+        }
+
+        @keyframes medicineGlow {
+            0%, 100% { box-shadow: 0 4px 0 #cc4444, 0 0 20px rgba(255, 107, 107, 0.5); }
+            50% { box-shadow: 0 4px 0 #cc4444, 0 0 40px rgba(255, 107, 107, 0.8); }
+        }
+
+        /* Toys System */
+        #toys-btn {
+            position: absolute;
+            bottom: 140px;
+            left: 10px;
+            background: linear-gradient(135deg, #ff69b4, #ff1493);
+            border: 3px solid #ffd700;
+            border-radius: 12px;
+            padding: 8px 12px;
+            color: #fff;
+            font-family: 'Press Start 2P', monospace;
+            font-size: clamp(0.4rem, 1.8vw, 0.5rem);
+            cursor: pointer;
+            text-shadow: 2px 2px 0 #000;
+            z-index: 10;
+            transition: all 0.3s;
+            box-shadow: 0 4px 0 #c71585, 0 0 20px rgba(255, 105, 180, 0.5);
+        }
+
+        #toys-btn:hover {
+            transform: scale(1.05);
+        }
+
+        #toys-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 150;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        #toys-modal.active {
+            display: flex;
+        }
+
+        .toy-item {
+            background: linear-gradient(135deg, #9b30ff, #6a0dad);
+            border: 3px solid #ff00ff;
+            border-radius: 15px;
+            padding: 15px;
+            margin: 8px 0;
+            width: 90%;
+            max-width: 350px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .toy-item:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 20px rgba(255, 0, 255, 0.5);
+        }
+
+        .toy-item.owned {
+            background: linear-gradient(135deg, #228b22, #32cd32);
+            border-color: #00ff00;
+        }
+
+        .active-toy {
+            position: absolute;
+            font-size: 2rem;
+            z-index: 7;
+            animation: toyBounce 1s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes toyBounce {
+            0%, 100% { transform: translateY(0) rotate(-5deg); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+        }
+
+        /* Visitor System */
+        #visitor-container {
+            position: absolute;
+            left: 5%;
+            bottom: 25%;
+            z-index: 8;
+            display: none;
+        }
+
+        #visitor-container.visible {
+            display: block;
+        }
+
+        .visitor {
+            font-size: 2.5rem;
+            animation: visitorEnter 0.5s ease-out, visitorIdle 2s ease-in-out infinite 0.5s;
+        }
+
+        @keyframes visitorEnter {
+            0% { transform: translateX(-100px) scale(0); opacity: 0; }
+            100% { transform: translateX(0) scale(1); opacity: 1; }
+        }
+
+        @keyframes visitorIdle {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .visitor-speech {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            border: 2px solid #9b30ff;
+            border-radius: 10px;
+            padding: 5px 10px;
+            font-size: clamp(0.4rem, 1.5vw, 0.5rem);
+            color: #333;
+            white-space: nowrap;
+            animation: speechPop 0.3s ease-out;
+        }
+
+        @keyframes speechPop {
+            0% { transform: translateX(-50%) scale(0); }
+            100% { transform: translateX(-50%) scale(1); }
+        }
+
+        /* Tricks System */
+        #tricks-btn {
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #9932cc, #8b008b);
+            border: 3px solid #dda0dd;
+            border-radius: 15px;
+            padding: 8px 15px;
+            color: #fff;
+            font-family: 'Press Start 2P', monospace;
+            font-size: clamp(0.4rem, 1.8vw, 0.5rem);
+            cursor: pointer;
+            text-shadow: 2px 2px 0 #000;
+            z-index: 10;
+            transition: all 0.3s;
+            box-shadow: 0 4px 0 #4b0082, 0 0 20px rgba(153, 50, 204, 0.5);
+        }
+
+        #tricks-btn:hover {
+            transform: translateX(-50%) scale(1.05);
+        }
+
+        #tricks-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 150;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        #tricks-modal.active {
+            display: flex;
+        }
+
+        .trick-item {
+            background: linear-gradient(135deg, #9b30ff, #6a0dad);
+            border: 3px solid #ff00ff;
+            border-radius: 15px;
+            padding: 15px;
+            margin: 8px 0;
+            width: 90%;
+            max-width: 350px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .trick-item:hover {
+            transform: scale(1.02);
+        }
+
+        .trick-item.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .trick-item.learned {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            border-color: #fff;
+        }
+
+        /* Fortune Cookie */
+        #fortune-btn {
+            position: absolute;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #daa520, #b8860b);
+            border: 3px solid #ffd700;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            color: #fff;
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            box-shadow: 0 4px 0 #8b6914, 0 0 15px rgba(218, 165, 32, 0.5);
+        }
+
+        #fortune-btn:hover {
+            transform: translateX(-50%) scale(1.1) rotate(10deg);
+        }
+
+        #fortune-btn.claimed {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        #fortune-modal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #fff8dc, #faebd7);
+            border: 4px solid #daa520;
+            border-radius: 20px;
+            padding: 25px;
+            color: #8b4513;
+            font-size: clamp(0.5rem, 2vw, 0.7rem);
+            text-align: center;
+            z-index: 200;
+            display: none;
+            max-width: 80%;
+            box-shadow: 0 0 40px rgba(218, 165, 32, 0.8);
+            animation: fortunePop 0.4s ease-out;
+        }
+
+        #fortune-modal.active {
+            display: block;
+        }
+
+        @keyframes fortunePop {
+            0% { transform: translate(-50%, -50%) scale(0) rotate(-20deg); }
+            100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+        }
+
+        .fortune-text {
+            font-style: italic;
+            margin: 15px 0;
+            line-height: 1.6;
+        }
+
+        .fortune-lucky {
+            color: #ff6347;
+            margin-top: 10px;
+        }
+
         /* Dance Button */
         #dance-btn {
             position: absolute;
@@ -1724,6 +2042,13 @@
             <button id="achievements-btn" onclick="showAchievements()">🏆</button>
             <button id="shop-btn" onclick="showShop()">🛒 SHOP</button>
             <button id="dance-btn" onclick="makeBulkDance()">💃 DANCE</button>
+            <button id="toys-btn" onclick="showToys()">🧸 TOYS</button>
+            <button id="medicine-btn" onclick="giveMedicine()">💊 MEDICINE</button>
+            <button id="tricks-btn" onclick="showTricks()">🎪 TRICKS</button>
+            <button id="fortune-btn" onclick="openFortune()">🥠</button>
+            <div id="sick-indicator">🤒</div>
+            <div id="visitor-container"></div>
+            <div id="active-toy-display"></div>
             <div id="thought-bubble"></div>
             <div class="sleep-overlay" id="sleep-overlay">
                 💤
@@ -1786,6 +2111,25 @@
                 <div style="font-size: clamp(0.5rem, 2vw, 0.6rem); color: #ff69b4; margin-bottom: 20px;">Your coins: <span id="shop-coins">0</span> 🪙</div>
                 <div id="shop-items"></div>
                 <button class="close-modal-btn" onclick="closeShop()">CLOSE</button>
+            </div>
+            <div id="toys-modal">
+                <div style="font-size: clamp(1rem, 4vw, 1.5rem); color: #ffd700; margin-bottom: 10px;">🧸 TOY BOX 🧸</div>
+                <div style="font-size: clamp(0.5rem, 2vw, 0.6rem); color: #ff69b4; margin-bottom: 20px;">Your coins: <span id="toys-coins">0</span> 🪙</div>
+                <div id="toys-items"></div>
+                <button class="close-modal-btn" onclick="closeToys()">CLOSE</button>
+            </div>
+            <div id="tricks-modal">
+                <div style="font-size: clamp(1rem, 4vw, 1.5rem); color: #ffd700; margin-bottom: 10px;">🎪 TRICKS 🎪</div>
+                <div style="font-size: clamp(0.5rem, 2vw, 0.6rem); color: #dda0dd; margin-bottom: 20px;">Teach Bulk cool tricks!</div>
+                <div id="tricks-items"></div>
+                <button class="close-modal-btn" onclick="closeTricks()">CLOSE</button>
+            </div>
+            <div id="fortune-modal">
+                <div style="font-size: 2rem; margin-bottom: 10px;">🥠</div>
+                <div style="font-size: clamp(0.6rem, 2.5vw, 0.8rem); color: #8b4513;">TODAY'S FORTUNE</div>
+                <div class="fortune-text" id="fortune-text"></div>
+                <div class="fortune-lucky" id="fortune-lucky"></div>
+                <button class="close-modal-btn" onclick="closeFortune()" style="margin-top: 15px;">OK!</button>
             </div>
             <div id="event-notification"></div>
             <div id="message"></div>
@@ -1895,6 +2239,14 @@
         let totalPoopsCleaned = 0;
         let goldenPoopsCleaned = 0;
         let lastFeedTime = 0;
+        let isSick = false;
+        let sickTime = 0;
+        let ownedToys = [];
+        let activeToy = null;
+        let learnedTricks = [];
+        let lastFortuneDate = null;
+        let lastVisitorTime = 0;
+        let currentVisitor = null;
 
         // Audio Context for sound effects
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -2705,7 +3057,11 @@
             { id: 'allFoods', icon: '🍽️', title: 'Foodie', desc: 'Try all food types' },
             { id: 'eventLucky', icon: '🍀', title: 'Lucky Star', desc: 'Experience 5 special events' },
             { id: 'goldenPoop', icon: '✨', title: 'Golden Discovery', desc: 'Find and clean a golden poop' },
-            { id: 'poopMaster', icon: '💩', title: 'Poop Master', desc: 'Clean 50 poops total' }
+            { id: 'poopMaster', icon: '💩', title: 'Poop Master', desc: 'Clean 50 poops total' },
+            { id: 'doctor', icon: '💊', title: 'Doctor Bulk', desc: 'Cure Bulk when sick' },
+            { id: 'trickster', icon: '🎪', title: 'Trickster', desc: 'Learn 3 tricks' },
+            { id: 'fortunate', icon: '🥠', title: 'Fortune Seeker', desc: 'Open a fortune cookie' },
+            { id: 'socialButterfly', icon: '🦋', title: 'Social Butterfly', desc: 'Receive a visitor' }
         ];
 
         function checkAchievements() {
@@ -3565,6 +3921,22 @@
                 totalPoopsCleaned = state.totalPoopsCleaned || 0;
                 goldenPoopsCleaned = state.goldenPoopsCleaned || 0;
                 lastFeedTime = state.lastFeedTime || 0;
+                isSick = state.isSick || false;
+                ownedToys = state.ownedToys || [];
+                learnedTricks = state.learnedTricks || [];
+                lastFortuneDate = state.lastFortuneDate || null;
+                lastVisitorTime = state.lastVisitorTime || 0;
+
+                // Update sick indicator if sick
+                if (isSick) {
+                    document.getElementById('sick-indicator').classList.add('visible');
+                    document.getElementById('medicine-btn').classList.add('visible');
+                }
+
+                // Update fortune button if already claimed today
+                if (lastFortuneDate === new Date().toDateString()) {
+                    document.getElementById('fortune-btn').classList.add('claimed');
+                }
 
                 // Update UI toggles
                 if (!soundEnabled) document.getElementById('sound-toggle').classList.remove('active');
@@ -3661,7 +4033,12 @@
                 poopUrgency,
                 totalPoopsCleaned,
                 goldenPoopsCleaned,
-                lastFeedTime
+                lastFeedTime,
+                isSick,
+                ownedToys,
+                learnedTricks,
+                lastFortuneDate,
+                lastVisitorTime
             };
             localStorage.setItem('bulkagachi', JSON.stringify(state));
         }
@@ -4019,6 +4396,457 @@
             }
         }
 
+        // Sickness System
+        function checkForSickness() {
+            if (isDead || isSleeping || isSick) return;
+
+            // Higher chance when stats are low or after too many poops
+            const avgStats = (hunger + happiness + cleanliness) / 3;
+            let sickChance = 0;
+
+            if (avgStats < 30) sickChance += 0.02;
+            if (poopCount >= 3) sickChance += 0.03;
+            if (cleanliness < 20) sickChance += 0.02;
+
+            if (Math.random() < sickChance) {
+                makeBulkSick();
+            }
+        }
+
+        function makeBulkSick() {
+            isSick = true;
+            sickTime = Date.now();
+
+            document.getElementById('sick-indicator').classList.add('visible');
+            document.getElementById('medicine-btn').classList.add('visible');
+
+            showMessage("OH NO! BULK IS SICK! 🤒");
+            playSound('clean'); // Sad sound
+
+            // Sick Bulk moves slower
+            if (bulk) {
+                bulk.material && (bulk.material.color.setHex(0x90ee90)); // Greenish tint
+            }
+
+            // Stats decay faster when sick
+            happiness = Math.max(0, happiness - 20);
+            updateUI();
+            saveState();
+        }
+
+        function giveMedicine() {
+            if (!isSick) return;
+
+            isSick = false;
+            sickTime = 0;
+
+            document.getElementById('sick-indicator').classList.remove('visible');
+            document.getElementById('medicine-btn').classList.remove('visible');
+
+            showMessage("💊 ALL BETTER NOW! 💊");
+            playSound('play');
+            createParticles('#ff69b4', 30);
+
+            happiness = Math.min(100, happiness + 30);
+            addXP(20);
+            addCoins(5);
+
+            // Achievement
+            if (!achievements.doctor) unlockAchievement('doctor');
+
+            updateUI();
+            saveState();
+        }
+
+        // Toys System
+        const toysList = [
+            { id: 'ball', icon: '⚽', name: 'Bouncy Ball', price: 20, happiness: 15 },
+            { id: 'teddy', icon: '🧸', name: 'Teddy Bear', price: 35, happiness: 20 },
+            { id: 'kite', icon: '🪁', name: 'Flying Kite', price: 30, happiness: 18 },
+            { id: 'robot', icon: '🤖', name: 'Robot Friend', price: 50, happiness: 25 },
+            { id: 'car', icon: '🚗', name: 'Toy Car', price: 25, happiness: 15 },
+            { id: 'drum', icon: '🥁', name: 'Mini Drum', price: 40, happiness: 22 },
+            { id: 'balloon', icon: '🎈', name: 'Balloon', price: 10, happiness: 10 },
+            { id: 'puzzle', icon: '🧩', name: 'Puzzle', price: 45, happiness: 20 }
+        ];
+
+        function showToys() {
+            const modal = document.getElementById('toys-modal');
+            const itemsContainer = document.getElementById('toys-items');
+            itemsContainer.innerHTML = '';
+
+            document.getElementById('toys-coins').textContent = coins;
+
+            toysList.forEach(toy => {
+                const div = document.createElement('div');
+                const owned = ownedToys.includes(toy.id);
+
+                div.className = 'toy-item' + (owned ? ' owned' : '');
+                div.innerHTML = `
+                    <div class="shop-item-icon">${toy.icon}</div>
+                    <div class="shop-item-info">
+                        <div class="shop-item-name">${toy.name}</div>
+                        <div class="shop-item-price">${owned ? 'TAP TO PLAY! +' + toy.happiness + ' 😊' : toy.price + ' 🪙'}</div>
+                    </div>
+                `;
+                div.onclick = () => handleToyItem(toy);
+                itemsContainer.appendChild(div);
+            });
+
+            modal.classList.add('active');
+        }
+
+        function closeToys() {
+            document.getElementById('toys-modal').classList.remove('active');
+        }
+
+        function handleToyItem(toy) {
+            if (ownedToys.includes(toy.id)) {
+                // Play with toy
+                playWithToy(toy);
+                closeToys();
+            } else if (coins >= toy.price) {
+                // Buy toy
+                coins -= toy.price;
+                ownedToys.push(toy.id);
+                updateCoinDisplay();
+                showMessage(`BOUGHT ${toy.name}! ${toy.icon}`);
+                playSound('play');
+                createParticles('#ff69b4', 20);
+                showToys(); // Refresh
+                saveState();
+            } else {
+                showMessage("NOT ENOUGH COINS! 💸");
+            }
+        }
+
+        function playWithToy(toy) {
+            if (isDead || isSleeping) return;
+
+            activeToy = toy.id;
+            showActiveToy(toy);
+
+            happiness = Math.min(100, happiness + toy.happiness);
+            addXP(8);
+            addCoins(2);
+
+            showMessage(`PLAYING WITH ${toy.name}! ${toy.icon}`);
+            playSound('play');
+            playHappyAnimation();
+
+            // Remove toy after a while
+            setTimeout(() => {
+                hideActiveToy();
+                activeToy = null;
+            }, 5000);
+
+            updateUI();
+            saveState();
+        }
+
+        function showActiveToy(toy) {
+            const display = document.getElementById('active-toy-display');
+            display.innerHTML = `<div class="active-toy" style="left: 65%; bottom: 30%;">${toy.icon}</div>`;
+        }
+
+        function hideActiveToy() {
+            document.getElementById('active-toy-display').innerHTML = '';
+        }
+
+        // Tricks System
+        const tricksList = [
+            { id: 'wave', icon: '👋', name: 'Wave', level: 1, xpReward: 10 },
+            { id: 'spin', icon: '🔄', name: 'Spin', level: 3, xpReward: 15 },
+            { id: 'flip', icon: '🤸', name: 'Backflip', level: 5, xpReward: 25 },
+            { id: 'dance', icon: '💃', name: 'Dance Move', level: 7, xpReward: 30 },
+            { id: 'bow', icon: '🙇', name: 'Take a Bow', level: 2, xpReward: 12 },
+            { id: 'jump', icon: '⬆️', name: 'High Jump', level: 4, xpReward: 20 },
+            { id: 'roll', icon: '🔃', name: 'Roll Over', level: 6, xpReward: 25 },
+            { id: 'pose', icon: '🌟', name: 'Star Pose', level: 10, xpReward: 40 }
+        ];
+
+        function showTricks() {
+            const modal = document.getElementById('tricks-modal');
+            const itemsContainer = document.getElementById('tricks-items');
+            itemsContainer.innerHTML = '';
+
+            tricksList.forEach(trick => {
+                const div = document.createElement('div');
+                const learned = learnedTricks.includes(trick.id);
+                const canLearn = level >= trick.level;
+
+                div.className = 'trick-item' + (learned ? ' learned' : (!canLearn ? ' locked' : ''));
+                div.innerHTML = `
+                    <div class="shop-item-icon">${trick.icon}</div>
+                    <div class="shop-item-info">
+                        <div class="shop-item-name">${trick.name}</div>
+                        <div class="shop-item-price">${learned ? 'TAP TO PERFORM!' : (canLearn ? 'TAP TO LEARN!' : 'NEED LEVEL ' + trick.level)}</div>
+                    </div>
+                `;
+                div.onclick = () => handleTrick(trick);
+                itemsContainer.appendChild(div);
+            });
+
+            modal.classList.add('active');
+        }
+
+        function closeTricks() {
+            document.getElementById('tricks-modal').classList.remove('active');
+        }
+
+        function handleTrick(trick) {
+            const learned = learnedTricks.includes(trick.id);
+            const canLearn = level >= trick.level;
+
+            if (learned) {
+                performTrick(trick);
+                closeTricks();
+            } else if (canLearn) {
+                learnTrick(trick);
+            } else {
+                showMessage(`NEED LEVEL ${trick.level}! 🔒`);
+            }
+        }
+
+        function learnTrick(trick) {
+            learnedTricks.push(trick.id);
+            showMessage(`LEARNED ${trick.name}! ${trick.icon}`);
+            playSound('play');
+            createParticles('#ffd700', 40);
+            addXP(trick.xpReward);
+
+            if (!achievements.trickster && learnedTricks.length >= 3) {
+                unlockAchievement('trickster');
+            }
+
+            showTricks(); // Refresh
+            saveState();
+        }
+
+        function performTrick(trick) {
+            if (isDead || isSleeping) return;
+
+            showMessage(`${trick.icon} ${trick.name.toUpperCase()}! ${trick.icon}`);
+            playSound('play');
+            happiness = Math.min(100, happiness + 10);
+            addXP(5);
+            addCoins(3);
+
+            // Perform animation based on trick
+            switch(trick.id) {
+                case 'wave':
+                    if (bulk) {
+                        let waveCount = 0;
+                        const waveInt = setInterval(() => {
+                            bulk.rotation.z = (waveCount % 2 === 0) ? 0.2 : -0.2;
+                            waveCount++;
+                            if (waveCount >= 6) {
+                                clearInterval(waveInt);
+                                bulk.rotation.z = 0;
+                            }
+                        }, 150);
+                    }
+                    break;
+                case 'spin':
+                    playSpinAnimation();
+                    break;
+                case 'flip':
+                    if (bulk) {
+                        let flipAngle = 0;
+                        const flipInt = setInterval(() => {
+                            flipAngle += Math.PI / 8;
+                            bulk.rotation.x = flipAngle;
+                            if (flipAngle >= Math.PI * 2) {
+                                clearInterval(flipInt);
+                                bulk.rotation.x = 0;
+                            }
+                        }, 50);
+                    }
+                    createParticles('#ff00ff', 30);
+                    break;
+                case 'dance':
+                    makeBulkDance();
+                    break;
+                case 'bow':
+                    if (bulk) {
+                        bulk.rotation.x = 0.5;
+                        setTimeout(() => { if (bulk) bulk.rotation.x = 0; }, 1000);
+                    }
+                    break;
+                case 'jump':
+                    playJumpAnimation();
+                    playJumpAnimation();
+                    break;
+                case 'roll':
+                    if (bulk) {
+                        let rollAngle = 0;
+                        const rollInt = setInterval(() => {
+                            rollAngle += Math.PI / 6;
+                            bulk.rotation.z = rollAngle;
+                            if (rollAngle >= Math.PI * 2) {
+                                clearInterval(rollInt);
+                                bulk.rotation.z = 0;
+                            }
+                        }, 80);
+                    }
+                    break;
+                case 'pose':
+                    if (bulk) {
+                        bulk.scale.set(1.3, 1.3, 1.3);
+                        createParticles('#ffd700', 50);
+                        setTimeout(() => { if (bulk) bulk.scale.set(1, 1, 1); }, 2000);
+                    }
+                    break;
+            }
+
+            updateUI();
+            saveState();
+        }
+
+        // Fortune Cookie System
+        const fortunes = [
+            { text: "A purple friend brings great joy to your day!", lucky: "Lucky numbers: 7, 14, 21" },
+            { text: "Good things come to those who care for others.", lucky: "Lucky color: Purple" },
+            { text: "Your kindness will be rewarded tenfold.", lucky: "Lucky numbers: 3, 9, 27" },
+            { text: "Today is a great day for new adventures!", lucky: "Lucky emoji: 🌟" },
+            { text: "Patience and love create the strongest bonds.", lucky: "Lucky time: Now!" },
+            { text: "A golden opportunity awaits... perhaps a golden poop?", lucky: "Lucky numbers: 5, 15, 25" },
+            { text: "Dance like nobody's watching - even if you're Bulk!", lucky: "Lucky color: Gold" },
+            { text: "The best caretakers make the happiest pets.", lucky: "Lucky numbers: 1, 8, 88" },
+            { text: "Expect the unexpected - a visitor may come soon!", lucky: "Lucky emoji: 💜" },
+            { text: "Clean spaces lead to happy places.", lucky: "Lucky numbers: 4, 12, 20" },
+            { text: "Your dedication is noticed and appreciated.", lucky: "Lucky time: Midnight" },
+            { text: "Every combo builds to something greater.", lucky: "Lucky numbers: 10, 100, 1000" }
+        ];
+
+        function openFortune() {
+            const today = new Date().toDateString();
+
+            if (lastFortuneDate === today) {
+                showMessage("ALREADY CLAIMED TODAY! 🥠");
+                return;
+            }
+
+            lastFortuneDate = today;
+
+            const fortune = fortunes[Math.floor(Math.random() * fortunes.length)];
+            document.getElementById('fortune-text').textContent = `"${fortune.text}"`;
+            document.getElementById('fortune-lucky').textContent = fortune.lucky;
+
+            document.getElementById('fortune-modal').classList.add('active');
+            document.getElementById('fortune-btn').classList.add('claimed');
+
+            // Fortune bonus!
+            addCoins(10);
+            addXP(15);
+            happiness = Math.min(100, happiness + 10);
+
+            playSound('play');
+            createParticles('#daa520', 25);
+
+            if (!achievements.fortunate) unlockAchievement('fortunate');
+
+            updateUI();
+            saveState();
+        }
+
+        function closeFortune() {
+            document.getElementById('fortune-modal').classList.remove('active');
+        }
+
+        // Visitor System
+        const visitors = [
+            { emoji: '🐱', name: 'Kitty', message: "Meow! You're doing great!", bonus: { happiness: 15 } },
+            { emoji: '🐶', name: 'Puppy', message: "Woof! Let's play!", bonus: { happiness: 20 } },
+            { emoji: '🐰', name: 'Bunny', message: "Hop hop! Cute friend!", bonus: { happiness: 15 } },
+            { emoji: '🦊', name: 'Foxy', message: "What does the fox say?", bonus: { happiness: 18 } },
+            { emoji: '🐻', name: 'Bear', message: "Bear hugs for Bulk!", bonus: { happiness: 25 } },
+            { emoji: '🦋', name: 'Butterfly', message: "So pretty!", bonus: { happiness: 12 } },
+            { emoji: '🐸', name: 'Froggy', message: "Ribbit! Nice to meet you!", bonus: { happiness: 15 } },
+            { emoji: '🦄', name: 'Unicorn', message: "Magical visit!", bonus: { happiness: 30, coins: 10 } }
+        ];
+
+        function checkForVisitor() {
+            if (isDead || isSleeping || currentVisitor) return;
+
+            const timeSinceLastVisitor = Date.now() - lastVisitorTime;
+            if (timeSinceLastVisitor < 180000) return; // 3 minutes minimum
+
+            if (Math.random() < 0.05) { // 5% chance
+                spawnVisitor();
+            }
+        }
+
+        function spawnVisitor() {
+            const visitor = visitors[Math.floor(Math.random() * visitors.length)];
+            currentVisitor = visitor;
+            lastVisitorTime = Date.now();
+
+            const container = document.getElementById('visitor-container');
+            container.innerHTML = `
+                <div class="visitor">${visitor.emoji}</div>
+                <div class="visitor-speech">${visitor.message}</div>
+            `;
+            container.classList.add('visible');
+
+            showMessage(`${visitor.emoji} ${visitor.name.toUpperCase()} CAME TO VISIT!`);
+            playSound('play');
+
+            // Apply visitor bonus
+            if (visitor.bonus.happiness) happiness = Math.min(100, happiness + visitor.bonus.happiness);
+            if (visitor.bonus.coins) addCoins(visitor.bonus.coins);
+            addXP(10);
+
+            if (!achievements.socialButterfly) unlockAchievement('socialButterfly');
+
+            updateUI();
+            saveState();
+
+            // Visitor leaves after a while
+            setTimeout(() => {
+                container.classList.remove('visible');
+                currentVisitor = null;
+                showMessage(`BYE BYE ${visitor.name.toUpperCase()}! 👋`);
+            }, 15000);
+        }
+
+        // Random Idle Animations
+        function playRandomIdleAnimation() {
+            if (isDead || isSleeping || isDancing || !bulk) return;
+
+            const rand = Math.random();
+
+            if (rand < 0.2) {
+                // Look around
+                bulk.rotation.y = (Math.random() - 0.5) * 0.5;
+                setTimeout(() => { if (bulk) bulk.rotation.y = 0; }, 1000);
+            } else if (rand < 0.35) {
+                // Little hop
+                const origY = bulk.position.y;
+                bulk.position.y = origY + 0.1;
+                setTimeout(() => { if (bulk) bulk.position.y = origY; }, 200);
+            } else if (rand < 0.45) {
+                // Wiggle
+                let wiggleCount = 0;
+                const wiggleInt = setInterval(() => {
+                    bulk.rotation.z = (wiggleCount % 2 === 0) ? 0.05 : -0.05;
+                    wiggleCount++;
+                    if (wiggleCount >= 4) {
+                        clearInterval(wiggleInt);
+                        bulk.rotation.z = 0;
+                    }
+                }, 100);
+            } else if (rand < 0.55) {
+                // Blink (scale eyes if visible)
+                bulk.scale.y = 0.9;
+                setTimeout(() => { if (bulk) bulk.scale.y = 1; }, 150);
+            } else if (rand < 0.65) {
+                // Stretch
+                bulk.scale.set(0.9, 1.1, 0.9);
+                setTimeout(() => { if (bulk) bulk.scale.set(1, 1, 1); }, 500);
+            }
+        }
+
         // Dance System
         function makeBulkDance() {
             if (isDead || isSleeping || isDancing) return;
@@ -4145,6 +4973,9 @@
             updateAura();
             showEmotionIndicators();
             checkForPoop();
+            checkForSickness();
+            checkForVisitor();
+            if (Math.random() < 0.15) playRandomIdleAnimation();
         }, 3000);
 
         // Create background stars on load
