@@ -215,16 +215,12 @@
         }
 
         @media (max-width: 480px) {
-            body {
-                overflow: hidden;
-            }
-
             #game-container {
-                width: 100vw;
-                height: 100vh;
-                max-height: 100vh;
-                border-width: 0;
-                border-radius: 0;
+                width: 85vw;
+                height: 95vh;
+                max-height: 95vh;
+                border-width: 6px;
+                border-radius: 20px;
             }
 
             #title {
@@ -362,6 +358,206 @@
             gap: 3px;
         }
 
+        /* Level Display */
+        #level-display {
+            position: absolute;
+            top: 110px;
+            left: 10px;
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            border: 3px solid #fff;
+            border-radius: 12px;
+            padding: 8px 12px;
+            color: #000;
+            font-size: clamp(0.4rem, 1.8vw, 0.5rem);
+            font-weight: bold;
+            z-index: 10;
+            text-shadow: 0 0 3px rgba(255,255,255,0.8);
+        }
+
+        #xp-bar-container {
+            width: 60px;
+            height: 8px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 4px;
+            margin-top: 4px;
+            overflow: hidden;
+        }
+
+        #xp-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00, #7fff00);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        /* Poop Container */
+        #poop-container {
+            position: absolute;
+            bottom: 18%;
+            left: 20%;
+            display: flex;
+            gap: 8px;
+            z-index: 5;
+            flex-wrap: wrap;
+            max-width: 60%;
+        }
+
+        .poop {
+            font-size: 1.5rem;
+            animation: poopAppear 0.5s ease-out, poopWiggle 2s ease-in-out infinite;
+            cursor: pointer;
+            transition: transform 0.2s;
+            position: relative;
+        }
+
+        .poop.tiny {
+            font-size: 1rem;
+        }
+
+        .poop.golden {
+            font-size: 1.8rem;
+            filter: drop-shadow(0 0 10px gold) drop-shadow(0 0 20px gold);
+            animation: poopAppear 0.5s ease-out, goldenPoopGlow 1s ease-in-out infinite;
+        }
+
+        .poop:hover {
+            transform: scale(1.3);
+        }
+
+        @keyframes poopAppear {
+            0% { transform: scale(0) rotate(-180deg); opacity: 0; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        @keyframes poopWiggle {
+            0%, 100% { transform: rotate(-5deg); }
+            50% { transform: rotate(5deg); }
+        }
+
+        @keyframes goldenPoopGlow {
+            0%, 100% { filter: drop-shadow(0 0 10px gold) drop-shadow(0 0 20px gold); transform: scale(1); }
+            50% { filter: drop-shadow(0 0 20px gold) drop-shadow(0 0 40px gold); transform: scale(1.1); }
+        }
+
+        .fly {
+            position: absolute;
+            font-size: 0.8rem;
+            pointer-events: none;
+            z-index: 6;
+            animation: flyBuzz 1s ease-in-out infinite;
+        }
+
+        @keyframes flyBuzz {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(10px, -8px) rotate(15deg); }
+            50% { transform: translate(-5px, -12px) rotate(-10deg); }
+            75% { transform: translate(-10px, -5px) rotate(10deg); }
+            100% { transform: translate(0, 0) rotate(0deg); }
+        }
+
+        /* Day/Night Overlay */
+        #day-night-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 3;
+            transition: background 2s ease;
+        }
+
+        #day-night-overlay.morning {
+            background: linear-gradient(180deg, rgba(255, 200, 100, 0.1) 0%, transparent 50%);
+        }
+
+        #day-night-overlay.day {
+            background: transparent;
+        }
+
+        #day-night-overlay.evening {
+            background: linear-gradient(180deg, rgba(255, 100, 50, 0.15) 0%, rgba(100, 50, 150, 0.1) 100%);
+        }
+
+        #day-night-overlay.night {
+            background: linear-gradient(180deg, rgba(0, 0, 50, 0.3) 0%, rgba(0, 0, 30, 0.2) 100%);
+        }
+
+        /* Achievements Modal */
+        #achievements-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 150;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        #achievements-modal.active {
+            display: flex;
+        }
+
+        .achievement {
+            background: rgba(155, 48, 255, 0.3);
+            border: 3px solid #9b30ff;
+            border-radius: 12px;
+            padding: 12px;
+            margin: 8px 0;
+            width: 90%;
+            max-width: 400px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .achievement.unlocked {
+            background: rgba(255, 215, 0, 0.3);
+            border-color: #ffd700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+
+        .achievement-icon {
+            font-size: 2rem;
+        }
+
+        .achievement-info {
+            flex: 1;
+        }
+
+        .achievement-title {
+            color: #ffd700;
+            font-size: clamp(0.5rem, 2vw, 0.6rem);
+            margin-bottom: 4px;
+        }
+
+        .achievement-desc {
+            color: #9b30ff;
+            font-size: clamp(0.4rem, 1.5vw, 0.5rem);
+        }
+
+        .close-modal-btn {
+            background: linear-gradient(135deg, #ff00ff, #9b30ff);
+            border: 3px solid #ffd700;
+            border-radius: 12px;
+            padding: 12px 24px;
+            color: #fff;
+            font-size: clamp(0.5rem, 2vw, 0.7rem);
+            cursor: pointer;
+            margin-top: 15px;
+            text-shadow: 2px 2px 0 #000;
+            font-family: 'Press Start 2P', monospace;
+        }
+
+        .close-modal-btn:active {
+            transform: scale(0.95);
+        }
+
         .floating-emoji {
             position: absolute;
             font-size: 2rem;
@@ -496,6 +692,15 @@
             <div id="fortune-btn" style="cursor: pointer;">
                 <span>🥠</span>
             </div>
+            <div id="level-display">
+                <div>LV <span id="level-num">1</span></div>
+                <div id="xp-bar-container">
+                    <div id="xp-bar" style="width: 0%"></div>
+                </div>
+            </div>
+            <button id="achievements-btn" onclick="showAchievements()" style="position: absolute; top: 50px; right: 10px; background: linear-gradient(135deg, #ffd700, #ff8c00); border: 3px solid #fff; border-radius: 50%; width: 50px; height: 50px; font-size: 1.5rem; cursor: pointer; z-index: 10; box-shadow: 0 0 15px rgba(255, 215, 0, 0.6);">🏆</button>
+            <div id="poop-container"></div>
+            <div id="day-night-overlay"></div>
             <div class="sleep-overlay" id="sleep-overlay">
                 💤
             </div>
@@ -505,6 +710,11 @@
                 <button class="revival-btn" onclick="reviveBulk()">REVIVE ✨</button>
             </div>
             <div id="message"></div>
+            <div id="achievements-modal">
+                <div style="font-size: clamp(1rem, 4vw, 1.5rem); color: #ffd700; margin-bottom: 15px;">🏆 ACHIEVEMENTS 🏆</div>
+                <div id="achievements-list"></div>
+                <button class="close-modal-btn" onclick="closeAchievements()">CLOSE</button>
+            </div>
         </div>
 
         <div id="stats">
@@ -559,6 +769,12 @@
         let isSleeping = false;
         let isDead = false;
         let totalCareActions = 0;
+        let achievements = {};
+        let level = 1;
+        let xp = 0;
+        let poopCount = 0;
+        let lastPoopTime = Date.now();
+        let poopUrgency = 0;
 
         // Audio Context for sound effects
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -575,6 +791,11 @@
                 birthTime = state.birthTime || Date.now();
                 totalCareActions = state.totalCareActions || 0;
                 isDead = state.isDead || false;
+                achievements = state.achievements || {};
+                level = state.level || 1;
+                xp = state.xp || 0;
+                poopCount = state.poopCount || 0;
+                poopUrgency = state.poopUrgency || 0;
 
                 // Calculate decay since last visit
                 const timePassed = (Date.now() - lastUpdateTime) / 1000; // seconds
@@ -591,6 +812,20 @@
                     isDead = true;
                     showRevivalScreen();
                 }
+
+                // Restore poops
+                const poopContainer = document.getElementById('poop-container');
+                poopContainer.innerHTML = '';
+                for (let i = 0; i < poopCount; i++) {
+                    const poop = document.createElement('div');
+                    poop.className = 'poop';
+                    poop.textContent = '💩';
+                    poop.dataset.type = 'normal';
+                    poop.onclick = () => cleanPoop(poop);
+                    poopContainer.appendChild(poop);
+                }
+                updateFlies();
+                updateLevelDisplay();
 
                 // Show welcome back message
                 if (minutesPassed > 1 && !isDead) {
@@ -621,7 +856,12 @@
                 lastUpdateTime: Date.now(),
                 birthTime,
                 totalCareActions,
-                isDead
+                isDead,
+                achievements,
+                level,
+                xp,
+                poopCount,
+                poopUrgency
             };
             localStorage.setItem('bulkagachi', JSON.stringify(state));
         }
@@ -702,6 +942,8 @@
             updateGrowthStage();
             checkSleepTime();
             updateBackground();
+            updateDayNightCycle();
+            checkAchievements();
             animate();
 
             // Add click interaction with Bulk
@@ -936,8 +1178,223 @@
             showMessage("BULK IS BACK! TAKE BETTER CARE! 💚");
             playSound('play');
             createParticles('#00ff00', 40);
+            if (!achievements.revival) unlockAchievement('revival');
             updateUI();
             saveState();
+        }
+
+        // XP and Level System
+        function addXP(amount) {
+            xp += amount;
+            const xpNeeded = getXPForLevel(level);
+
+            while (xp >= xpNeeded) {
+                xp -= xpNeeded;
+                level++;
+                showMessage(`🎉 LEVEL UP! NOW LEVEL ${level}! 🎉`);
+                createParticles('#ffd700', 50);
+                playSound('play');
+
+                if (level >= 5 && !achievements.level5) unlockAchievement('level5');
+                if (level >= 10 && !achievements.level10) unlockAchievement('level10');
+            }
+
+            updateLevelDisplay();
+        }
+
+        function getXPForLevel(lvl) {
+            return 50 + (lvl * 25);
+        }
+
+        function updateLevelDisplay() {
+            document.getElementById('level-num').textContent = level;
+            const xpNeeded = getXPForLevel(level);
+            const xpPercent = (xp / xpNeeded) * 100;
+            document.getElementById('xp-bar').style.width = xpPercent + '%';
+        }
+
+        // Poop System
+        function addPoop() {
+            if (poopCount >= 5) return;
+
+            poopCount++;
+            const container = document.getElementById('poop-container');
+            const poop = document.createElement('div');
+
+            const rand = Math.random();
+            let poopType = 'normal';
+
+            if (rand < 0.05) {
+                poopType = 'golden';
+                poop.classList.add('golden');
+                showMessage("✨ WOW! A GOLDEN POOP! ✨");
+                createParticles('#ffd700', 20);
+            } else if (rand < 0.25) {
+                poopType = 'tiny';
+                poop.classList.add('tiny');
+            }
+
+            poop.className = 'poop' + (poopType !== 'normal' ? ' ' + poopType : '');
+            poop.textContent = '💩';
+            poop.dataset.type = poopType;
+            poop.onclick = () => cleanPoop(poop);
+            container.appendChild(poop);
+
+            const cleanReduction = poopType === 'golden' ? 5 : (poopType === 'tiny' ? 5 : 10);
+            cleanliness = Math.max(0, cleanliness - cleanReduction);
+
+            updateUI();
+
+            if (poopCount === 1) {
+                showMessage("UH OH... BULK MADE A MESS! 💩");
+            }
+
+            updateFlies();
+            saveState();
+        }
+
+        function cleanPoop(poopElement) {
+            const poopType = poopElement.dataset.type || 'normal';
+
+            poopElement.style.animation = 'poopAppear 0.3s ease-out reverse';
+            setTimeout(() => {
+                poopElement.remove();
+                poopCount--;
+
+                let xpReward = 3;
+                let cleanBonus = 5;
+                let message = "POOP CLEANED!";
+
+                if (poopType === 'golden') {
+                    xpReward = 10;
+                    cleanBonus = 10;
+                    message = "✨ GOLDEN POOP CLEANED! ✨";
+                    createParticles('#ffd700', 30);
+                    if (!achievements.goldenPoop) {
+                        unlockAchievement('goldenPoop');
+                    }
+                } else if (poopType === 'tiny') {
+                    xpReward = 2;
+                    cleanBonus = 3;
+                    message = "TINY POOP CLEANED!";
+                }
+
+                cleanliness = Math.min(100, cleanliness + cleanBonus);
+                addXP(xpReward);
+
+                playSound('clean');
+                createParticles('#00ffff', 10);
+                showMessage(message);
+
+                updateFlies();
+                updateUI();
+                saveState();
+            }, 300);
+        }
+
+        function updateFlies() {
+            const container = document.getElementById('poop-container');
+            const oldFlies = container.querySelectorAll('.fly');
+            oldFlies.forEach(fly => fly.remove());
+
+            if (poopCount >= 2) {
+                const flyCount = Math.min(poopCount, 4);
+                for (let i = 0; i < flyCount; i++) {
+                    const fly = document.createElement('div');
+                    fly.className = 'fly';
+                    fly.textContent = '🪰';
+                    fly.style.left = (20 + Math.random() * 40) + '%';
+                    fly.style.bottom = (20 + Math.random() * 15) + '%';
+                    fly.style.animationDelay = (Math.random() * 1) + 's';
+                    fly.style.animationDuration = (0.8 + Math.random() * 0.4) + 's';
+                    container.appendChild(fly);
+                }
+            }
+        }
+
+        // Day/Night Cycle
+        function updateDayNightCycle() {
+            const overlay = document.getElementById('day-night-overlay');
+            if (!overlay) return;
+
+            const hour = new Date().getHours();
+            overlay.className = '';
+            if (hour >= 6 && hour < 10) {
+                overlay.classList.add('morning');
+            } else if (hour >= 10 && hour < 17) {
+                overlay.classList.add('day');
+            } else if (hour >= 17 && hour < 20) {
+                overlay.classList.add('evening');
+            } else {
+                overlay.classList.add('night');
+            }
+        }
+
+        // Achievements System
+        const achievementsList = [
+            { id: 'firstFeed', icon: '🥤', title: 'First Meal', desc: 'Feed Bulk for the first time' },
+            { id: 'combo10', icon: '🔥', title: 'Combo Master', desc: 'Reach a 10x combo' },
+            { id: 'perfectCare', icon: '💯', title: 'Perfect Care', desc: 'Get all stats to 100%' },
+            { id: 'oneDay', icon: '🎂', title: 'First Birthday', desc: 'Keep Bulk alive for 1 day' },
+            { id: 'care100', icon: '❤️', title: 'Dedicated Carer', desc: 'Perform 100 care actions' },
+            { id: 'care500', icon: '💪', title: 'Super Parent', desc: 'Perform 500 care actions' },
+            { id: 'revival', icon: '✨', title: 'Second Chance', desc: 'Revive Bulk' },
+            { id: 'threeDays', icon: '🌟', title: 'Week Warrior', desc: 'Keep Bulk alive for 3 days' },
+            { id: 'level5', icon: '⭐', title: 'Rising Star', desc: 'Reach Level 5' },
+            { id: 'level10', icon: '🌟', title: 'Superstar', desc: 'Reach Level 10' },
+            { id: 'goldenPoop', icon: '✨', title: 'Golden Discovery', desc: 'Find and clean a golden poop' }
+        ];
+
+        function checkAchievements() {
+            const ageInDays = (Date.now() - birthTime) / (1000 * 60 * 60 * 24);
+
+            if (totalCareActions >= 1 && !achievements.firstFeed) unlockAchievement('firstFeed');
+            if (comboCount >= 10 && !achievements.combo10) unlockAchievement('combo10');
+            if (hunger === 100 && happiness === 100 && cleanliness === 100 && !achievements.perfectCare) unlockAchievement('perfectCare');
+            if (ageInDays >= 1 && !achievements.oneDay) unlockAchievement('oneDay');
+            if (totalCareActions >= 100 && !achievements.care100) unlockAchievement('care100');
+            if (totalCareActions >= 500 && !achievements.care500) unlockAchievement('care500');
+            if (ageInDays >= 3 && !achievements.threeDays) unlockAchievement('threeDays');
+        }
+
+        function unlockAchievement(id) {
+            achievements[id] = true;
+            const achievement = achievementsList.find(a => a.id === id);
+            if (achievement) {
+                showMessage(`🏆 ACHIEVEMENT: ${achievement.title}! 🏆`);
+                playSound('play');
+                createParticles('#ffd700', 50);
+                document.getElementById('game-container').style.borderColor = '#ffd700';
+                setTimeout(() => {
+                    document.getElementById('game-container').style.borderColor = '#9b30ff';
+                }, 500);
+            }
+            saveState();
+        }
+
+        function showAchievements() {
+            const modal = document.getElementById('achievements-modal');
+            const list = document.getElementById('achievements-list');
+            list.innerHTML = '';
+
+            achievementsList.forEach(achievement => {
+                const div = document.createElement('div');
+                div.className = 'achievement' + (achievements[achievement.id] ? ' unlocked' : '');
+                div.innerHTML = `
+                    <div class="achievement-icon">${achievements[achievement.id] ? achievement.icon : '🔒'}</div>
+                    <div class="achievement-info">
+                        <div class="achievement-title">${achievement.title}</div>
+                        <div class="achievement-desc">${achievement.desc}</div>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+
+            modal.classList.add('active');
+        }
+
+        function closeAchievements() {
+            document.getElementById('achievements-modal').classList.remove('active');
         }
 
         // Update stats over time
@@ -954,6 +1411,17 @@
                 showRevivalScreen();
             }
 
+            // Poop urgency increases over time
+            if (!isSleeping) {
+                poopUrgency = Math.min(100, poopUrgency + 2);
+
+                if (poopUrgency >= 90 && poopCount < 5) {
+                    addPoop();
+                    poopUrgency = 0;
+                }
+            }
+
+            checkAchievements();
             updateUI();
             saveState();
         }, 10000); // Every 10 seconds
@@ -964,6 +1432,7 @@
             updateGrowthStage();
             checkSleepTime();
             updateBackground();
+            updateDayNightCycle();
         }, 60000); // Every minute
 
         // Sound Effects
@@ -1038,6 +1507,9 @@
 
             hunger = Math.min(100, hunger + 30);
             happiness = Math.min(100, happiness + 10);
+            poopUrgency = Math.min(100, poopUrgency + 20);
+            totalCareActions++;
+            addXP(5);
             showMessage(messages[Math.floor(Math.random() * messages.length)]);
             playSound('feed');
             createParticles('#ff00ff', 25);
@@ -1063,6 +1535,8 @@
 
             happiness = Math.min(100, happiness + 40);
             hunger = Math.max(0, hunger - 5);
+            totalCareActions++;
+            addXP(7);
             showMessage(messages[Math.floor(Math.random() * messages.length)]);
             playSound('play');
             createParticles('#ffd700', 30);
@@ -1088,6 +1562,8 @@
 
             cleanliness = Math.min(100, cleanliness + 50);
             happiness = Math.min(100, happiness + 5);
+            totalCareActions++;
+            addXP(6);
             showMessage(messages[Math.floor(Math.random() * messages.length)]);
             playSound('clean');
             createParticles('#00ffff', 25);
