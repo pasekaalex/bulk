@@ -769,7 +769,8 @@
     <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/js/loaders/GLTFLoader.js"></script>
     <script>
         // Game State
-        let scene, camera, renderer, bulk, bulkModel;
+        let scene, camera, renderer, bulk, bulkModel, mixer;
+        let clock = new THREE.Clock();
         let hunger = 100;
         let happiness = 100;
         let cleanliness = 100;
@@ -920,7 +921,7 @@
             scene.add(bulk);
 
             const loader = new THREE.GLTFLoader();
-            loader.load('bulk.glb',
+            loader.load('run.glb',
                 (gltf) => {
                     bulkModel = gltf.scene;
 
@@ -932,6 +933,14 @@
                     bulkModel.scale.set(scale, scale, scale);
 
                     bulk.add(bulkModel);
+
+                    // Setup animation if it exists
+                    if (gltf.animations && gltf.animations.length > 0) {
+                        mixer = new THREE.AnimationMixer(bulkModel);
+                        const action = mixer.clipAction(gltf.animations[0]);
+                        action.play();
+                        console.log('Animation playing:', gltf.animations[0].name);
+                    }
                 },
                 undefined,
                 (error) => {
@@ -1032,6 +1041,12 @@
                         }
                     });
                 }
+            }
+
+            // Update animation mixer
+            if (mixer) {
+                const delta = clock.getDelta();
+                mixer.update(delta);
             }
 
             renderer.render(scene, camera);
