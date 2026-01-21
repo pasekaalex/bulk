@@ -2224,6 +2224,206 @@
             100% { transform: scale(1.5) rotate(180deg); opacity: 0; }
         }
 
+        /* Catch Game Modal */
+        #catch-game-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+            z-index: 170;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+        }
+
+        #catch-game-modal.active {
+            display: flex;
+        }
+
+        #catch-area {
+            position: relative;
+            width: 100%;
+            flex: 1;
+            background: linear-gradient(180deg, #0f0f23 0%, #1a1a2e 100%);
+            border: 3px solid #9b30ff;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+            touch-action: none;
+        }
+
+        #catch-basket {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2.5rem;
+            transition: left 0.1s;
+            user-select: none;
+        }
+
+        .falling-item {
+            position: absolute;
+            font-size: 1.8rem;
+            animation: fall linear forwards;
+            pointer-events: none;
+        }
+
+        @keyframes fall {
+            0% { top: -30px; }
+            100% { top: 100%; }
+        }
+
+        .catch-effect {
+            position: absolute;
+            font-size: 1rem;
+            animation: catchPop 0.5s ease-out forwards;
+            pointer-events: none;
+        }
+
+        @keyframes catchPop {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(2) translateY(-20px); opacity: 0; }
+        }
+
+        /* Gift Modal */
+        #gift-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 160;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        #gift-modal.active {
+            display: flex;
+        }
+
+        #gift-box {
+            font-size: 5rem;
+            cursor: pointer;
+            animation: giftBounce 1s ease-in-out infinite;
+            transition: transform 0.3s;
+        }
+
+        #gift-box:hover {
+            transform: scale(1.1);
+        }
+
+        #gift-box.opened {
+            animation: giftOpen 0.5s ease-out forwards;
+        }
+
+        @keyframes giftBounce {
+            0%, 100% { transform: translateY(0) rotate(-5deg); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+        }
+
+        @keyframes giftOpen {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3) rotate(10deg); }
+            100% { transform: scale(0); opacity: 0; }
+        }
+
+        #gift-reward {
+            font-size: clamp(1rem, 4vw, 1.5rem);
+            color: #ffd700;
+            text-align: center;
+            animation: rewardAppear 0.5s ease-out;
+        }
+
+        @keyframes rewardAppear {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Workout Overlay */
+        #workout-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 100, 0, 0.2);
+            z-index: 45;
+            display: none;
+            pointer-events: none;
+        }
+
+        #workout-overlay.active {
+            display: block;
+            animation: workoutPulse 0.5s ease-in-out infinite;
+        }
+
+        @keyframes workoutPulse {
+            0%, 100% { background: rgba(255, 100, 0, 0.1); }
+            50% { background: rgba(255, 100, 0, 0.3); }
+        }
+
+        .sweat-drop {
+            position: absolute;
+            font-size: 1rem;
+            animation: sweatFall 1s ease-in forwards;
+            pointer-events: none;
+        }
+
+        @keyframes sweatFall {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(50px); }
+        }
+
+        /* Day/Night Cycle Overlay */
+        #day-night-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 3;
+            transition: background 2s ease;
+        }
+
+        #day-night-overlay.morning {
+            background: linear-gradient(180deg, rgba(255, 200, 100, 0.1) 0%, transparent 50%);
+        }
+
+        #day-night-overlay.day {
+            background: transparent;
+        }
+
+        #day-night-overlay.evening {
+            background: linear-gradient(180deg, rgba(255, 100, 50, 0.15) 0%, rgba(100, 50, 150, 0.1) 100%);
+        }
+
+        #day-night-overlay.night {
+            background: linear-gradient(180deg, rgba(0, 0, 50, 0.3) 0%, rgba(0, 0, 30, 0.2) 100%);
+        }
+
+        /* Personality Badge */
+        #personality-badge {
+            position: absolute;
+            top: 50px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #ffd700;
+            border-radius: 10px;
+            padding: 5px 8px;
+            font-size: clamp(0.4rem, 1.5vw, 0.5rem);
+            color: #ffd700;
+            z-index: 15;
+        }
+
         /* Dance Button */
         #dance-btn {
             position: absolute;
@@ -2634,14 +2834,17 @@
             <button id="extras-menu-btn" onclick="toggleExtrasMenu()">✨</button>
             <div id="extras-panel">
                 <button class="extras-btn" onclick="giveBath(); toggleExtrasMenu();"><span class="extras-btn-icon">🛁</span> BATH</button>
+                <button class="extras-btn" onclick="doWorkout(); toggleExtrasMenu();"><span class="extras-btn-icon">💪</span> WORKOUT</button>
                 <button class="extras-btn" onclick="toggleMusic(); toggleExtrasMenu();"><span class="extras-btn-icon">🎵</span> MUSIC</button>
                 <button class="extras-btn" onclick="openFortune(); toggleExtrasMenu();"><span class="extras-btn-icon">🥠</span> FORTUNE</button>
+                <button class="extras-btn" onclick="openGift(); toggleExtrasMenu();"><span class="extras-btn-icon">🎁</span> GIFT</button>
                 <button class="extras-btn" onclick="showQuests(); toggleExtrasMenu();"><span class="extras-btn-icon">📜</span> QUESTS</button>
                 <button class="extras-btn" onclick="showStats(); toggleExtrasMenu();"><span class="extras-btn-icon">📊</span> STATS</button>
                 <button class="extras-btn" onclick="showColorPicker(); toggleExtrasMenu();"><span class="extras-btn-icon">🎨</span> COLORS</button>
                 <button class="extras-btn" onclick="showToys(); toggleExtrasMenu();"><span class="extras-btn-icon">🧸</span> TOYS</button>
                 <button class="extras-btn" onclick="showTricks(); toggleExtrasMenu();"><span class="extras-btn-icon">🎪</span> TRICKS</button>
                 <button class="extras-btn" onclick="playMemoryGame(); toggleExtrasMenu();"><span class="extras-btn-icon">🧠</span> MEMORY</button>
+                <button class="extras-btn" onclick="playCatchGame(); toggleExtrasMenu();"><span class="extras-btn-icon">🎯</span> CATCH</button>
                 <button class="extras-btn" onclick="showAchievements(); toggleExtrasMenu();"><span class="extras-btn-icon">🏆</span> ACHIEVEMENTS</button>
                 <button class="extras-btn" onclick="showSettings(); toggleExtrasMenu();"><span class="extras-btn-icon">⚙️</span> SETTINGS</button>
             </div>
@@ -2754,6 +2957,22 @@
                 <div id="memory-grid"></div>
                 <button class="close-modal-btn" onclick="closeMemoryGame()">CLOSE</button>
             </div>
+            <div id="catch-game-modal">
+                <div style="font-size: clamp(1rem, 4vw, 1.5rem); color: #ffd700; margin-bottom: 5px;">🎯 CATCH GAME 🎯</div>
+                <div style="font-size: clamp(0.5rem, 2vw, 0.6rem); color: #ff69b4; margin-bottom: 5px;">Score: <span id="catch-score">0</span> | Time: <span id="catch-time">30</span>s</div>
+                <div id="catch-area">
+                    <div id="catch-basket">🧺</div>
+                </div>
+                <button class="close-modal-btn" onclick="closeCatchGame()">QUIT</button>
+            </div>
+            <div id="gift-modal">
+                <div style="font-size: clamp(1rem, 4vw, 1.5rem); color: #ffd700; margin-bottom: 10px;">🎁 DAILY GIFT 🎁</div>
+                <div id="gift-box" onclick="openGiftBox()">🎁</div>
+                <div id="gift-reward" style="display: none;"></div>
+                <button class="close-modal-btn" onclick="closeGift()">CLOSE</button>
+            </div>
+            <div id="workout-overlay"></div>
+            <div id="day-night-overlay"></div>
             <div id="mood-indicator"></div>
             <div id="event-notification"></div>
             <div id="message"></div>
@@ -3709,7 +3928,10 @@
             { id: 'socialButterfly', icon: '🦋', title: 'Social Butterfly', desc: 'Receive a visitor' },
             { id: 'bathLover', icon: '🛁', title: 'Bath Lover', desc: 'Give Bulk 10 baths' },
             { id: 'colorful', icon: '🌈', title: 'Colorful', desc: 'Own 5 different colors' },
-            { id: 'questHero', icon: '📜', title: 'Quest Hero', desc: 'Complete 10 daily quests' }
+            { id: 'questHero', icon: '📜', title: 'Quest Hero', desc: 'Complete 10 daily quests' },
+            { id: 'catchPro', icon: '🎯', title: 'Catch Pro', desc: 'Score 100+ in catch game' },
+            { id: 'fitBulk', icon: '💪', title: 'Fit Bulk', desc: 'Complete a workout' },
+            { id: 'giftOpener', icon: '🎁', title: 'Gift Opener', desc: 'Open 7 daily gifts' }
         ];
 
         function checkAchievements() {
@@ -4581,6 +4803,9 @@
                 if (state.lastQuestReset) lastQuestReset = state.lastQuestReset;
                 if (state.ownedColors) ownedColors = state.ownedColors;
                 if (state.bulkColor !== undefined) bulkColor = state.bulkColor;
+                if (state.lastGiftDate) lastGiftDate = state.lastGiftDate;
+                if (state.bulkPersonality) bulkPersonality = state.bulkPersonality;
+                if (state.giftsOpened) lifeStats.giftsOpened = state.giftsOpened;
 
                 // Update sick indicator if sick
                 if (isSick) {
@@ -4698,7 +4923,10 @@
                 dailyQuests,
                 lastQuestReset,
                 ownedColors,
-                bulkColor
+                bulkColor,
+                lastGiftDate,
+                bulkPersonality,
+                giftsOpened: lifeStats.giftsOpened || 0
             };
             localStorage.setItem('bulkagachi', JSON.stringify(state));
         }
@@ -5540,7 +5768,8 @@
             fortunesRead: 0,
             daysAlive: 0,
             bathsGiven: 0,
-            questsCompleted: 0
+            questsCompleted: 0,
+            giftsOpened: 0
         };
 
         function showStats() {
@@ -5984,6 +6213,360 @@
             document.getElementById('memory-game-modal').classList.remove('active');
         }
 
+        // Catch Game System
+        let catchScore = 0;
+        let catchTime = 30;
+        let catchInterval = null;
+        let catchSpawnInterval = null;
+        let catchActive = false;
+        const catchItems = [
+            { emoji: '⭐', points: 10, speed: 2 },
+            { emoji: '🪙', points: 5, speed: 2.5 },
+            { emoji: '💎', points: 20, speed: 1.5 },
+            { emoji: '🍕', points: 8, speed: 2 },
+            { emoji: '🍪', points: 5, speed: 2.5 },
+            { emoji: '💩', points: -10, speed: 3 }, // Avoid this!
+            { emoji: '🎁', points: 15, speed: 1.8 }
+        ];
+
+        function playCatchGame() {
+            if (isDead) return;
+
+            catchScore = 0;
+            catchTime = 30;
+            catchActive = true;
+
+            document.getElementById('catch-score').textContent = '0';
+            document.getElementById('catch-time').textContent = '30';
+            document.getElementById('catch-game-modal').classList.add('active');
+
+            const area = document.getElementById('catch-area');
+            const basket = document.getElementById('catch-basket');
+
+            // Mouse/touch controls
+            area.onmousemove = (e) => moveBasket(e, area, basket);
+            area.ontouchmove = (e) => {
+                e.preventDefault();
+                moveBasket(e.touches[0], area, basket);
+            };
+
+            // Timer
+            catchInterval = setInterval(() => {
+                catchTime--;
+                document.getElementById('catch-time').textContent = catchTime;
+                if (catchTime <= 0) {
+                    endCatchGame();
+                }
+            }, 1000);
+
+            // Spawn items
+            catchSpawnInterval = setInterval(() => {
+                if (catchActive) spawnCatchItem(area, basket);
+            }, 800);
+        }
+
+        function moveBasket(e, area, basket) {
+            const rect = area.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / rect.width * 100;
+            basket.style.left = Math.max(10, Math.min(90, x)) + '%';
+        }
+
+        function spawnCatchItem(area, basket) {
+            const item = catchItems[Math.floor(Math.random() * catchItems.length)];
+            const elem = document.createElement('div');
+            elem.className = 'falling-item';
+            elem.textContent = item.emoji;
+            elem.dataset.points = item.points;
+            elem.style.left = (10 + Math.random() * 80) + '%';
+            elem.style.animationDuration = item.speed + 's';
+
+            area.appendChild(elem);
+
+            // Check for catch
+            const checkCatch = setInterval(() => {
+                if (!catchActive) {
+                    clearInterval(checkCatch);
+                    elem.remove();
+                    return;
+                }
+
+                const elemRect = elem.getBoundingClientRect();
+                const basketRect = basket.getBoundingClientRect();
+
+                if (elemRect.bottom >= basketRect.top &&
+                    elemRect.top <= basketRect.bottom &&
+                    elemRect.right >= basketRect.left &&
+                    elemRect.left <= basketRect.right) {
+                    // Caught!
+                    clearInterval(checkCatch);
+                    const points = parseInt(elem.dataset.points);
+                    catchScore += points;
+                    document.getElementById('catch-score').textContent = catchScore;
+
+                    // Effect
+                    const effect = document.createElement('div');
+                    effect.className = 'catch-effect';
+                    effect.textContent = points > 0 ? `+${points}` : points;
+                    effect.style.color = points > 0 ? '#00ff00' : '#ff0000';
+                    effect.style.left = elem.style.left;
+                    effect.style.top = basketRect.top - area.getBoundingClientRect().top + 'px';
+                    area.appendChild(effect);
+                    setTimeout(() => effect.remove(), 500);
+
+                    elem.remove();
+                }
+
+                // Remove if off screen
+                if (elemRect.top > area.getBoundingClientRect().bottom) {
+                    clearInterval(checkCatch);
+                    elem.remove();
+                }
+            }, 50);
+
+            setTimeout(() => {
+                clearInterval(checkCatch);
+                if (elem.parentNode) elem.remove();
+            }, item.speed * 1000 + 500);
+        }
+
+        function endCatchGame() {
+            catchActive = false;
+            clearInterval(catchInterval);
+            clearInterval(catchSpawnInterval);
+
+            // Clean up falling items
+            document.querySelectorAll('.falling-item').forEach(el => el.remove());
+
+            const reward = Math.max(0, Math.floor(catchScore / 5));
+            addCoins(reward);
+            addXP(15);
+            happiness = Math.min(100, happiness + 10);
+
+            showMessage(`🎯 SCORE: ${catchScore}! +${reward} 🪙`);
+
+            if (catchScore >= 100 && !achievements.catchPro) {
+                unlockAchievement('catchPro');
+            }
+
+            closeCatchGame();
+            updateUI();
+            saveState();
+        }
+
+        function closeCatchGame() {
+            catchActive = false;
+            clearInterval(catchInterval);
+            clearInterval(catchSpawnInterval);
+            document.getElementById('catch-game-modal').classList.remove('active');
+        }
+
+        // Gift System
+        let lastGiftDate = null;
+        const giftRewards = [
+            { emoji: '🪙', name: 'Coins', amount: 25, type: 'coins' },
+            { emoji: '🪙', name: 'Big Coins', amount: 50, type: 'coins' },
+            { emoji: '⭐', name: 'XP Boost', amount: 30, type: 'xp' },
+            { emoji: '❤️', name: 'Love', amount: 20, type: 'happiness' },
+            { emoji: '🍔', name: 'Food', amount: 30, type: 'hunger' },
+            { emoji: '💎', name: 'Rare Gems', amount: 100, type: 'coins' },
+            { emoji: '✨', name: 'Full Restore', amount: 100, type: 'restore' }
+        ];
+
+        function openGift() {
+            const today = new Date().toDateString();
+            const giftBox = document.getElementById('gift-box');
+            const reward = document.getElementById('gift-reward');
+
+            giftBox.style.display = 'block';
+            giftBox.className = '';
+            reward.style.display = 'none';
+
+            if (lastGiftDate === today) {
+                reward.innerHTML = '<div style="color: #ff69b4;">Come back tomorrow for your next gift! 🎁</div>';
+                reward.style.display = 'block';
+                giftBox.style.display = 'none';
+            }
+
+            document.getElementById('gift-modal').classList.add('active');
+        }
+
+        function openGiftBox() {
+            const today = new Date().toDateString();
+            if (lastGiftDate === today) return;
+
+            lastGiftDate = today;
+            lifeStats.giftsOpened++;
+
+            const giftBox = document.getElementById('gift-box');
+            const reward = document.getElementById('gift-reward');
+
+            giftBox.classList.add('opened');
+            playSound('play');
+
+            // Gift achievement
+            if (lifeStats.giftsOpened >= 7 && !achievements.giftOpener) {
+                unlockAchievement('giftOpener');
+            }
+
+            setTimeout(() => {
+                giftBox.style.display = 'none';
+
+                // Random reward
+                const gift = giftRewards[Math.floor(Math.random() * giftRewards.length)];
+
+                switch (gift.type) {
+                    case 'coins':
+                        addCoins(gift.amount);
+                        break;
+                    case 'xp':
+                        addXP(gift.amount);
+                        break;
+                    case 'happiness':
+                        happiness = Math.min(100, happiness + gift.amount);
+                        break;
+                    case 'hunger':
+                        hunger = Math.min(100, hunger + gift.amount);
+                        break;
+                    case 'restore':
+                        hunger = 100;
+                        happiness = 100;
+                        cleanliness = 100;
+                        break;
+                }
+
+                reward.innerHTML = `
+                    <div style="font-size: 3rem; margin-bottom: 10px;">${gift.emoji}</div>
+                    <div>${gift.name}!</div>
+                    <div style="color: #00ff00;">+${gift.amount}${gift.type === 'coins' ? ' 🪙' : ''}</div>
+                `;
+                reward.style.display = 'block';
+
+                createParticles('#ffd700', 40);
+                updateUI();
+                saveState();
+            }, 500);
+        }
+
+        function closeGift() {
+            document.getElementById('gift-modal').classList.remove('active');
+        }
+
+        // Workout System
+        let isWorkingOut = false;
+
+        function doWorkout() {
+            if (isDead || isSleeping || isWorkingOut) {
+                if (isSleeping) showMessage("SHHH! BULK IS SLEEPING! 💤");
+                return;
+            }
+
+            if (hunger < 20) {
+                showMessage("TOO HUNGRY TO WORKOUT! 🍔");
+                return;
+            }
+
+            isWorkingOut = true;
+            const overlay = document.getElementById('workout-overlay');
+            overlay.classList.add('active');
+
+            showMessage('💪 WORKOUT TIME! 💪');
+            playSound('play');
+
+            // Sweat drops
+            for (let i = 0; i < 10; i++) {
+                setTimeout(() => {
+                    if (!isWorkingOut) return;
+                    const sweat = document.createElement('div');
+                    sweat.className = 'sweat-drop';
+                    sweat.textContent = '💧';
+                    sweat.style.left = (30 + Math.random() * 40) + '%';
+                    sweat.style.top = (20 + Math.random() * 30) + '%';
+                    document.getElementById('scene-container').appendChild(sweat);
+                    setTimeout(() => sweat.remove(), 1000);
+                }, i * 200);
+            }
+
+            // Workout animation
+            playSpinAnimation();
+            setTimeout(() => playJumpAnimation(), 500);
+            setTimeout(() => playSpinAnimation(), 1000);
+
+            // Workout benefits
+            setTimeout(() => {
+                overlay.classList.remove('active');
+                isWorkingOut = false;
+
+                hunger = Math.max(0, hunger - 15);
+                happiness = Math.min(100, happiness + 25);
+                addXP(20);
+                addCoins(8);
+
+                showMessage('✨ GREAT WORKOUT! ✨');
+                createParticles('#ff6600', 30);
+
+                lifeStats.totalPlays++;
+                updateQuestProgress('play');
+
+                if (!achievements.fitBulk) {
+                    unlockAchievement('fitBulk');
+                }
+
+                updateUI();
+                saveState();
+            }, 2500);
+        }
+
+        // Day/Night Cycle System
+        function updateDayNightCycle() {
+            const overlay = document.getElementById('day-night-overlay');
+            if (!overlay) return;
+
+            const hour = new Date().getHours();
+
+            overlay.className = '';
+            if (hour >= 6 && hour < 10) {
+                overlay.classList.add('morning');
+            } else if (hour >= 10 && hour < 17) {
+                overlay.classList.add('day');
+            } else if (hour >= 17 && hour < 20) {
+                overlay.classList.add('evening');
+            } else {
+                overlay.classList.add('night');
+            }
+        }
+
+        // Personality System
+        const personalities = [
+            { name: 'Playful', emoji: '🎮', trait: 'Loves to play and gains extra happiness from games' },
+            { name: 'Foodie', emoji: '🍔', trait: 'Gets hungrier faster but gains more from food' },
+            { name: 'Sleepy', emoji: '😴', trait: 'Needs more rest but recovers faster when sleeping' },
+            { name: 'Social', emoji: '🦋', trait: 'Attracts more visitors and loves company' },
+            { name: 'Active', emoji: '💪', trait: 'Loves workouts and stays energetic longer' },
+            { name: 'Curious', emoji: '🔍', trait: 'Finds more coins and has random discoveries' }
+        ];
+        let bulkPersonality = null;
+
+        function assignPersonality() {
+            if (!bulkPersonality) {
+                bulkPersonality = personalities[Math.floor(Math.random() * personalities.length)];
+                saveState();
+            }
+            updatePersonalityDisplay();
+        }
+
+        function updatePersonalityDisplay() {
+            let badge = document.getElementById('personality-badge');
+            if (!badge) {
+                badge = document.createElement('div');
+                badge.id = 'personality-badge';
+                document.getElementById('scene-container').appendChild(badge);
+            }
+            if (bulkPersonality) {
+                badge.innerHTML = `${bulkPersonality.emoji} ${bulkPersonality.name}`;
+                badge.title = bulkPersonality.trait;
+            }
+        }
+
         // Mood System - Facial expressions based on stats
         function updateMoodIndicator() {
             const indicator = document.getElementById('mood-indicator');
@@ -6260,6 +6843,15 @@
         setTimeout(() => {
             updateWeatherEffects();
         }, 2000);
+
+        // Initialize day/night cycle
+        updateDayNightCycle();
+        setInterval(updateDayNightCycle, 60000); // Update every minute
+
+        // Initialize personality
+        setTimeout(() => {
+            assignPersonality();
+        }, 1000);
 
         // Close extras panel when clicking outside
         document.addEventListener('click', (e) => {
