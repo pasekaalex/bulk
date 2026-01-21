@@ -26,7 +26,8 @@
 
         #game-container {
             width: min(90vw, 500px);
-            height: min(90vh, 700px);
+            height: 100vh;
+            max-height: 100vh;
             background: #0d0d0d;
             border: 8px solid #9b30ff;
             border-radius: 30px;
@@ -186,7 +187,7 @@
         }
 
         #mood-emoji {
-            font-size: clamp(1.5rem, 5vw, 2rem);
+            font-size: clamp(1.125rem, 3.75vw, 1.5rem);
         }
 
         #message {
@@ -214,31 +215,41 @@
         }
 
         @media (max-width: 480px) {
+            body {
+                overflow: hidden;
+            }
+
             #game-container {
-                border-width: 6px;
-                border-radius: 20px;
+                width: 100vw;
+                height: 100vh;
+                max-height: 100vh;
+                border-width: 0;
+                border-radius: 0;
             }
 
             #title {
-                padding: 10px;
+                padding: 8px;
+                font-size: clamp(0.6rem, 3vw, 0.9rem);
             }
 
             #stats {
-                padding: 10px;
-                gap: 8px;
+                padding: 8px;
+                gap: 6px;
             }
 
             .stat-label {
-                width: 60px;
+                width: 50px;
+                font-size: clamp(0.35rem, 1.8vw, 0.5rem);
             }
 
             #actions {
-                padding: 10px;
-                gap: 8px;
+                padding: 8px;
+                gap: 6px;
             }
 
             .action-btn {
-                padding: 10px 5px;
+                padding: 8px 4px;
+                font-size: clamp(0.35rem, 1.8vw, 0.5rem);
             }
         }
 
@@ -322,6 +333,23 @@
             left: 10px;
             background: rgba(0, 0, 0, 0.8);
             border: 3px solid #ffd700;
+            border-radius: 10px;
+            padding: 8px 12px;
+            color: #ffd700;
+            font-size: clamp(0.4rem, 2vw, 0.6rem);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            z-index: 10;
+        }
+
+        #fortune-btn {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 3px solid #ff9800;
             border-radius: 12px;
             padding: 8px 12px;
             color: #ffd700;
@@ -464,6 +492,9 @@
             <div id="age-counter">
                 <span>AGE</span>
                 <span id="age-display">0d 0h</span>
+            </div>
+            <div id="fortune-btn" style="cursor: pointer;">
+                <span>🥠</span>
             </div>
             <div class="sleep-overlay" id="sleep-overlay">
                 💤
@@ -646,7 +677,7 @@
                     const box = new THREE.Box3().setFromObject(bulkModel);
                     const size = box.getSize(new THREE.Vector3());
                     const maxDim = Math.max(size.x, size.y, size.z);
-                    const scale = 2 / maxDim;
+                    const scale = 1.8 / maxDim;
                     bulkModel.scale.set(scale, scale, scale);
 
                     bulk.add(bulkModel);
@@ -706,16 +737,17 @@
             // Idle animation - gentle bobbing with mood variation
             if (bulk && !isDead) {
                 const avgStats = (hunger + happiness + cleanliness) / 3;
+                const baseHeight = 0.5; // Float higher off the ground
 
                 // Different animation when sleeping
                 if (isSleeping) {
-                    bulk.position.y = Math.sin(Date.now() * 0.0003) * 0.03; // Very slow, small movement
+                    bulk.position.y = baseHeight + Math.sin(Date.now() * 0.0003) * 0.03; // Very slow, small movement
                     bulk.rotation.y = 0; // No rotation when sleeping
                 } else {
                     const bobbingSpeed = avgStats > 50 ? 0.001 : 0.0005; // Slower when sad
                     const bobbingAmount = avgStats > 50 ? 0.1 : 0.05; // Less movement when sad
 
-                    bulk.position.y = Math.sin(Date.now() * bobbingSpeed) * bobbingAmount;
+                    bulk.position.y = baseHeight + Math.sin(Date.now() * bobbingSpeed) * bobbingAmount;
                     bulk.rotation.y = Math.sin(Date.now() * 0.0005) * 0.2;
                 }
 
