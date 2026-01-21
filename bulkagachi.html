@@ -1125,11 +1125,13 @@
         /* Poop System */
         #poop-container {
             position: absolute;
-            bottom: 20%;
-            left: 25%;
+            bottom: 18%;
+            left: 20%;
             display: flex;
-            gap: 10px;
+            gap: 8px;
             z-index: 5;
+            flex-wrap: wrap;
+            max-width: 60%;
         }
 
         .poop {
@@ -1137,10 +1139,21 @@
             animation: poopAppear 0.5s ease-out, poopWiggle 2s ease-in-out infinite;
             cursor: pointer;
             transition: transform 0.2s;
+            position: relative;
+        }
+
+        .poop.tiny {
+            font-size: 1rem;
+        }
+
+        .poop.golden {
+            font-size: 1.8rem;
+            filter: drop-shadow(0 0 10px gold) drop-shadow(0 0 20px gold);
+            animation: poopAppear 0.5s ease-out, goldenPoopGlow 1s ease-in-out infinite;
         }
 
         .poop:hover {
-            transform: scale(1.2);
+            transform: scale(1.3);
         }
 
         @keyframes poopAppear {
@@ -1151,6 +1164,48 @@
         @keyframes poopWiggle {
             0%, 100% { transform: rotate(-5deg); }
             50% { transform: rotate(5deg); }
+        }
+
+        @keyframes goldenPoopGlow {
+            0%, 100% { filter: drop-shadow(0 0 10px gold) drop-shadow(0 0 20px gold); transform: scale(1); }
+            50% { filter: drop-shadow(0 0 20px gold) drop-shadow(0 0 40px gold); transform: scale(1.1); }
+        }
+
+        /* Poop Warning */
+        #poop-warning {
+            position: absolute;
+            top: 28%;
+            right: 30%;
+            font-size: 1.5rem;
+            z-index: 25;
+            display: none;
+            animation: warningPulse 0.5s ease-in-out infinite;
+        }
+
+        #poop-warning.visible {
+            display: block;
+        }
+
+        @keyframes warningPulse {
+            0%, 100% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.3); opacity: 1; }
+        }
+
+        /* Buzzing Flies */
+        .fly {
+            position: absolute;
+            font-size: 0.8rem;
+            pointer-events: none;
+            z-index: 6;
+            animation: flyBuzz 1s ease-in-out infinite;
+        }
+
+        @keyframes flyBuzz {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(10px, -8px) rotate(15deg); }
+            50% { transform: translate(-5px, -12px) rotate(-10deg); }
+            75% { transform: translate(-10px, -5px) rotate(10deg); }
+            100% { transform: translate(0, 0) rotate(0deg); }
         }
 
         /* Stink Lines */
@@ -1173,6 +1228,96 @@
         @keyframes stinkFloat {
             0%, 100% { transform: translateY(0) rotate(-10deg); opacity: 0.3; }
             50% { transform: translateY(-15px) rotate(10deg); opacity: 0.8; }
+        }
+
+        /* Stink Cloud */
+        .stink-cloud {
+            position: absolute;
+            font-size: 1.2rem;
+            pointer-events: none;
+            z-index: 4;
+            animation: stinkCloudFloat 2s ease-out forwards;
+            opacity: 0.6;
+        }
+
+        @keyframes stinkCloudFloat {
+            0% { transform: translateY(0) scale(0.5); opacity: 0.8; }
+            100% { transform: translateY(-60px) scale(1.5); opacity: 0; }
+        }
+
+        /* Scoop Animation */
+        .scoop-effect {
+            position: absolute;
+            font-size: 2rem;
+            pointer-events: none;
+            z-index: 100;
+            animation: scoopAnim 0.5s ease-out forwards;
+        }
+
+        @keyframes scoopAnim {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            50% { transform: translateY(-20px) rotate(-30deg); opacity: 1; }
+            100% { transform: translateY(-50px) rotate(-60deg); opacity: 0; }
+        }
+
+        /* Embarrassed Face */
+        #embarrassed-face {
+            position: absolute;
+            top: 35%;
+            left: 55%;
+            font-size: 1.5rem;
+            z-index: 26;
+            display: none;
+            animation: embarrassedBounce 0.3s ease-in-out;
+        }
+
+        #embarrassed-face.visible {
+            display: block;
+        }
+
+        @keyframes embarrassedBounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        /* Poop Urgency Meter */
+        #poop-meter {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #8b4513;
+            border-radius: 10px;
+            padding: 5px 10px;
+            z-index: 10;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+        }
+
+        #poop-meter.visible {
+            display: flex;
+        }
+
+        #poop-meter-label {
+            color: #8b4513;
+            font-size: clamp(0.3rem, 1.5vw, 0.4rem);
+        }
+
+        #poop-meter-bar {
+            width: 50px;
+            height: 8px;
+            background: #333;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        #poop-meter-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #8b4513, #daa520);
+            border-radius: 4px;
+            transition: width 0.3s;
         }
 
         /* Dance Button */
@@ -1544,7 +1689,16 @@
             </div>
             <div id="accessory-display"></div>
             <div id="poop-container"></div>
+            <div id="poop-warning">😣</div>
+            <div id="embarrassed-face">😳</div>
+            <div id="flies-container"></div>
             <div class="stink-lines" id="stink-lines">~💨~</div>
+            <div id="poop-meter">
+                <span id="poop-meter-label">💩 URGENCY</span>
+                <div id="poop-meter-bar">
+                    <div id="poop-meter-fill" style="width: 0%"></div>
+                </div>
+            </div>
             <div id="bulk-aura"></div>
             <div id="perfect-halo"></div>
             <div id="needs-container">
@@ -1737,6 +1891,10 @@
         let poopCount = 0;
         let lastPoopTime = Date.now();
         let isDancing = false;
+        let poopUrgency = 0;
+        let totalPoopsCleaned = 0;
+        let goldenPoopsCleaned = 0;
+        let lastFeedTime = 0;
 
         // Audio Context for sound effects
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -2305,6 +2463,12 @@
             addXP(10);
             addCoins(3);
             updateStreak();
+
+            // Eating increases poop urgency!
+            lastFeedTime = Date.now();
+            poopUrgency = Math.min(100, poopUrgency + 20 + food.hunger / 2);
+            updatePoopMeter();
+
             updateUI();
             saveState();
         }
@@ -2539,7 +2703,9 @@
             { id: 'level10', icon: '🌟', title: 'Superstar', desc: 'Reach Level 10' },
             { id: 'memoryMaster', icon: '🧠', title: 'Memory Master', desc: 'Win memory game perfectly' },
             { id: 'allFoods', icon: '🍽️', title: 'Foodie', desc: 'Try all food types' },
-            { id: 'eventLucky', icon: '🍀', title: 'Lucky Star', desc: 'Experience 5 special events' }
+            { id: 'eventLucky', icon: '🍀', title: 'Lucky Star', desc: 'Experience 5 special events' },
+            { id: 'goldenPoop', icon: '✨', title: 'Golden Discovery', desc: 'Find and clean a golden poop' },
+            { id: 'poopMaster', icon: '💩', title: 'Poop Master', desc: 'Clean 50 poops total' }
         ];
 
         function checkAchievements() {
@@ -3395,6 +3561,10 @@
                 equippedAccessory = state.equippedAccessory || null;
                 poopCount = state.poopCount || 0;
                 lastPoopTime = state.lastPoopTime || Date.now();
+                poopUrgency = state.poopUrgency || 0;
+                totalPoopsCleaned = state.totalPoopsCleaned || 0;
+                goldenPoopsCleaned = state.goldenPoopsCleaned || 0;
+                lastFeedTime = state.lastFeedTime || 0;
 
                 // Update UI toggles
                 if (!soundEnabled) document.getElementById('sound-toggle').classList.remove('active');
@@ -3415,10 +3585,13 @@
                     const poop = document.createElement('div');
                     poop.className = 'poop';
                     poop.textContent = '💩';
+                    poop.dataset.type = 'normal';
                     poop.onclick = () => cleanPoop(poop);
                     poopContainer.appendChild(poop);
                 }
                 updateStinkLines();
+                updatePoopMeter();
+                updateFlies();
 
                 // Apply saved theme
                 if (currentTheme !== 'default') {
@@ -3484,7 +3657,11 @@
                 ownedAccessories,
                 equippedAccessory,
                 poopCount,
-                lastPoopTime
+                lastPoopTime,
+                poopUrgency,
+                totalPoopsCleaned,
+                goldenPoopsCleaned,
+                lastFeedTime
             };
             localStorage.setItem('bulkagachi', JSON.stringify(state));
         }
@@ -3599,18 +3776,79 @@
             }
         }
 
-        // Poop System
+        // Enhanced Poop System
         function checkForPoop() {
-            if (isDead || isSleeping) return;
+            if (isDead || isSleeping) {
+                hidePoopWarning();
+                return;
+            }
 
+            // Urgency increases over time, especially after eating
             const timeSinceLastPoop = Date.now() - lastPoopTime;
-            const poopChance = timeSinceLastPoop > 120000 ? 0.1 : 0.02; // Higher chance after 2 minutes
+            const timeSinceEating = Date.now() - lastFeedTime;
 
-            if (Math.random() < poopChance && poopCount < 3) {
+            // Base urgency increase
+            if (timeSinceLastPoop > 30000) { // 30 seconds
+                poopUrgency = Math.min(100, poopUrgency + 2);
+            }
+
+            // Extra urgency if recently ate
+            if (timeSinceEating < 60000 && timeSinceEating > 0) {
+                poopUrgency = Math.min(100, poopUrgency + 1);
+            }
+
+            updatePoopMeter();
+
+            // Show warning when urgency is high
+            if (poopUrgency >= 70 && poopUrgency < 90) {
+                showPoopWarning();
+            } else if (poopUrgency >= 90 && poopCount < 5) {
+                // Time to poop!
+                hidePoopWarning();
                 addPoop();
+                poopUrgency = 0;
+            } else {
+                hidePoopWarning();
             }
 
             updateStinkLines();
+            updateFlies();
+        }
+
+        function showPoopWarning() {
+            const warning = document.getElementById('poop-warning');
+            warning.classList.add('visible');
+
+            // Bulk squirms when needing to poop
+            if (bulk && Math.random() < 0.3) {
+                bulk.position.x = (Math.random() - 0.5) * 0.1;
+                setTimeout(() => { if (bulk) bulk.position.x = 0; }, 200);
+            }
+        }
+
+        function hidePoopWarning() {
+            document.getElementById('poop-warning').classList.remove('visible');
+        }
+
+        function updatePoopMeter() {
+            const meter = document.getElementById('poop-meter');
+            const fill = document.getElementById('poop-meter-fill');
+
+            if (poopUrgency > 30) {
+                meter.classList.add('visible');
+                fill.style.width = poopUrgency + '%';
+
+                // Change color based on urgency
+                if (poopUrgency >= 80) {
+                    fill.style.background = 'linear-gradient(90deg, #ff4500, #ff0000)';
+                } else if (poopUrgency >= 50) {
+                    fill.style.background = 'linear-gradient(90deg, #daa520, #ff8c00)';
+                } else {
+                    fill.style.background = 'linear-gradient(90deg, #8b4513, #daa520)';
+                }
+            } else {
+                meter.classList.remove('visible');
+            }
         }
 
         function addPoop() {
@@ -3619,40 +3857,136 @@
 
             const container = document.getElementById('poop-container');
             const poop = document.createElement('div');
-            poop.className = 'poop';
-            poop.textContent = '💩';
+
+            // Determine poop type
+            const rand = Math.random();
+            let poopType = 'normal';
+            let poopEmoji = '💩';
+
+            if (rand < 0.05) {
+                // 5% chance for golden poop!
+                poopType = 'golden';
+                poopEmoji = '💩';
+                poop.classList.add('golden');
+                showMessage("✨ WOW! A GOLDEN POOP! ✨");
+                createParticles('#ffd700', 20);
+            } else if (rand < 0.25) {
+                // 20% chance for tiny poop
+                poopType = 'tiny';
+                poop.classList.add('tiny');
+            }
+
+            poop.className = 'poop' + (poopType !== 'normal' ? ' ' + poopType : '');
+            poop.textContent = poopEmoji;
+            poop.dataset.type = poopType;
             poop.onclick = () => cleanPoop(poop);
             container.appendChild(poop);
 
             // Reduce cleanliness when poop appears
-            cleanliness = Math.max(0, cleanliness - 10);
+            const cleanReduction = poopType === 'golden' ? 5 : (poopType === 'tiny' ? 5 : 10);
+            cleanliness = Math.max(0, cleanliness - cleanReduction);
+
+            // Show embarrassed face
+            showEmbarrassedFace();
+
+            // Create stink cloud
+            createStinkCloud();
+
             updateUI();
 
-            if (poopCount === 1) {
+            if (poopCount === 1 && poopType !== 'golden') {
                 showMessage("UH OH... BULK MADE A MESS! 💩");
-            } else if (poopCount >= 3) {
+            } else if (poopCount >= 4) {
                 showMessage("SO MUCH POOP! PLEASE CLEAN! 😫");
             }
 
             saveState();
         }
 
+        function showEmbarrassedFace() {
+            const face = document.getElementById('embarrassed-face');
+            face.classList.add('visible');
+            setTimeout(() => face.classList.remove('visible'), 2000);
+        }
+
+        function createStinkCloud() {
+            const container = document.getElementById('scene-container');
+            const clouds = ['💨', '☁️', '💭'];
+
+            for (let i = 0; i < 3; i++) {
+                setTimeout(() => {
+                    const cloud = document.createElement('div');
+                    cloud.className = 'stink-cloud';
+                    cloud.textContent = clouds[Math.floor(Math.random() * clouds.length)];
+                    cloud.style.left = (25 + Math.random() * 30) + '%';
+                    cloud.style.bottom = '25%';
+                    cloud.style.color = '#90ee90';
+                    container.appendChild(cloud);
+                    setTimeout(() => cloud.remove(), 2000);
+                }, i * 300);
+            }
+        }
+
         function cleanPoop(poopElement) {
+            const poopType = poopElement.dataset.type || 'normal';
+            const rect = poopElement.getBoundingClientRect();
+            const containerRect = document.getElementById('scene-container').getBoundingClientRect();
+
+            // Show scoop animation
+            const scoop = document.createElement('div');
+            scoop.className = 'scoop-effect';
+            scoop.textContent = '🧹';
+            scoop.style.left = (rect.left - containerRect.left) + 'px';
+            scoop.style.top = (rect.top - containerRect.top) + 'px';
+            document.getElementById('scene-container').appendChild(scoop);
+            setTimeout(() => scoop.remove(), 500);
+
             poopElement.style.animation = 'poopAppear 0.3s ease-out reverse';
             setTimeout(() => {
                 poopElement.remove();
                 poopCount--;
+                totalPoopsCleaned++;
 
-                // Reward for cleaning
-                cleanliness = Math.min(100, cleanliness + 5);
-                addCoins(2);
-                addXP(3);
+                // Reward based on poop type
+                let coinReward = 2;
+                let xpReward = 3;
+                let cleanBonus = 5;
+                let message = "POOP CLEANED! +2 🪙";
+
+                if (poopType === 'golden') {
+                    coinReward = 15;
+                    xpReward = 10;
+                    cleanBonus = 10;
+                    goldenPoopsCleaned++;
+                    message = "✨ GOLDEN POOP! +15 🪙 ✨";
+                    createParticles('#ffd700', 30);
+
+                    // Achievement check
+                    if (goldenPoopsCleaned >= 1 && !achievements.goldenPoop) {
+                        unlockAchievement('goldenPoop');
+                    }
+                } else if (poopType === 'tiny') {
+                    coinReward = 1;
+                    xpReward = 2;
+                    cleanBonus = 3;
+                    message = "TINY POOP CLEANED! +1 🪙";
+                }
+
+                cleanliness = Math.min(100, cleanliness + cleanBonus);
+                addCoins(coinReward);
+                addXP(xpReward);
 
                 playSound('clean');
                 createParticles('#00ffff', 10);
-                showMessage("POOP CLEANED! +2 🪙");
+                showMessage(message);
+
+                // Achievement for cleaning lots of poop
+                if (totalPoopsCleaned >= 50 && !achievements.poopMaster) {
+                    unlockAchievement('poopMaster');
+                }
 
                 updateStinkLines();
+                updateFlies();
                 updateUI();
                 saveState();
             }, 300);
@@ -3661,6 +3995,28 @@
         function updateStinkLines() {
             const stink = document.getElementById('stink-lines');
             stink.classList.toggle('visible', poopCount >= 2);
+        }
+
+        function updateFlies() {
+            const container = document.getElementById('flies-container');
+
+            // Remove old flies
+            container.innerHTML = '';
+
+            // Add flies based on poop count
+            if (poopCount >= 2) {
+                const flyCount = Math.min(poopCount, 4);
+                for (let i = 0; i < flyCount; i++) {
+                    const fly = document.createElement('div');
+                    fly.className = 'fly';
+                    fly.textContent = '🪰';
+                    fly.style.left = (20 + Math.random() * 40) + '%';
+                    fly.style.bottom = (20 + Math.random() * 15) + '%';
+                    fly.style.animationDelay = (Math.random() * 1) + 's';
+                    fly.style.animationDuration = (0.8 + Math.random() * 0.4) + 's';
+                    container.appendChild(fly);
+                }
+            }
         }
 
         // Dance System
