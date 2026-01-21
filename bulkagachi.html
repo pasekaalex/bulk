@@ -921,7 +921,7 @@
             scene.add(bulk);
 
             const loader = new THREE.GLTFLoader();
-            loader.load('run.glb',
+            loader.load('bulk.glb',
                 (gltf) => {
                     bulkModel = gltf.scene;
 
@@ -933,14 +933,6 @@
                     bulkModel.scale.set(scale, scale, scale);
 
                     bulk.add(bulkModel);
-
-                    // Setup animation if it exists
-                    if (gltf.animations && gltf.animations.length > 0) {
-                        mixer = new THREE.AnimationMixer(bulkModel);
-                        const action = mixer.clipAction(gltf.animations[0]);
-                        action.play();
-                        console.log('Animation playing:', gltf.animations[0].name);
-                    }
                 },
                 undefined,
                 (error) => {
