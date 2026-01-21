@@ -2109,6 +2109,121 @@
             100% { transform: scale(2); opacity: 0; }
         }
 
+        /* Memory Game Modal */
+        #memory-game-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 160;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px;
+            overflow-y: auto;
+        }
+
+        #memory-game-modal.active {
+            display: flex;
+        }
+
+        #memory-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            max-width: 300px;
+            margin: 10px 0;
+        }
+
+        .memory-card {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #9b30ff, #6a0dad);
+            border: 3px solid #ff00ff;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 0 #4a0080;
+        }
+
+        .memory-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .memory-card.flipped {
+            background: linear-gradient(135deg, #ffd700, #ffaa00);
+            border-color: #fff;
+        }
+
+        .memory-card.matched {
+            background: linear-gradient(135deg, #00ff00, #00cc00);
+            border-color: #90ee90;
+            animation: matchPulse 0.5s ease;
+        }
+
+        @keyframes matchPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* Mood Indicator */
+        #mood-indicator {
+            position: absolute;
+            top: 50px;
+            left: 10px;
+            font-size: 1.8rem;
+            z-index: 15;
+            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
+            transition: all 0.5s;
+        }
+
+        /* Bath Bubbles Container */
+        #bath-bubbles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 51;
+            overflow: hidden;
+        }
+
+        .bath-bubble {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.9), rgba(135, 206, 250, 0.5));
+            animation: bathBubbleRise 3s ease-in-out forwards;
+            box-shadow: inset -2px -2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        @keyframes bathBubbleRise {
+            0% { transform: translateY(100%) scale(0); opacity: 0; }
+            20% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { transform: translateY(-100vh) scale(1.5); opacity: 0; }
+        }
+
+        /* Sparkle effect */
+        .sparkle {
+            position: absolute;
+            font-size: 1rem;
+            animation: sparkleAnim 1s ease-out forwards;
+            pointer-events: none;
+            z-index: 52;
+        }
+
+        @keyframes sparkleAnim {
+            0% { transform: scale(0) rotate(0deg); opacity: 1; }
+            100% { transform: scale(1.5) rotate(180deg); opacity: 0; }
+        }
+
         /* Dance Button */
         #dance-btn {
             position: absolute;
@@ -2518,6 +2633,7 @@
             <button id="tricks-btn" onclick="showTricks()">🎪 TRICKS</button>
             <button id="extras-menu-btn" onclick="toggleExtrasMenu()">✨</button>
             <div id="extras-panel">
+                <button class="extras-btn" onclick="giveBath(); toggleExtrasMenu();"><span class="extras-btn-icon">🛁</span> BATH</button>
                 <button class="extras-btn" onclick="toggleMusic(); toggleExtrasMenu();"><span class="extras-btn-icon">🎵</span> MUSIC</button>
                 <button class="extras-btn" onclick="openFortune(); toggleExtrasMenu();"><span class="extras-btn-icon">🥠</span> FORTUNE</button>
                 <button class="extras-btn" onclick="showQuests(); toggleExtrasMenu();"><span class="extras-btn-icon">📜</span> QUESTS</button>
@@ -2525,6 +2641,7 @@
                 <button class="extras-btn" onclick="showColorPicker(); toggleExtrasMenu();"><span class="extras-btn-icon">🎨</span> COLORS</button>
                 <button class="extras-btn" onclick="showToys(); toggleExtrasMenu();"><span class="extras-btn-icon">🧸</span> TOYS</button>
                 <button class="extras-btn" onclick="showTricks(); toggleExtrasMenu();"><span class="extras-btn-icon">🎪</span> TRICKS</button>
+                <button class="extras-btn" onclick="playMemoryGame(); toggleExtrasMenu();"><span class="extras-btn-icon">🧠</span> MEMORY</button>
                 <button class="extras-btn" onclick="showAchievements(); toggleExtrasMenu();"><span class="extras-btn-icon">🏆</span> ACHIEVEMENTS</button>
                 <button class="extras-btn" onclick="showSettings(); toggleExtrasMenu();"><span class="extras-btn-icon">⚙️</span> SETTINGS</button>
             </div>
@@ -2631,6 +2748,13 @@
                 <div class="color-grid" id="color-grid"></div>
                 <button class="close-modal-btn" onclick="closeColorPicker()">CLOSE</button>
             </div>
+            <div id="memory-game-modal">
+                <div style="font-size: clamp(1rem, 4vw, 1.5rem); color: #ffd700; margin-bottom: 10px;">🧠 MEMORY MATCH 🧠</div>
+                <div style="font-size: clamp(0.5rem, 2vw, 0.6rem); color: #ff69b4; margin-bottom: 10px;">Moves: <span id="memory-moves">0</span> | Pairs: <span id="memory-pairs">0</span>/6</div>
+                <div id="memory-grid"></div>
+                <button class="close-modal-btn" onclick="closeMemoryGame()">CLOSE</button>
+            </div>
+            <div id="mood-indicator"></div>
             <div id="event-notification"></div>
             <div id="message"></div>
         </div>
@@ -3527,6 +3651,7 @@
             }
 
             updateMood();
+            updateMoodIndicator();
         }
 
         function updateMood() {
@@ -3581,7 +3706,10 @@
             { id: 'doctor', icon: '💊', title: 'Doctor Bulk', desc: 'Cure Bulk when sick' },
             { id: 'trickster', icon: '🎪', title: 'Trickster', desc: 'Learn 3 tricks' },
             { id: 'fortunate', icon: '🥠', title: 'Fortune Seeker', desc: 'Open a fortune cookie' },
-            { id: 'socialButterfly', icon: '🦋', title: 'Social Butterfly', desc: 'Receive a visitor' }
+            { id: 'socialButterfly', icon: '🦋', title: 'Social Butterfly', desc: 'Receive a visitor' },
+            { id: 'bathLover', icon: '🛁', title: 'Bath Lover', desc: 'Give Bulk 10 baths' },
+            { id: 'colorful', icon: '🌈', title: 'Colorful', desc: 'Own 5 different colors' },
+            { id: 'questHero', icon: '📜', title: 'Quest Hero', desc: 'Complete 10 daily quests' }
         ];
 
         function checkAchievements() {
@@ -5410,7 +5538,9 @@
             toysPlayed: 0,
             visitorsReceived: 0,
             fortunesRead: 0,
-            daysAlive: 0
+            daysAlive: 0,
+            bathsGiven: 0,
+            questsCompleted: 0
         };
 
         function showStats() {
@@ -5545,7 +5675,15 @@
                 addCoins(quest.reward);
                 showMessage(`+${quest.reward} 💰 REWARD!`);
                 playSound('buy');
+
+                // Track quest completion
+                lifeStats.questsCompleted++;
+                if (lifeStats.questsCompleted >= 10 && !achievements.questHero) {
+                    unlockAchievement('questHero');
+                }
+
                 showQuests(); // Refresh display
+                saveState();
             }
         }
 
@@ -5612,6 +5750,12 @@
                 updateUI();
                 showMessage(`🎨 ${colorName.toUpperCase()} UNLOCKED!`);
                 playSound('buy');
+
+                // Color achievement
+                if (ownedColors.length >= 5 && !achievements.colorful) {
+                    unlockAchievement('colorful');
+                }
+
                 showColorPicker(); // Refresh
                 saveState();
             } else {
@@ -5644,6 +5788,239 @@
 
         function closeColorPicker() {
             document.getElementById('color-modal').classList.remove('active');
+        }
+
+        // Bath System
+        let isBathing = false;
+
+        function giveBath() {
+            if (isDead || isSleeping || isBathing) {
+                if (isSleeping) showMessage("SHHH! BULK IS SLEEPING! 💤");
+                return;
+            }
+
+            isBathing = true;
+
+            // Show bath overlay
+            const overlay = document.getElementById('bath-overlay');
+            overlay.classList.add('active');
+
+            // Create bubbles container
+            let bubblesContainer = document.getElementById('bath-bubbles');
+            if (!bubblesContainer) {
+                bubblesContainer = document.createElement('div');
+                bubblesContainer.id = 'bath-bubbles';
+                document.getElementById('scene-container').appendChild(bubblesContainer);
+            }
+
+            // Generate bath bubbles
+            const bubbleCount = 30;
+            for (let i = 0; i < bubbleCount; i++) {
+                setTimeout(() => {
+                    if (!isBathing) return;
+                    const bubble = document.createElement('div');
+                    bubble.className = 'bath-bubble';
+                    const size = 10 + Math.random() * 30;
+                    bubble.style.width = `${size}px`;
+                    bubble.style.height = `${size}px`;
+                    bubble.style.left = `${Math.random() * 100}%`;
+                    bubble.style.bottom = '0';
+                    bubble.style.animationDuration = `${2 + Math.random() * 2}s`;
+                    bubblesContainer.appendChild(bubble);
+                    setTimeout(() => bubble.remove(), 4000);
+                }, i * 100);
+            }
+
+            // Add sparkles
+            for (let i = 0; i < 15; i++) {
+                setTimeout(() => {
+                    if (!isBathing) return;
+                    const sparkle = document.createElement('div');
+                    sparkle.className = 'sparkle';
+                    sparkle.textContent = '✨';
+                    sparkle.style.left = `${20 + Math.random() * 60}%`;
+                    sparkle.style.top = `${20 + Math.random() * 60}%`;
+                    document.getElementById('scene-container').appendChild(sparkle);
+                    setTimeout(() => sparkle.remove(), 1000);
+                }, 500 + i * 150);
+            }
+
+            showMessage('🛁 BATH TIME! SPLISH SPLASH! 🛁');
+            playSound('clean');
+            playHappyAnimation();
+
+            // Bath benefits
+            cleanliness = 100;
+            happiness = Math.min(100, happiness + 20);
+            addXP(15);
+            addCoins(5);
+
+            // Track stats
+            lifeStats.totalCleans++;
+            lifeStats.bathsGiven++;
+            updateQuestProgress('clean');
+
+            // Bath achievement
+            if (lifeStats.bathsGiven >= 10 && !achievements.bathLover) {
+                unlockAchievement('bathLover');
+            }
+
+            // Remove any poops during bath
+            if (poopCount > 0) {
+                document.getElementById('poop-container').innerHTML = '';
+                poopCount = 0;
+                updateStinkLines();
+                updateFlies();
+            }
+
+            // End bath after 3 seconds
+            setTimeout(() => {
+                overlay.classList.remove('active');
+                bubblesContainer.innerHTML = '';
+                isBathing = false;
+                showMessage('✨ SQUEAKY CLEAN! ✨');
+                createParticles('#87ceeb', 40);
+                updateUI();
+                saveState();
+            }, 3000);
+        }
+
+        // Memory Game System
+        let memoryCards = [];
+        let memoryFlipped = [];
+        let memoryMoves = 0;
+        let memoryPairs = 0;
+        let memoryLocked = false;
+
+        const memoryEmojis = ['🐱', '🐶', '🐰', '🦊', '🐻', '🦋', '🐸', '🦄', '🎮', '🍕', '⭐', '💎'];
+
+        function playMemoryGame() {
+            if (isDead) return;
+
+            memoryMoves = 0;
+            memoryPairs = 0;
+            memoryFlipped = [];
+            memoryLocked = false;
+
+            // Pick 6 random emojis and duplicate them
+            const shuffledEmojis = [...memoryEmojis].sort(() => Math.random() - 0.5).slice(0, 6);
+            memoryCards = [...shuffledEmojis, ...shuffledEmojis].sort(() => Math.random() - 0.5);
+
+            const grid = document.getElementById('memory-grid');
+            grid.innerHTML = memoryCards.map((emoji, index) => `
+                <div class="memory-card" data-index="${index}" data-emoji="${emoji}" onclick="flipMemoryCard(${index})">
+                    ?
+                </div>
+            `).join('');
+
+            document.getElementById('memory-moves').textContent = '0';
+            document.getElementById('memory-pairs').textContent = '0';
+            document.getElementById('memory-game-modal').classList.add('active');
+        }
+
+        function flipMemoryCard(index) {
+            if (memoryLocked) return;
+
+            const card = document.querySelector(`.memory-card[data-index="${index}"]`);
+            if (!card || card.classList.contains('flipped') || card.classList.contains('matched')) return;
+
+            card.classList.add('flipped');
+            card.textContent = memoryCards[index];
+            memoryFlipped.push({ index, emoji: memoryCards[index] });
+
+            if (memoryFlipped.length === 2) {
+                memoryMoves++;
+                document.getElementById('memory-moves').textContent = memoryMoves;
+                memoryLocked = true;
+
+                const [first, second] = memoryFlipped;
+
+                if (first.emoji === second.emoji) {
+                    // Match!
+                    setTimeout(() => {
+                        document.querySelector(`.memory-card[data-index="${first.index}"]`).classList.add('matched');
+                        document.querySelector(`.memory-card[data-index="${second.index}"]`).classList.add('matched');
+                        memoryPairs++;
+                        document.getElementById('memory-pairs').textContent = memoryPairs;
+                        playSound('play');
+
+                        if (memoryPairs === 6) {
+                            // Won!
+                            setTimeout(() => {
+                                const reward = Math.max(5, 30 - memoryMoves);
+                                addCoins(reward);
+                                addXP(20);
+                                happiness = Math.min(100, happiness + 15);
+                                showMessage(`🧠 MEMORY MASTER! +${reward} 🪙`);
+
+                                if (memoryMoves <= 12 && !achievements.memoryMaster) {
+                                    unlockAchievement('memoryMaster');
+                                }
+
+                                closeMemoryGame();
+                                updateUI();
+                                saveState();
+                            }, 500);
+                        }
+
+                        memoryFlipped = [];
+                        memoryLocked = false;
+                    }, 300);
+                } else {
+                    // No match
+                    setTimeout(() => {
+                        document.querySelector(`.memory-card[data-index="${first.index}"]`).classList.remove('flipped');
+                        document.querySelector(`.memory-card[data-index="${first.index}"]`).textContent = '?';
+                        document.querySelector(`.memory-card[data-index="${second.index}"]`).classList.remove('flipped');
+                        document.querySelector(`.memory-card[data-index="${second.index}"]`).textContent = '?';
+                        memoryFlipped = [];
+                        memoryLocked = false;
+                    }, 800);
+                }
+            }
+        }
+
+        function closeMemoryGame() {
+            document.getElementById('memory-game-modal').classList.remove('active');
+        }
+
+        // Mood System - Facial expressions based on stats
+        function updateMoodIndicator() {
+            const indicator = document.getElementById('mood-indicator');
+            if (!indicator) return;
+
+            const avgStats = (hunger + happiness + cleanliness) / 3;
+
+            let mood;
+            if (isDead) {
+                mood = '💀';
+            } else if (isSleeping) {
+                mood = '😴';
+            } else if (isSick) {
+                mood = '🤢';
+            } else if (avgStats >= 90) {
+                mood = '🥰';
+            } else if (avgStats >= 75) {
+                mood = '😊';
+            } else if (avgStats >= 60) {
+                mood = '🙂';
+            } else if (avgStats >= 40) {
+                mood = '😐';
+            } else if (avgStats >= 25) {
+                mood = '😟';
+            } else {
+                mood = '😢';
+            }
+
+            // Add special moods
+            if (!isDead && !isSleeping) {
+                if (hunger < 20) mood = '🤤'; // Hungry
+                if (cleanliness < 20) mood = '🤮'; // Dirty
+                if (poopCount >= 3) mood = '😖'; // Too much poop
+                if (hunger === 100 && happiness === 100 && cleanliness === 100) mood = '🤩'; // Perfect
+            }
+
+            indicator.textContent = mood;
         }
 
         // Visitor System
