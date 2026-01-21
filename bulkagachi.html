@@ -219,31 +219,56 @@
         }
 
         @media (max-width: 480px) {
+            body {
+                padding: 5px 0;
+                overflow: hidden;
+            }
+
             #game-container {
-                border-width: 6px;
-                border-radius: 20px;
+                width: 98vw;
+                height: 98vh;
+                max-height: 98vh;
+                border-width: 4px;
+                border-radius: 15px;
             }
 
             #title {
-                padding: 10px;
+                padding: 8px;
+                font-size: clamp(0.7rem, 3.5vw, 1rem);
             }
 
             #stats {
-                padding: 10px;
-                gap: 8px;
+                padding: 8px;
+                gap: 5px;
             }
 
             .stat-label {
-                width: 60px;
+                width: 50px;
+                font-size: clamp(0.35rem, 1.8vw, 0.5rem);
+            }
+
+            .stat-bar-container {
+                height: 16px;
             }
 
             #actions {
-                padding: 10px;
-                gap: 8px;
+                padding: 8px;
+                gap: 6px;
             }
 
             .action-btn {
-                padding: 10px 5px;
+                padding: 8px 4px;
+                font-size: clamp(0.35rem, 1.8vw, 0.5rem);
+            }
+
+            #extras-menu-btn {
+                width: 35px;
+                height: 35px;
+                font-size: 1rem;
+            }
+
+            #extras-panel {
+                max-height: 60vh;
             }
         }
 
@@ -1572,15 +1597,14 @@
         #fortune-btn {
             position: absolute;
             top: 60px;
-            left: 50%;
-            transform: translateX(-50%);
+            left: 10px;
             background: linear-gradient(135deg, #daa520, #b8860b);
             border: 3px solid #ffd700;
             border-radius: 50%;
-            width: 45px;
-            height: 45px;
+            width: 40px;
+            height: 40px;
             color: #fff;
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             cursor: pointer;
             z-index: 10;
             display: flex;
@@ -1591,7 +1615,7 @@
         }
 
         #fortune-btn:hover {
-            transform: translateX(-50%) scale(1.1) rotate(10deg);
+            transform: scale(1.1) rotate(10deg);
         }
 
         #fortune-btn.claimed {
@@ -1636,6 +1660,453 @@
         .fortune-lucky {
             color: #ff6347;
             margin-top: 10px;
+        }
+
+        /* Extras Menu Button - Clean Mobile UI */
+        #extras-menu-btn {
+            position: absolute;
+            top: 10px;
+            right: 60px;
+            background: linear-gradient(135deg, #9b30ff, #6a0dad);
+            border: 3px solid #ff00ff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            color: #fff;
+            font-size: 1.2rem;
+            cursor: pointer;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            box-shadow: 0 0 15px rgba(155, 48, 255, 0.5);
+        }
+
+        #extras-menu-btn:hover {
+            transform: scale(1.1);
+        }
+
+        #extras-menu-btn.active {
+            background: linear-gradient(135deg, #ff00ff, #ff69b4);
+        }
+
+        /* Extras Panel */
+        #extras-panel {
+            position: absolute;
+            top: 60px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.95);
+            border: 3px solid #9b30ff;
+            border-radius: 15px;
+            padding: 10px;
+            z-index: 19;
+            display: none;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 70%;
+            overflow-y: auto;
+        }
+
+        #extras-panel.active {
+            display: flex;
+        }
+
+        .extras-btn {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 2px solid #9b30ff;
+            border-radius: 10px;
+            padding: 10px 15px;
+            color: #fff;
+            font-family: 'Press Start 2P', monospace;
+            font-size: clamp(0.35rem, 1.5vw, 0.45rem);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .extras-btn:hover {
+            background: linear-gradient(135deg, #9b30ff, #6a0dad);
+            transform: scale(1.02);
+        }
+
+        .extras-btn-icon {
+            font-size: 1.2rem;
+        }
+
+        /* Hide buttons that are now in extras menu */
+        #music-btn, #photo-btn, #stats-btn, #quests-btn, #color-btn, #fortune-btn,
+        #achievements-btn, #settings-btn, #toys-btn, #tricks-btn {
+            display: none;
+        }
+
+        /* Photo Mode */
+
+        #photo-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 200;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        #photo-modal.active {
+            display: flex;
+        }
+
+        #photo-preview {
+            border: 5px solid #ffd700;
+            border-radius: 15px;
+            margin: 15px 0;
+            max-width: 90%;
+            max-height: 50%;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 15px 0;
+        }
+
+        .filter-btn {
+            background: linear-gradient(135deg, #9b30ff, #6a0dad);
+            border: 2px solid #ff00ff;
+            border-radius: 10px;
+            padding: 8px 15px;
+            color: #fff;
+            font-family: 'Press Start 2P', monospace;
+            font-size: clamp(0.3rem, 1.5vw, 0.4rem);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            border-color: #fff;
+        }
+
+        /* Stats Page */
+        #stats-btn {
+            position: absolute;
+            top: 60px;
+            right: 10px;
+            background: linear-gradient(135deg, #20b2aa, #008b8b);
+            border: 3px solid #7fffd4;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            color: #fff;
+            font-size: 1.2rem;
+            cursor: pointer;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            box-shadow: 0 0 15px rgba(32, 178, 170, 0.5);
+        }
+
+        #stats-btn:hover {
+            transform: scale(1.1);
+        }
+
+        #stats-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 150;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        #stats-modal.active {
+            display: flex;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 3px solid #9b30ff;
+            border-radius: 15px;
+            padding: 15px;
+            margin: 8px 0;
+            width: 90%;
+            max-width: 350px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .stat-card-icon {
+            font-size: 2rem;
+        }
+
+        .stat-card-info {
+            flex: 1;
+        }
+
+        .stat-card-label {
+            color: #9b30ff;
+            font-size: clamp(0.4rem, 1.5vw, 0.5rem);
+        }
+
+        .stat-card-value {
+            color: #ffd700;
+            font-size: clamp(0.6rem, 2vw, 0.7rem);
+            margin-top: 3px;
+        }
+
+        /* Daily Quests */
+        #quests-btn {
+            position: absolute;
+            top: 110px;
+            right: 10px;
+            background: linear-gradient(135deg, #ff8c00, #ff6347);
+            border: 3px solid #ffd700;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            color: #fff;
+            font-size: 1.2rem;
+            cursor: pointer;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            box-shadow: 0 0 15px rgba(255, 140, 0, 0.5);
+        }
+
+        #quests-btn:hover {
+            transform: scale(1.1);
+        }
+
+        #quests-btn.has-complete {
+            animation: questGlow 1s ease-in-out infinite;
+        }
+
+        @keyframes questGlow {
+            0%, 100% { box-shadow: 0 0 15px rgba(255, 140, 0, 0.5); }
+            50% { box-shadow: 0 0 30px rgba(255, 215, 0, 1); }
+        }
+
+        #quests-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 150;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        #quests-modal.active {
+            display: flex;
+        }
+
+        .quest-item {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 3px solid #ff8c00;
+            border-radius: 15px;
+            padding: 15px;
+            margin: 8px 0;
+            width: 90%;
+            max-width: 350px;
+        }
+
+        .quest-item.completed {
+            border-color: #00ff00;
+            background: linear-gradient(135deg, #0a3d0a, #1a4d1a);
+        }
+
+        .quest-item.claimed {
+            opacity: 0.5;
+            border-color: #666;
+        }
+
+        .quest-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .quest-title {
+            color: #ffd700;
+            font-size: clamp(0.5rem, 2vw, 0.6rem);
+        }
+
+        .quest-reward {
+            color: #ff8c00;
+            font-size: clamp(0.4rem, 1.5vw, 0.5rem);
+        }
+
+        .quest-progress {
+            background: #333;
+            border-radius: 10px;
+            height: 12px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .quest-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff8c00, #ffd700);
+            border-radius: 10px;
+            transition: width 0.3s;
+        }
+
+        /* Color Picker */
+        #color-btn {
+            position: absolute;
+            top: 160px;
+            right: 10px;
+            background: linear-gradient(135deg, #ff69b4, #ff1493);
+            border: 3px solid #fff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            color: #fff;
+            font-size: 1.2rem;
+            cursor: pointer;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            box-shadow: 0 0 15px rgba(255, 105, 180, 0.5);
+        }
+
+        #color-btn:hover {
+            transform: scale(1.1);
+        }
+
+        #color-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 150;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        #color-modal.active {
+            display: flex;
+        }
+
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .color-option {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 4px solid #fff;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .color-option:hover {
+            transform: scale(1.15);
+        }
+
+        .color-option.selected {
+            box-shadow: 0 0 20px #ffd700, 0 0 40px #ffd700;
+        }
+
+        .color-option.locked {
+            opacity: 0.6;
+            border-style: dashed;
+        }
+
+        .color-option.locked:hover {
+            border-color: #ffd700;
+        }
+
+        /* Bath Animation Overlay */
+        #bath-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg, rgba(0, 191, 255, 0.3) 0%, rgba(0, 191, 255, 0.6) 100%);
+            z-index: 50;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        #bath-overlay.active {
+            display: flex;
+            animation: bathFade 0.5s ease-out;
+        }
+
+        @keyframes bathFade {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        .bubble {
+            position: absolute;
+            font-size: 1.5rem;
+            animation: bubbleFloat 2s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes bubbleFloat {
+            0% { transform: translateY(0) scale(1); opacity: 0.8; }
+            50% { transform: translateY(-30px) scale(1.2); opacity: 1; }
+            100% { transform: translateY(-60px) scale(0.8); opacity: 0; }
+        }
+
+        .splash {
+            position: absolute;
+            font-size: 2rem;
+            animation: splashPop 0.5s ease-out forwards;
+            pointer-events: none;
+        }
+
+        @keyframes splashPop {
+            0% { transform: scale(0); opacity: 1; }
+            100% { transform: scale(2); opacity: 0; }
         }
 
         /* Dance Button */
@@ -2045,10 +2516,23 @@
             <button id="toys-btn" onclick="showToys()">🧸 TOYS</button>
             <button id="medicine-btn" onclick="giveMedicine()">💊 MEDICINE</button>
             <button id="tricks-btn" onclick="showTricks()">🎪 TRICKS</button>
-            <button id="fortune-btn" onclick="openFortune()">🥠</button>
+            <button id="extras-menu-btn" onclick="toggleExtrasMenu()">✨</button>
+            <div id="extras-panel">
+                <button class="extras-btn" onclick="toggleMusic(); toggleExtrasMenu();"><span class="extras-btn-icon">🎵</span> MUSIC</button>
+                <button class="extras-btn" onclick="openFortune(); toggleExtrasMenu();"><span class="extras-btn-icon">🥠</span> FORTUNE</button>
+                <button class="extras-btn" onclick="showQuests(); toggleExtrasMenu();"><span class="extras-btn-icon">📜</span> QUESTS</button>
+                <button class="extras-btn" onclick="showStats(); toggleExtrasMenu();"><span class="extras-btn-icon">📊</span> STATS</button>
+                <button class="extras-btn" onclick="showColorPicker(); toggleExtrasMenu();"><span class="extras-btn-icon">🎨</span> COLORS</button>
+                <button class="extras-btn" onclick="showToys(); toggleExtrasMenu();"><span class="extras-btn-icon">🧸</span> TOYS</button>
+                <button class="extras-btn" onclick="showTricks(); toggleExtrasMenu();"><span class="extras-btn-icon">🎪</span> TRICKS</button>
+                <button class="extras-btn" onclick="showAchievements(); toggleExtrasMenu();"><span class="extras-btn-icon">🏆</span> ACHIEVEMENTS</button>
+                <button class="extras-btn" onclick="showSettings(); toggleExtrasMenu();"><span class="extras-btn-icon">⚙️</span> SETTINGS</button>
+            </div>
+            <button id="medicine-btn" onclick="giveMedicine()">💊</button>
             <div id="sick-indicator">🤒</div>
             <div id="visitor-container"></div>
             <div id="active-toy-display"></div>
+            <div id="bath-overlay"></div>
             <div id="thought-bubble"></div>
             <div class="sleep-overlay" id="sleep-overlay">
                 💤
@@ -2130,6 +2614,22 @@
                 <div class="fortune-text" id="fortune-text"></div>
                 <div class="fortune-lucky" id="fortune-lucky"></div>
                 <button class="close-modal-btn" onclick="closeFortune()" style="margin-top: 15px;">OK!</button>
+            </div>
+            <div id="stats-modal">
+                <div style="font-size: clamp(1rem, 4vw, 1.5rem); color: #ffd700; margin-bottom: 15px;">📊 BULK'S LIFE 📊</div>
+                <div id="stats-content"></div>
+                <button class="close-modal-btn" onclick="closeStats()">CLOSE</button>
+            </div>
+            <div id="quests-modal">
+                <div style="font-size: clamp(1rem, 4vw, 1.5rem); color: #ffd700; margin-bottom: 15px;">📜 DAILY QUESTS 📜</div>
+                <div id="quests-content"></div>
+                <button class="close-modal-btn" onclick="closeQuests()">CLOSE</button>
+            </div>
+            <div id="color-modal">
+                <div style="font-size: clamp(1rem, 4vw, 1.5rem); color: #ffd700; margin-bottom: 15px;">🎨 BULK COLORS 🎨</div>
+                <div style="font-size: clamp(0.5rem, 2vw, 0.6rem); color: #ff69b4; margin-bottom: 15px;">Choose Bulk's color!</div>
+                <div class="color-grid" id="color-grid"></div>
+                <button class="close-modal-btn" onclick="closeColorPicker()">CLOSE</button>
             </div>
             <div id="event-notification"></div>
             <div id="message"></div>
@@ -2546,6 +3046,12 @@
             lastActionTime = now;
             totalCareActions++;
 
+            // Track longest combo and quest progress
+            if (comboCount > lifeStats.longestCombo) {
+                lifeStats.longestCombo = comboCount;
+            }
+            updateQuestProgress('combo', comboCount);
+
             const comboIndicator = document.getElementById('combo-indicator');
             const comboCountDisplay = document.getElementById('combo-count');
 
@@ -2821,6 +3327,10 @@
             poopUrgency = Math.min(100, poopUrgency + 20 + food.hunger / 2);
             updatePoopMeter();
 
+            // Track stats and quests
+            lifeStats.totalFeedings++;
+            updateQuestProgress('feed');
+
             updateUI();
             saveState();
         }
@@ -2849,6 +3359,11 @@
             addXP(12);
             addCoins(5);
             updateStreak();
+
+            // Track stats and quests
+            lifeStats.totalPlays++;
+            updateQuestProgress('play');
+
             updateUI();
             saveState();
         }
@@ -2877,6 +3392,11 @@
             addXP(8);
             addCoins(4);
             updateStreak();
+
+            // Track stats and quests
+            lifeStats.totalCleans++;
+            updateQuestProgress('clean');
+
             updateUI();
             saveState();
         }
@@ -3927,6 +4447,13 @@
                 lastFortuneDate = state.lastFortuneDate || null;
                 lastVisitorTime = state.lastVisitorTime || 0;
 
+                // Load new features
+                if (state.lifeStats) lifeStats = { ...lifeStats, ...state.lifeStats };
+                if (state.dailyQuests) dailyQuests = state.dailyQuests;
+                if (state.lastQuestReset) lastQuestReset = state.lastQuestReset;
+                if (state.ownedColors) ownedColors = state.ownedColors;
+                if (state.bulkColor !== undefined) bulkColor = state.bulkColor;
+
                 // Update sick indicator if sick
                 if (isSick) {
                     document.getElementById('sick-indicator').classList.add('visible');
@@ -4038,7 +4565,12 @@
                 ownedToys,
                 learnedTricks,
                 lastFortuneDate,
-                lastVisitorTime
+                lastVisitorTime,
+                lifeStats,
+                dailyQuests,
+                lastQuestReset,
+                ownedColors,
+                bulkColor
             };
             localStorage.setItem('bulkagachi', JSON.stringify(state));
         }
@@ -4046,6 +4578,7 @@
         // Coin System
         function addCoins(amount) {
             coins += amount;
+            lifeStats.totalCoinsEarned += amount;
             updateCoinDisplay();
 
             // Create flying coin animation
@@ -4067,19 +4600,26 @@
             if (shopCoins) shopCoins.textContent = coins;
         }
 
-        // Shop System
+        // Shop System - Accessories with position types
         const shopItems = [
-            { id: 'crown', icon: '👑', name: 'Royal Crown', price: 100, desc: 'For the king of pets!' },
-            { id: 'hat', icon: '🎩', name: 'Top Hat', price: 50, desc: 'Very distinguished!' },
-            { id: 'bow', icon: '🎀', name: 'Cute Bow', price: 30, desc: 'So adorable!' },
-            { id: 'glasses', icon: '🕶️', name: 'Cool Shades', price: 40, desc: 'Too cool for school!' },
-            { id: 'halo', icon: '😇', name: 'Angel Halo', price: 75, desc: 'Pure and innocent!' },
-            { id: 'party', icon: '🎉', name: 'Party Hat', price: 25, desc: 'Party time!' },
-            { id: 'flower', icon: '🌸', name: 'Flower Crown', price: 60, desc: 'Spring vibes!' },
-            { id: 'star', icon: '⭐', name: 'Star Headband', price: 80, desc: 'You are a star!' },
-            { id: 'wizard', icon: '🧙', name: 'Wizard Hat', price: 90, desc: 'Magical powers!' },
-            { id: 'chef', icon: '👨‍🍳', name: 'Chef Hat', price: 45, desc: 'Master chef Bulk!' }
+            { id: 'crown', icon: '👑', name: 'Royal Crown', price: 100, desc: 'For the king of pets!', pos: 'head' },
+            { id: 'hat', icon: '🎩', name: 'Top Hat', price: 50, desc: 'Very distinguished!', pos: 'head' },
+            { id: 'bow', icon: '🎀', name: 'Cute Bow', price: 30, desc: 'So adorable!', pos: 'head' },
+            { id: 'glasses', icon: '🕶️', name: 'Cool Shades', price: 40, desc: 'Too cool for school!', pos: 'face' },
+            { id: 'halo', icon: '😇', name: 'Angel Halo', price: 75, desc: 'Pure and innocent!', pos: 'above' },
+            { id: 'party', icon: '🎉', name: 'Party Hat', price: 25, desc: 'Party time!', pos: 'head' },
+            { id: 'flower', icon: '🌸', name: 'Flower Crown', price: 60, desc: 'Spring vibes!', pos: 'head' },
+            { id: 'star', icon: '⭐', name: 'Star Headband', price: 80, desc: 'You are a star!', pos: 'above' },
+            { id: 'wizard', icon: '🧙', name: 'Wizard Hat', price: 90, desc: 'Magical powers!', pos: 'head' },
+            { id: 'chef', icon: '👨‍🍳', name: 'Chef Hat', price: 45, desc: 'Master chef Bulk!', pos: 'head' }
         ];
+
+        // Accessory position offsets (relative to Bulk's center)
+        const accessoryPositions = {
+            head: { top: '20%', scale: 1.5 },
+            face: { top: '32%', scale: 1.3 },
+            above: { top: '12%', scale: 1.2 }
+        };
 
         function showShop() {
             const modal = document.getElementById('shop-modal');
@@ -4147,7 +4687,14 @@
             const display = document.getElementById('accessory-display');
             if (equippedAccessory) {
                 const item = shopItems.find(i => i.id === equippedAccessory);
-                display.textContent = item ? item.icon : '';
+                if (item) {
+                    display.textContent = item.icon;
+                    const pos = accessoryPositions[item.pos] || accessoryPositions.head;
+                    display.style.top = pos.top;
+                    display.style.fontSize = `${pos.scale * 2}rem`;
+                } else {
+                    display.textContent = '';
+                }
             } else {
                 display.textContent = '';
             }
@@ -4362,6 +4909,10 @@
                     unlockAchievement('poopMaster');
                 }
 
+                // Track stats and quests
+                lifeStats.totalPoops++;
+                updateQuestProgress('poop');
+
                 updateStinkLines();
                 updateFlies();
                 updateUI();
@@ -4534,6 +5085,10 @@
             playSound('play');
             playHappyAnimation();
 
+            // Track stats and quests
+            lifeStats.toysPlayed++;
+            updateQuestProgress('toy');
+
             // Remove toy after a while
             setTimeout(() => {
                 hideActiveToy();
@@ -4614,6 +5169,10 @@
             playSound('play');
             createParticles('#ffd700', 40);
             addXP(trick.xpReward);
+
+            // Track stats and quests
+            lifeStats.tricksLearned++;
+            updateQuestProgress('trick');
 
             if (!achievements.trickster && learnedTricks.length >= 3) {
                 unlockAchievement('trickster');
@@ -4744,6 +5303,10 @@
             playSound('play');
             createParticles('#daa520', 25);
 
+            // Track stats and quests
+            lifeStats.fortunesRead++;
+            updateQuestProgress('fortune');
+
             if (!achievements.fortunate) unlockAchievement('fortunate');
 
             updateUI();
@@ -4752,6 +5315,335 @@
 
         function closeFortune() {
             document.getElementById('fortune-modal').classList.remove('active');
+        }
+
+        // Extras Menu
+        function toggleExtrasMenu() {
+            const panel = document.getElementById('extras-panel');
+            panel.classList.toggle('active');
+        }
+
+        // Music System
+        let musicPlaying = false;
+        let backgroundMusic = null;
+        const musicTracks = [
+            { name: 'Calm Vibes', freq: 220, type: 'sine' },
+            { name: 'Peaceful', freq: 196, type: 'sine' },
+            { name: 'Dreamy', freq: 262, type: 'triangle' }
+        ];
+
+        function toggleMusic() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
+            if (musicPlaying) {
+                stopMusic();
+                showMessage('🔇 MUSIC OFF');
+            } else {
+                playBackgroundMusic();
+                showMessage('🎵 CALM MUSIC');
+            }
+            musicPlaying = !musicPlaying;
+        }
+
+        function playBackgroundMusic() {
+            if (!audioContext) return;
+
+            // Create a calming ambient sound
+            const now = audioContext.currentTime;
+
+            // Base drone
+            const osc1 = audioContext.createOscillator();
+            const gain1 = audioContext.createGain();
+            osc1.type = 'sine';
+            osc1.frequency.setValueAtTime(110, now);
+            gain1.gain.setValueAtTime(0.05, now);
+            osc1.connect(gain1);
+            gain1.connect(audioContext.destination);
+
+            // Harmony
+            const osc2 = audioContext.createOscillator();
+            const gain2 = audioContext.createGain();
+            osc2.type = 'sine';
+            osc2.frequency.setValueAtTime(165, now);
+            gain2.gain.setValueAtTime(0.03, now);
+            osc2.connect(gain2);
+            gain2.connect(audioContext.destination);
+
+            // High shimmer
+            const osc3 = audioContext.createOscillator();
+            const gain3 = audioContext.createGain();
+            osc3.type = 'triangle';
+            osc3.frequency.setValueAtTime(330, now);
+            gain3.gain.setValueAtTime(0.02, now);
+            osc3.connect(gain3);
+            gain3.connect(audioContext.destination);
+
+            osc1.start(now);
+            osc2.start(now);
+            osc3.start(now);
+
+            backgroundMusic = { oscs: [osc1, osc2, osc3], gains: [gain1, gain2, gain3] };
+        }
+
+        function stopMusic() {
+            if (backgroundMusic) {
+                backgroundMusic.oscs.forEach(osc => {
+                    try { osc.stop(); } catch(e) {}
+                });
+                backgroundMusic = null;
+            }
+        }
+
+        // Life Stats System
+        let lifeStats = {
+            birthDate: Date.now(),
+            totalFeedings: 0,
+            totalPlays: 0,
+            totalCleans: 0,
+            totalSleeps: 0,
+            totalPoops: 0,
+            totalCoinsEarned: 0,
+            longestCombo: 0,
+            tricksLearned: 0,
+            toysPlayed: 0,
+            visitorsReceived: 0,
+            fortunesRead: 0,
+            daysAlive: 0
+        };
+
+        function showStats() {
+            const modal = document.getElementById('stats-modal');
+            const content = document.getElementById('stats-content');
+
+            const daysAlive = Math.floor((Date.now() - lifeStats.birthDate) / (1000 * 60 * 60 * 24));
+            const hoursAlive = Math.floor((Date.now() - lifeStats.birthDate) / (1000 * 60 * 60));
+
+            content.innerHTML = `
+                <div class="stat-card">
+                    <div style="color: #ffd700; font-size: clamp(0.6rem, 2.5vw, 0.8rem);">⏰ TIME ALIVE</div>
+                    <div style="color: #fff; font-size: clamp(0.5rem, 2vw, 0.7rem);">${daysAlive} days, ${hoursAlive % 24} hours</div>
+                </div>
+                <div class="stat-card">
+                    <div style="color: #ff69b4; font-size: clamp(0.6rem, 2.5vw, 0.8rem);">🍔 TOTAL FEEDINGS</div>
+                    <div style="color: #fff; font-size: clamp(0.5rem, 2vw, 0.7rem);">${lifeStats.totalFeedings}</div>
+                </div>
+                <div class="stat-card">
+                    <div style="color: #00ffff; font-size: clamp(0.6rem, 2.5vw, 0.8rem);">🎮 TOTAL PLAYS</div>
+                    <div style="color: #fff; font-size: clamp(0.5rem, 2vw, 0.7rem);">${lifeStats.totalPlays}</div>
+                </div>
+                <div class="stat-card">
+                    <div style="color: #90ee90; font-size: clamp(0.6rem, 2.5vw, 0.8rem);">🧹 TOTAL CLEANS</div>
+                    <div style="color: #fff; font-size: clamp(0.5rem, 2vw, 0.7rem);">${lifeStats.totalCleans}</div>
+                </div>
+                <div class="stat-card">
+                    <div style="color: #9b30ff; font-size: clamp(0.6rem, 2.5vw, 0.8rem);">😴 TOTAL SLEEPS</div>
+                    <div style="color: #fff; font-size: clamp(0.5rem, 2vw, 0.7rem);">${lifeStats.totalSleeps}</div>
+                </div>
+                <div class="stat-card">
+                    <div style="color: #ffa500; font-size: clamp(0.6rem, 2.5vw, 0.8rem);">🔥 LONGEST COMBO</div>
+                    <div style="color: #fff; font-size: clamp(0.5rem, 2vw, 0.7rem);">${lifeStats.longestCombo}x</div>
+                </div>
+                <div class="stat-card">
+                    <div style="color: #ffff00; font-size: clamp(0.6rem, 2.5vw, 0.8rem);">💰 COINS EARNED</div>
+                    <div style="color: #fff; font-size: clamp(0.5rem, 2vw, 0.7rem);">${lifeStats.totalCoinsEarned}</div>
+                </div>
+                <div class="stat-card">
+                    <div style="color: #ff6b6b; font-size: clamp(0.6rem, 2.5vw, 0.8rem);">📊 GROWTH STAGE</div>
+                    <div style="color: #fff; font-size: clamp(0.5rem, 2vw, 0.7rem);">${growthStage.toUpperCase()}</div>
+                </div>
+            `;
+
+            modal.classList.add('active');
+        }
+
+        function closeStats() {
+            document.getElementById('stats-modal').classList.remove('active');
+        }
+
+        // Daily Quests System
+        let dailyQuests = [];
+        let lastQuestReset = 0;
+        const questTemplates = [
+            { id: 'feed3', task: 'Feed Bulk 3 times', target: 3, type: 'feed', reward: 20, emoji: '🍔' },
+            { id: 'play3', task: 'Play with Bulk 3 times', target: 3, type: 'play', reward: 20, emoji: '🎮' },
+            { id: 'clean2', task: 'Clean Bulk 2 times', target: 2, type: 'clean', reward: 15, emoji: '🧹' },
+            { id: 'combo5', task: 'Get a 5x combo', target: 5, type: 'combo', reward: 30, emoji: '🔥' },
+            { id: 'trick1', task: 'Teach a trick', target: 1, type: 'trick', reward: 25, emoji: '🎪' },
+            { id: 'toy2', task: 'Play with 2 toys', target: 2, type: 'toy', reward: 20, emoji: '🧸' },
+            { id: 'fortune1', task: 'Read a fortune', target: 1, type: 'fortune', reward: 10, emoji: '🥠' },
+            { id: 'poop2', task: 'Clean up 2 poops', target: 2, type: 'poop', reward: 15, emoji: '💩' }
+        ];
+
+        function generateDailyQuests() {
+            const today = new Date().setHours(0, 0, 0, 0);
+            if (lastQuestReset >= today && dailyQuests.length > 0) return;
+
+            lastQuestReset = today;
+            dailyQuests = [];
+
+            // Pick 3 random quests
+            const shuffled = [...questTemplates].sort(() => Math.random() - 0.5);
+            for (let i = 0; i < 3; i++) {
+                dailyQuests.push({
+                    ...shuffled[i],
+                    progress: 0,
+                    completed: false,
+                    claimed: false
+                });
+            }
+        }
+
+        function updateQuestProgress(type, amount = 1) {
+            dailyQuests.forEach(quest => {
+                if (quest.type === type && !quest.completed) {
+                    // For combo quests, set progress to current combo (not cumulative)
+                    if (type === 'combo') {
+                        quest.progress = Math.min(quest.target, amount);
+                    } else {
+                        quest.progress = Math.min(quest.target, quest.progress + amount);
+                    }
+                    if (quest.progress >= quest.target) {
+                        quest.completed = true;
+                        showMessage('📜 QUEST COMPLETE!');
+                    }
+                }
+            });
+        }
+
+        function showQuests() {
+            generateDailyQuests();
+            const modal = document.getElementById('quests-modal');
+            const content = document.getElementById('quests-content');
+
+            content.innerHTML = dailyQuests.map(quest => `
+                <div class="quest-item ${quest.completed ? 'completed' : ''} ${quest.claimed ? 'claimed' : ''}">
+                    <div class="quest-header">
+                        <span class="quest-title">${quest.emoji} ${quest.task}</span>
+                        <span style="color: #ffd700; font-size: clamp(0.5rem, 2vw, 0.6rem);">+${quest.reward}💰</span>
+                    </div>
+                    <div style="background: #333; border-radius: 5px; height: 10px; margin: 5px 0;">
+                        <div style="background: ${quest.completed ? '#00ff00' : '#ff69b4'}; width: ${(quest.progress / quest.target) * 100}%; height: 100%; border-radius: 5px; transition: width 0.3s;"></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: #aaa; font-size: clamp(0.4rem, 1.5vw, 0.5rem);">${quest.progress}/${quest.target}</span>
+                        ${quest.completed && !quest.claimed ?
+                            `<button onclick="claimQuestReward('${quest.id}')" style="background: #ffd700; color: #000; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: clamp(0.4rem, 1.5vw, 0.5rem);">CLAIM</button>` :
+                            quest.claimed ? '<span style="color: #00ff00; font-size: clamp(0.4rem, 1.5vw, 0.5rem);">✓ CLAIMED</span>' : ''}
+                    </div>
+                </div>
+            `).join('');
+
+            modal.classList.add('active');
+        }
+
+        function claimQuestReward(questId) {
+            const quest = dailyQuests.find(q => q.id === questId);
+            if (quest && quest.completed && !quest.claimed) {
+                quest.claimed = true;
+                addCoins(quest.reward);
+                showMessage(`+${quest.reward} 💰 REWARD!`);
+                playSound('buy');
+                showQuests(); // Refresh display
+            }
+        }
+
+        function closeQuests() {
+            document.getElementById('quests-modal').classList.remove('active');
+        }
+
+        // Color Customization System
+        let bulkColor = null;
+        const bulkColors = [
+            { name: 'Default', color: null, price: 0 },
+            { name: 'Pink', color: 0xff69b4, price: 50 },
+            { name: 'Blue', color: 0x00bfff, price: 50 },
+            { name: 'Green', color: 0x00ff00, price: 50 },
+            { name: 'Gold', color: 0xffd700, price: 100 },
+            { name: 'Purple', color: 0x9b30ff, price: 75 },
+            { name: 'Red', color: 0xff4444, price: 50 },
+            { name: 'Cyan', color: 0x00ffff, price: 75 },
+            { name: 'Orange', color: 0xff8c00, price: 50 },
+            { name: 'Rainbow', color: 'rainbow', price: 200 }
+        ];
+        let ownedColors = ['Default'];
+
+        function showColorPicker() {
+            const modal = document.getElementById('color-modal');
+            const grid = document.getElementById('color-grid');
+
+            grid.innerHTML = bulkColors.map(c => {
+                const owned = ownedColors.includes(c.name);
+                const selected = (bulkColor === c.color) || (bulkColor === null && c.color === null);
+                const colorDisplay = c.color === 'rainbow' ?
+                    'linear-gradient(90deg, red, orange, yellow, green, blue, purple)' :
+                    c.color ? `#${c.color.toString(16).padStart(6, '0')}` : '#888';
+
+                return `
+                    <div class="color-option ${selected ? 'selected' : ''} ${!owned ? 'locked' : ''}"
+                         onclick="${owned ? `selectColor('${c.name}')` : `buyColor('${c.name}')`}"
+                         style="background: ${colorDisplay};">
+                        <span style="background: rgba(0,0,0,0.7); padding: 2px 5px; border-radius: 5px; font-size: clamp(0.4rem, 1.5vw, 0.5rem);">
+                            ${c.name}${!owned ? ` (${c.price}💰)` : selected ? ' ✓' : ''}
+                        </span>
+                    </div>
+                `;
+            }).join('');
+
+            modal.classList.add('active');
+        }
+
+        function selectColor(colorName) {
+            const colorData = bulkColors.find(c => c.name === colorName);
+            if (colorData && ownedColors.includes(colorName)) {
+                bulkColor = colorData.color;
+                applyBulkColor();
+                showMessage(`🎨 ${colorName.toUpperCase()} SELECTED!`);
+                showColorPicker(); // Refresh
+            }
+        }
+
+        function buyColor(colorName) {
+            const colorData = bulkColors.find(c => c.name === colorName);
+            if (colorData && coins >= colorData.price) {
+                coins -= colorData.price;
+                ownedColors.push(colorName);
+                updateUI();
+                showMessage(`🎨 ${colorName.toUpperCase()} UNLOCKED!`);
+                playSound('buy');
+                showColorPicker(); // Refresh
+                saveState();
+            } else {
+                showMessage('NOT ENOUGH COINS!');
+            }
+        }
+
+        function applyBulkColor() {
+            if (!model) return;
+
+            model.traverse((child) => {
+                if (child.isMesh && child.material) {
+                    if (bulkColor === null) {
+                        // Reset to original
+                        if (child.userData.originalColor) {
+                            child.material.color.setHex(child.userData.originalColor);
+                        }
+                    } else if (bulkColor === 'rainbow') {
+                        // Rainbow animation handled in animate loop
+                    } else {
+                        // Store original color if not stored
+                        if (!child.userData.originalColor) {
+                            child.userData.originalColor = child.material.color.getHex();
+                        }
+                        child.material.color.setHex(bulkColor);
+                    }
+                }
+            });
+        }
+
+        function closeColorPicker() {
+            document.getElementById('color-modal').classList.remove('active');
         }
 
         // Visitor System
@@ -4991,6 +5883,17 @@
         setTimeout(() => {
             updateWeatherEffects();
         }, 2000);
+
+        // Close extras panel when clicking outside
+        document.addEventListener('click', (e) => {
+            const extrasPanel = document.getElementById('extras-panel');
+            const extrasBtn = document.getElementById('extras-menu-btn');
+            if (extrasPanel.classList.contains('active') &&
+                !extrasPanel.contains(e.target) &&
+                !extrasBtn.contains(e.target)) {
+                extrasPanel.classList.remove('active');
+            }
+        });
 
         // Initialize game
         init();
