@@ -6,6 +6,10 @@
     <title>The Amazing Bulk - Coming Soon | $BULK on Solana</title>
     <meta name="description" content="The Amazing Bulk - Full site being bulked up! Coming soon.">
     <link rel="icon" type="image/png" href="spin.png">
+
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
     <style>
         @font-face {
             font-family: 'Hulk Display';
@@ -57,70 +61,6 @@
             mix-blend-mode: screen;
         }
 
-        .cursor-trail {
-            position: fixed;
-            width: 8px;
-            height: 8px;
-            background: #9B4DCA;
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 9998;
-            opacity: 0.6;
-            animation: fadeOut 0.5s ease-out forwards;
-        }
-
-        @keyframes fadeOut {
-            to {
-                opacity: 0;
-                transform: scale(0);
-            }
-        }
-
-        .click-particle {
-            position: fixed;
-            width: 12px;
-            height: 12px;
-            background: radial-gradient(circle, #9B4DCA, #6B2D9E);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 9997;
-            box-shadow: 0 0 10px #9B4DCA;
-        }
-
-        @keyframes particleExplosion {
-            0% {
-                opacity: 1;
-                transform: translate(0, 0) scale(1);
-            }
-            100% {
-                opacity: 0;
-                transform: translate(var(--tx), var(--ty)) scale(0);
-            }
-        }
-
-        .move-particle {
-            position: fixed;
-            width: 6px;
-            height: 6px;
-            background: #9B4DCA;
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 9996;
-            opacity: 0.8;
-            box-shadow: 0 0 8px #9B4DCA, 0 0 15px rgba(155,77,202,0.5);
-            animation: moveParticleFade 1s ease-out forwards;
-        }
-
-        @keyframes moveParticleFade {
-            0% {
-                opacity: 0.8;
-                transform: scale(1);
-            }
-            100% {
-                opacity: 0;
-                transform: scale(0.3);
-            }
-        }
 
         .background-video {
             position: fixed;
@@ -371,28 +311,6 @@
             transform: scale(1.02);
         }
 
-        .juice-particle {
-            position: absolute;
-            width: 8px;
-            height: 8px;
-            background: radial-gradient(circle, #9B4DCA, #6B2D9E);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 9995;
-            box-shadow: 0 0 8px #9B4DCA;
-            animation: drip 1.5s ease-in forwards;
-        }
-
-        @keyframes drip {
-            0% {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-            100% {
-                opacity: 0;
-                transform: translateY(100px) scale(0.3);
-            }
-        }
 
         .sound-toggle-btn {
             position: fixed;
@@ -680,7 +598,7 @@
                 display: block;
             }
 
-            .cursor, .cursor-trail, .click-particle, .move-particle {
+            .cursor {
                 display: none;
             }
 
@@ -914,8 +832,56 @@
         }
     </style>
 </head>
-<body>
-    <video src="bulk.mp4" class="background-video" id="banner-video" autoplay loop playsinline></video>
+<body x-data="{
+    marketCap: '---',
+    soundOn: false,
+    gamesMenuOpen: false,
+
+    async fetchMarketCap() {
+        try {
+            const response = await fetch('https://api.dexscreener.com/latest/dex/tokens/F4TJfiMVi7zFGRJj4FVC1Zuj7fdCo6skKa4SnAU4pump');
+            const data = await response.json();
+            if (data.pairs && data.pairs.length > 0) {
+                const cap = data.pairs[0].marketCap || data.pairs[0].fdv;
+                this.marketCap = this.formatNumber(cap);
+            }
+        } catch (err) {
+            console.error('Error fetching market data:', err);
+        }
+    },
+
+    formatNumber(num) {
+        if (num === null || num === undefined) return '---';
+        if (num >= 1_000_000_000) return `$${(num / 1_000_000_000).toFixed(2)}B`;
+        if (num >= 1_000_000) return `$${(num / 1_000_000).toFixed(2)}M`;
+        if (num >= 1_000) return `$${(num / 1_000).toFixed(2)}K`;
+        return `$${num.toFixed(2)}`;
+    },
+
+    copyContract() {
+        navigator.clipboard.writeText('F4TJfiMVi7zFGRJj4FVC1Zuj7fdCo6skKa4SnAU4pump').then(() => {
+            alert('Contract address copied!');
+        });
+    },
+
+    toggleSound() {
+        this.soundOn = !this.soundOn;
+        const video = document.getElementById('banner-video');
+        video.muted = !this.soundOn;
+    },
+
+    init() {
+        this.fetchMarketCap();
+        setInterval(() => this.fetchMarketCap(), 30000);
+
+        // Try autoplay with sound
+        const video = document.getElementById('banner-video');
+        video.play().catch(() => {
+            console.log('Autoplay blocked');
+        });
+    }
+}" x-init="init()">
+    <video src="bulk.mp4" class="background-video" id="banner-video" autoplay loop muted playsinline></video>
 
     <div class="cursor" id="cursor"></div>
 
@@ -926,11 +892,11 @@
     <div class="container">
         <video src="title.mp4" class="title-image" autoplay loop muted playsinline preload="auto"></video>
 
-        <code class="contract-address" id="contract-address" onclick="copyContract(event)" title="Click to copy">F4TJfiMVi7zFGRJj4FVC1Zuj7fdCo6skKa4SnAU4pump</code>
+        <code class="contract-address" @click="copyContract()" title="Click to copy">F4TJfiMVi7zFGRJj4FVC1Zuj7fdCo6skKa4SnAU4pump</code>
 
         <div class="market-cap-container" id="market-cap-container">
             <span class="market-cap-label">MARKET CAP:</span>
-            <span class="market-cap-value" id="market-cap-value">---</span>
+            <span class="market-cap-value" x-text="marketCap"></span>
         </div>
 
         <a href="https://jup.ag/?sell=So11111111111111111111111111111111111111112&buy=F4TJfiMVi7zFGRJj4FVC1Zuj7fdCo6skKa4SnAU4pump" target="_blank" rel="noopener noreferrer" class="buy-now-btn" style="margin: 30px auto; display: flex; max-width: 300px;">
@@ -942,7 +908,7 @@
             BUY NOW
         </a>
 
-        <button class="buy-now-btn" onclick="toggleGamesMenu()" style="margin: 30px auto; display: flex; max-width: 300px; background: linear-gradient(135deg, #9B4DCA, #6B2D9E); border-color: #FFD700;">
+        <button class="buy-now-btn" @click="gamesMenuOpen = !gamesMenuOpen" style="margin: 30px auto; display: flex; max-width: 300px; background: linear-gradient(135deg, #9B4DCA, #6B2D9E); border-color: #FFD700;">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="3" y="3" width="18" height="18" rx="2"></rect>
                 <path d="M9 3v18M15 3v18M3 9h18M3 15h18"></path>
@@ -989,9 +955,9 @@
         </div>
     </div>
 
-    <div class="games-menu" id="games-menu" onclick="closeGamesMenuOnOutsideClick(event)">
+    <div class="games-menu" :class="{ 'active': gamesMenuOpen }" @click.self="gamesMenuOpen = false">
         <div class="games-menu-content">
-            <button class="games-menu-close" onclick="toggleGamesMenu()">×</button>
+            <button class="games-menu-close" @click="gamesMenuOpen = false">×</button>
             <h2 class="games-menu-title">🎮 GAMES 🎮</h2>
             <div class="games-menu-list">
                 <a href="the-amazing-bulk-game.html" class="game-btn">
@@ -1024,257 +990,33 @@
         </div>
     </div>
 
-    <button class="sound-toggle-btn" onclick="toggleSound()" title="Toggle sound">
-        <svg id="sound-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
-            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+    <button class="sound-toggle-btn" @click="toggleSound()" title="Toggle sound" :class="{ 'muted': !soundOn }">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <template x-if="soundOn">
+                <g>
+                    <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                </g>
+            </template>
+            <template x-if="!soundOn">
+                <g>
+                    <path d="M11 5L6 9H2v6h4l5 4V5z"></path>
+                    <line x1="23" y1="9" x2="17" y2="15"></line>
+                    <line x1="17" y1="9" x2="23" y2="15"></line>
+                </g>
+            </template>
         </svg>
-        <span id="sound-text">SOUND ON</span>
+        <span x-text="soundOn ? 'SOUND ON' : 'SOUND OFF'"></span>
     </button>
 
     <script>
-        // Games Menu Toggle
-        function toggleGamesMenu() {
-            const menu = document.getElementById('games-menu');
-            menu.classList.toggle('active');
-        }
-
-        function closeGamesMenuOnOutsideClick(event) {
-            if (event.target.id === 'games-menu') {
-                toggleGamesMenu();
-            }
-        }
-
-        const CONTRACT_ADDRESS = "F4TJfiMVi7zFGRJj4FVC1Zuj7fdCo6skKa4SnAU4pump";
-        const DEXSCREENER_API = `https://api.dexscreener.com/latest/dex/tokens/${CONTRACT_ADDRESS}`;
-
-        function formatNumber(num) {
-            if (num === null || num === undefined) return "---";
-            if (num >= 1_000_000_000) return `$${(num / 1_000_000_000).toFixed(2)}B`;
-            if (num >= 1_000_000) return `$${(num / 1_000_000).toFixed(2)}M`;
-            if (num >= 1_000) return `$${(num / 1_000).toFixed(2)}K`;
-            return `$${num.toFixed(2)}`;
-        }
-
-        async function updateMarketCap() {
-            try {
-                const response = await fetch(DEXSCREENER_API);
-                const data = await response.json();
-                if (data.pairs && data.pairs.length > 0) {
-                    const pair = data.pairs[0];
-                    const marketCap = pair.marketCap || pair.fdv;
-                    const marketCapElement = document.getElementById('market-cap-value');
-
-                    if (marketCapElement) {
-                        marketCapElement.textContent = formatNumber(marketCap);
-                    }
-                }
-            } catch (err) {
-                console.error('Error fetching market data:', err);
-            }
-        }
-
-        // Pull to refresh on mobile
-        let touchStartY = 0;
-        let touchEndY = 0;
-        let isPulling = false;
-
-        if ('ontouchstart' in window) {
-            document.addEventListener('touchstart', (e) => {
-                touchStartY = e.touches[0].clientY;
-            });
-
-            document.addEventListener('touchmove', (e) => {
-                touchEndY = e.touches[0].clientY;
-                const pullDistance = touchEndY - touchStartY;
-
-                if (pullDistance > 100 && window.scrollY === 0 && !isPulling) {
-                    isPulling = true;
-                }
-            });
-
-            document.addEventListener('touchend', () => {
-                if (isPulling) {
-                    isPulling = false;
-                    const marketCapElement = document.getElementById('market-cap-value');
-
-                    // Show loading state
-                    if (marketCapElement) marketCapElement.textContent = '...';
-
-                    // Update data
-                    updateMarketCap();
-                }
-                touchStartY = 0;
-                touchEndY = 0;
-            });
-        }
-
-        function copyContract(event) {
-            const addressElement = document.getElementById('contract-address');
-            const originalText = addressElement.textContent;
-            
-            navigator.clipboard.writeText(CONTRACT_ADDRESS).then(() => {
-                addressElement.textContent = 'Copied!';
-                addressElement.style.color = '#39FF14';
-                setTimeout(() => {
-                    addressElement.textContent = originalText;
-                    addressElement.style.color = '';
-                }, 2000);
-            }).catch((err) => {
-                // Fallback for older browsers
-                const textArea = document.createElement('textarea');
-                textArea.value = CONTRACT_ADDRESS;
-                textArea.style.position = 'fixed';
-                textArea.style.opacity = '0';
-                document.body.appendChild(textArea);
-                textArea.select();
-                try {
-                    document.execCommand('copy');
-                    addressElement.textContent = 'Copied!';
-                    addressElement.style.color = '#39FF14';
-                    setTimeout(() => {
-                        addressElement.textContent = originalText;
-                        addressElement.style.color = '';
-                    }, 2000);
-                } catch (err) {
-                    alert('Click to select, then Ctrl+C to copy');
-                }
-                document.body.removeChild(textArea);
-            });
-        }
-
-        function toggleSound() {
-            const video = document.getElementById('banner-video');
-            const btn = document.querySelector('.sound-toggle-btn');
-            const icon = document.getElementById('sound-icon');
-            const text = document.getElementById('sound-text');
-            
-            if (video.muted) {
-                video.muted = false;
-                btn.classList.remove('muted');
-                text.textContent = 'SOUND ON';
-                // Update icon to show sound on
-                icon.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>';
-            } else {
-                video.muted = true;
-                btn.classList.add('muted');
-                text.textContent = 'SOUND OFF';
-                // Update icon to show sound off
-                icon.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4V5z"></path><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line>';
-            }
-        }
-
-        // Initialize: start with sound on
-        window.addEventListener('DOMContentLoaded', () => {
-            const video = document.getElementById('banner-video');
-            const btn = document.querySelector('.sound-toggle-btn');
-            const icon = document.getElementById('sound-icon');
-            const text = document.getElementById('sound-text');
-
-            // Ensure title videos autoplay
-            const titleVideos = document.querySelectorAll('.title-image');
-            titleVideos.forEach(vid => {
-                vid.play().catch(err => console.log('Title video autoplay:', err));
-            });
-
-            // Start with sound on
-            video.muted = false;
-            btn.classList.remove('muted');
-            text.textContent = 'SOUND ON';
-            icon.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>';
-
-            // Try to play with sound (may be blocked by browser autoplay policy)
-            video.play().catch(err => {
-                console.log('Autoplay with sound blocked:', err);
-                // If blocked, mute it for autoplay
-                video.muted = true;
-                btn.classList.add('muted');
-                text.textContent = 'SOUND OFF';
-                icon.innerHTML = '<path d="M11 5L6 9H2v6h4l5 4V5z"></path><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line>';
-            });
-
-            // Initialize market cap
-            updateMarketCap();
-            setInterval(updateMarketCap, 30000); // Update every 30 seconds
-        });
-
-        // Custom cursor with purple trail and particles
+        // Simple cursor movement (no heavy trails/particles for performance)
         const cursor = document.getElementById('cursor');
-        let lastTrailTime = 0;
-        const trailInterval = 20; // ms between trail particles - reduced for more particles
 
         document.addEventListener('mousemove', (e) => {
             cursor.style.left = e.clientX + 'px';
             cursor.style.top = e.clientY + 'px';
-
-            const now = Date.now();
-            if (now - lastTrailTime > trailInterval) {
-                createTrail(e.clientX, e.clientY);
-                createMoveParticle(e.clientX, e.clientY);
-                lastTrailTime = now;
-            }
         });
-
-        function createTrail(x, y) {
-            const trail = document.createElement('div');
-            trail.className = 'cursor-trail';
-            trail.style.left = x + 'px';
-            trail.style.top = y + 'px';
-            document.body.appendChild(trail);
-
-            setTimeout(() => {
-                trail.remove();
-            }, 500);
-        }
-
-        function createMoveParticle(x, y) {
-            const particle = document.createElement('div');
-            particle.className = 'move-particle';
-            particle.style.left = x + 'px';
-            particle.style.top = y + 'px';
-
-            // Random offset for variety
-            const offsetX = (Math.random() - 0.5) * 20;
-            const offsetY = (Math.random() - 0.5) * 20;
-            particle.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
-
-            document.body.appendChild(particle);
-
-            setTimeout(() => {
-                particle.remove();
-            }, 1000);
-        }
-
-        // Click particle explosion effect
-        document.addEventListener('click', (e) => {
-            createClickExplosion(e.clientX, e.clientY);
-        });
-
-        function createClickExplosion(x, y) {
-            const particleCount = 12; // Number of particles in explosion
-
-            for (let i = 0; i < particleCount; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'click-particle';
-
-                const angle = (Math.PI * 2 * i) / particleCount;
-                const distance = 50 + Math.random() * 50; // Random distance 50-100px
-                const tx = Math.cos(angle) * distance;
-                const ty = Math.sin(angle) * distance;
-
-                particle.style.left = x + 'px';
-                particle.style.top = y + 'px';
-                particle.style.setProperty('--tx', `${tx}px`);
-                particle.style.setProperty('--ty', `${ty}px`);
-                particle.style.animation = `particleExplosion ${0.6 + Math.random() * 0.4}s ease-out forwards`;
-
-                document.body.appendChild(particle);
-
-                setTimeout(() => {
-                    particle.remove();
-                }, 1000);
-            }
-        }
 
         // Add hover effect to cursor on interactive elements
         const interactiveElements = document.querySelectorAll('a, button, code');
@@ -1288,48 +1030,6 @@
                 cursor.style.borderColor = '#9B4DCA';
             });
         });
-
-        // Purple juice drip effect on contract address hover
-        const contractAddress = document.getElementById('contract-address');
-        let juiceInterval = null;
-
-        if (contractAddress) {
-            contractAddress.addEventListener('mouseenter', () => {
-                juiceInterval = setInterval(() => {
-                    createJuiceParticle();
-                }, 100); // Create a drip every 100ms
-            });
-
-            contractAddress.addEventListener('mouseleave', () => {
-                if (juiceInterval) {
-                    clearInterval(juiceInterval);
-                    juiceInterval = null;
-                }
-            });
-        }
-
-        function createJuiceParticle() {
-            const contractBox = document.getElementById('contract-address');
-            if (!contractBox) return;
-
-            const rect = contractBox.getBoundingClientRect();
-            const particle = document.createElement('div');
-            particle.className = 'juice-particle';
-
-            // Random position along the bottom edge of the contract box
-            const randomX = rect.left + Math.random() * rect.width;
-            particle.style.left = randomX + 'px';
-            particle.style.top = rect.bottom + 'px';
-
-            document.body.appendChild(particle);
-
-            setTimeout(() => {
-                particle.remove();
-            }, 1500);
-        }
-
-        // Allow replacing banner with GIF later
-        // Just change the src of #banner-image to your GIF file
     </script>
 </body>
 </html>
