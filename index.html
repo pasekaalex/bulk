@@ -19,6 +19,45 @@
             display: swap;
         }
 
+        :root {
+            /* Colors */
+            --color-purple: var(--color-purple);
+            --color-purple-dark: var(--color-purple-dark);
+            --color-purple-darker: #4A1D6E;
+            --color-gold: var(--color-gold);
+            --color-gold-dark: var(--color-gold-dark);
+            --color-black: #000000;
+            --color-white: #ffffff;
+            --color-green: #39FF14;
+            --color-bg-dark: rgba(45, 27, 78, 0.95);
+            --color-bg-darker: rgba(26, 11, 46, 0.98);
+
+            /* Transitions */
+            --transition-fast: 0.15s ease;
+            --transition-normal: 0.3s ease;
+            --transition-slow: 0.5s ease;
+
+            /* Border radius */
+            --radius-small: 8px;
+            --radius-medium: 12px;
+            --radius-large: 20px;
+
+            /* Shadows */
+            --shadow-purple: 0 0 15px rgba(155, 77, 202, 0.4);
+            --shadow-purple-hover: 0 0 20px rgba(155, 77, 202, 0.6);
+            --shadow-gold: 0 0 30px rgba(255, 215, 0, 0.6);
+            --shadow-gold-hover: 0 0 50px rgba(255, 215, 0, 0.9);
+
+            /* Spacing */
+            --space-small: 10px;
+            --space-medium: 20px;
+            --space-large: 40px;
+
+            /* Font families */
+            --font-display: 'Hulk Display', 'Orbitron', sans-serif;
+            --font-system: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -33,16 +72,16 @@
         }
 
         body {
-            background: #000000;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-            color: #ffffff;
+            background: var(--color-black);
+            font-family: var(--font-system);
+            color: var(--color-white);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             text-align: center;
-            padding: 20px;
+            padding: var(--space-medium);
             position: relative;
         }
 
@@ -140,9 +179,9 @@
         }
 
         .subtitle {
-            font-family: 'Hulk Display', 'Orbitron', sans-serif;
+            font-family: var(--font-display);
             font-size: 24px;
-            color: #FFD700;
+            color: var(--color-gold);
             letter-spacing: 0.1em;
             text-shadow: 0 0 15px rgba(255,215,0,0.7);
             margin-bottom: 40px;
@@ -168,9 +207,9 @@
         }
 
         .column-title {
-            font-family: 'Hulk Display', 'Orbitron', sans-serif;
+            font-family: var(--font-display);
             font-size: 20px;
-            color: #FFD700;
+            color: var(--color-gold);
             letter-spacing: 0.1em;
             text-shadow: 0 0 15px rgba(255,215,0,0.7);
             margin-bottom: 10px;
@@ -213,17 +252,17 @@
             justify-content: center;
             gap: 12px;
             padding: 16px 24px;
-            background: linear-gradient(135deg, #FFD700, #FFA500);
-            border: 3px solid #9B4DCA;
-            border-radius: 12px;
+            background: linear-gradient(135deg, var(--color-gold), var(--color-gold-dark));
+            border: 3px solid var(--color-purple);
+            border-radius: var(--radius-medium);
             color: #000;
             font-weight: bold;
             text-decoration: none;
             font-size: 16px;
-            font-family: 'Hulk Display', 'Orbitron', sans-serif;
+            font-family: var(--font-display);
             text-shadow: 0 0 5px rgba(255,215,0,0.5);
             box-shadow: 0 0 30px rgba(255,215,0,0.6), 0 0 60px rgba(155,77,202,0.4);
-            transition: all 0.3s;
+            transition: all var(--transition-normal);
             animation: buyBtnPulse 2s ease-in-out infinite;
             -webkit-tap-highlight-color: transparent;
             touch-action: manipulation;
@@ -242,7 +281,7 @@
         }
 
         .buy-now-btn:hover {
-            background: linear-gradient(135deg, #FFA500, #FFD700);
+            background: linear-gradient(135deg, var(--color-gold-dark), var(--color-gold));
             transform: scale(1.15) rotate(-2deg);
             box-shadow: 0 0 50px rgba(255,215,0,0.9), 0 0 100px rgba(155,77,202,0.7);
             animation: btnShake 0.3s ease-in-out;
@@ -278,9 +317,9 @@
             word-break: break-all;
             padding: 14px 18px;
             border: 2px solid rgba(155,77,202,0.5);
-            border-radius: 8px;
+            border-radius: var(--radius-small);
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all var(--transition-normal);
             margin-top: 40px;
             -webkit-tap-highlight-color: transparent;
             touch-action: manipulation;
@@ -308,12 +347,12 @@
             padding: 8px 12px;
             background: linear-gradient(to right, rgba(45,27,78,0.95), rgba(26,11,46,0.98));
             border: 2px solid rgba(155,77,202,0.6);
-            border-radius: 8px;
+            border-radius: var(--radius-small);
             color: white;
             cursor: pointer;
             font-size: 12px;
             font-weight: bold;
-            transition: all 0.3s;
+            transition: all var(--transition-normal);
             z-index: 1000;
             box-shadow: 0 0 15px rgba(155,77,202,0.4);
             -webkit-tap-highlight-color: transparent;
@@ -348,7 +387,7 @@
             padding: 14px 20px;
             background: linear-gradient(to right, rgba(45,27,78,0.95), rgba(26,11,46,0.98));
             border: 2px solid rgba(155,77,202,0.6);
-            border-radius: 8px;
+            border-radius: var(--radius-small);
             color: white;
             font-size: 16px;
             box-shadow: 0 0 15px rgba(155,77,202,0.4);
@@ -397,17 +436,17 @@
             justify-content: center;
             gap: 12px;
             padding: 16px 24px;
-            background: linear-gradient(to right, #9B4DCA, #6B2D9E);
-            border: 3px solid #FFD700;
-            border-radius: 12px;
+            background: linear-gradient(to right, var(--color-purple), var(--color-purple-dark));
+            border: 3px solid var(--color-gold);
+            border-radius: var(--radius-medium);
             color: white;
             font-weight: bold;
             text-decoration: none;
             font-size: 16px;
-            font-family: 'Hulk Display', 'Orbitron', sans-serif;
+            font-family: var(--font-display);
             text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
             box-shadow: 0 0 30px rgba(155,77,202,0.6), 0 0 60px rgba(255,215,0,0.3);
-            transition: all 0.3s;
+            transition: all var(--transition-normal);
             animation: gameBtnPulse 2s ease-in-out infinite;
             -webkit-tap-highlight-color: transparent;
             touch-action: manipulation;
@@ -426,7 +465,7 @@
         }
 
         .game-btn:hover {
-            background: linear-gradient(to right, #BF5FFF, #9B4DCA);
+            background: linear-gradient(to right, #BF5FFF, var(--color-purple));
             transform: scale(1.1) rotate(1deg);
             box-shadow: 0 0 50px rgba(155,77,202,0.9), 0 0 100px rgba(255,215,0,0.6);
             animation: btnShake 0.3s ease-in-out;
@@ -456,11 +495,11 @@
             justify-content: center;
             gap: 12px;
             padding: 14px 20px;
-            border-radius: 8px;
+            border-radius: var(--radius-small);
             color: white;
             font-weight: bold;
             text-decoration: none;
-            transition: all 0.3s;
+            transition: all var(--transition-normal);
             font-size: 14px;
             -webkit-tap-highlight-color: transparent;
             touch-action: manipulation;
@@ -468,26 +507,26 @@
         }
 
         .dexscreener-btn {
-            background: linear-gradient(to right, #6B2D9E, #4A1D6E);
-            border: 2px solid #9B4DCA;
+            background: linear-gradient(to right, var(--color-purple-dark), #4A1D6E);
+            border: 2px solid var(--color-purple);
             box-shadow: 0 0 20px rgba(155,77,202,0.35);
         }
 
         .dexscreener-btn:hover {
-            background: linear-gradient(to right, #9B4DCA, #6B2D9E);
+            background: linear-gradient(to right, var(--color-purple), var(--color-purple-dark));
             box-shadow: 0 0 30px rgba(155,77,202,0.6);
             transform: scale(1.05) translateY(-2px);
         }
 
 
         .x-btn, .x-community-btn {
-            background: linear-gradient(to right, #6B2D9E, #4A1D6E);
-            border: 2px solid #9B4DCA;
+            background: linear-gradient(to right, var(--color-purple-dark), #4A1D6E);
+            border: 2px solid var(--color-purple);
             box-shadow: 0 0 20px rgba(155,77,202,0.35);
         }
 
         .x-btn:hover, .x-community-btn:hover {
-            background: linear-gradient(to right, #9B4DCA, #6B2D9E);
+            background: linear-gradient(to right, var(--color-purple), var(--color-purple-dark));
             box-shadow: 0 0 30px rgba(155,77,202,0.6);
             transform: scale(1.05) translateY(-2px);
         }
@@ -529,7 +568,7 @@
         .games-menu-content {
             background: linear-gradient(135deg, #1a0a2e, #2d1b4e);
             border: 4px solid #9b4dca;
-            border-radius: 20px;
+            border-radius: var(--radius-large);
             padding: 30px;
             max-width: 400px;
             width: 100%;
@@ -538,7 +577,7 @@
         }
 
         .games-menu-title {
-            font-family: 'Hulk Display', 'Orbitron', sans-serif;
+            font-family: var(--font-display);
             font-size: 2rem;
             color: #ffd700;
             text-align: center;
@@ -560,7 +599,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s;
+            transition: all var(--transition-normal);
         }
 
         .games-menu-close:hover {
@@ -886,7 +925,7 @@
             BUY NOW
         </a>
 
-        <button class="buy-now-btn" @click="gamesMenuOpen = !gamesMenuOpen" style="margin: 30px auto; display: flex; max-width: 300px; background: linear-gradient(135deg, #9B4DCA, #6B2D9E); border-color: #FFD700;">
+        <button class="buy-now-btn" @click="gamesMenuOpen = !gamesMenuOpen" style="margin: 30px auto; display: flex; max-width: 300px; background: linear-gradient(135deg, var(--color-purple), var(--color-purple-dark)); border-color: var(--color-gold);">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="3" y="3" width="18" height="18" rx="2"></rect>
                 <path d="M9 3v18M15 3v18M3 9h18M3 15h18"></path>
