@@ -894,7 +894,9 @@
             achievementCount: 0
         };
         let musicEnabled = false;
-        let backgroundMusic = null;
+        let backgroundMusic = new Audio('jazz.mp3');
+        backgroundMusic.loop = true;
+        backgroundMusic.volume = 0.15; // Quieter volume
         let notificationsEnabled = false;
         let lastNotificationCheck = Date.now();
 
@@ -1946,62 +1948,12 @@
             updateMenuUI();
 
             if (musicEnabled) {
-                if (!backgroundMusic) {
-                    createBackgroundMusic();
-                }
-                backgroundMusic.start();
+                backgroundMusic.play().catch(e => console.log('Music autoplay blocked:', e));
             } else {
-                if (backgroundMusic) {
-                    backgroundMusic.stop();
-                }
+                backgroundMusic.pause();
             }
 
             saveState();
-        }
-
-        function createBackgroundMusic() {
-            // Create a simple, calm looping melody using Web Audio API
-            const notes = [261.63, 293.66, 329.63, 392.00, 329.63, 293.66]; // C, D, E, G, E, D
-            let currentNote = 0;
-            let oscillator = null;
-            let gainNode = null;
-            let isPlaying = false;
-
-            backgroundMusic = {
-                start: function() {
-                    if (isPlaying) return;
-                    isPlaying = true;
-                    this.playNextNote();
-                },
-                stop: function() {
-                    isPlaying = false;
-                    if (oscillator) {
-                        try {
-                            oscillator.stop();
-                        } catch (e) {}
-                    }
-                },
-                playNextNote: function() {
-                    if (!isPlaying || !musicEnabled) return;
-
-                    oscillator = audioContext.createOscillator();
-                    gainNode = audioContext.createGain();
-
-                    oscillator.connect(gainNode);
-                    gainNode.connect(audioContext.destination);
-
-                    oscillator.frequency.value = notes[currentNote];
-                    oscillator.type = 'sine';
-                    gainNode.gain.value = 0.05; // Very quiet
-
-                    oscillator.start();
-                    oscillator.stop(audioContext.currentTime + 0.5);
-
-                    currentNote = (currentNote + 1) % notes.length;
-
-                    setTimeout(() => this.playNextNote(), 600);
-                }
-            };
         }
 
         // Notifications
@@ -2139,8 +2091,7 @@
 
         // Start music if enabled
         if (musicEnabled) {
-            createBackgroundMusic();
-            backgroundMusic.start();
+            backgroundMusic.play().catch(e => console.log('Music autoplay blocked:', e));
         }
     </script>
 </body>
