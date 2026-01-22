@@ -216,7 +216,12 @@
         // Car spawn prevention
         let lastSpawnTime = {};  // Track last spawn time per lane
         const minSpawnInterval = 1500; // Minimum ms between spawns in same lane
-        
+
+        // Background music
+        const bgm = new Audio('run.mp3');
+        bgm.loop = true;
+        bgm.volume = 0.25;
+
         function init() {
             // Scene - night city atmosphere
             scene = new THREE.Scene();
@@ -986,10 +991,15 @@
             document.getElementById('title-screen').classList.add('hidden');
             document.getElementById('hud').style.display = 'block';
             gameStarted = true;
+
+            // Start background music
+            bgm.currentTime = 0;
+            bgm.play().catch(e => console.log('BGM autoplay blocked:', e));
         }
-        
+
         function endGame() {
             gameOver = true;
+            bgm.pause();
             document.getElementById('final-score').textContent = 'SCORE: ' + score;
             document.getElementById('final-money').textContent = '$' + money;
             document.getElementById('game-over').classList.add('show');
