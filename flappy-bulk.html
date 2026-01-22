@@ -380,6 +380,11 @@
         let rageTimer = 0;
         let obstacleSpawnTimer = 0;
 
+        // === BACKGROUND MUSIC ===
+        const bgm = new Audio('bgm.mp3');
+        bgm.loop = true;
+        bgm.volume = 0.3;
+
         // === SOUND EFFECTS ===
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
@@ -1387,6 +1392,10 @@
             document.getElementById('title-screen').classList.add('hidden');
             document.getElementById('hud').classList.add('show');
 
+            // Start background music
+            bgm.currentTime = 0;
+            bgm.play().catch(e => console.log('BGM autoplay blocked:', e));
+
             gameStarted = true;
             gameOver = false;
             score = 0;
@@ -1415,6 +1424,7 @@
             if (gameOver) return;
 
             gameOver = true;
+            bgm.pause();
             playSound('gameOver');
 
             // Change title based on how they died
