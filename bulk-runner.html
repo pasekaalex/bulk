@@ -188,7 +188,8 @@
     <script>
         // Game variables
         let scene, camera, renderer;
-        let bulk;
+        let bulk, mixer;
+        let clock = new THREE.Clock();
         let gameStarted = false, gameOver = false;
         let score = 0, distance = 0;
         let speed = 0.5;
@@ -435,25 +436,25 @@
                 }
                 
                 const loader = new THREE.GLTFLoader();
-                loader.load('bulk.glb', 
+                loader.load('run.glb',
                     (gltf) => {
                         console.log('GLB loaded!');
                         const model = gltf.scene;
-                        
+
                         // Scale based on bounding box
                         const box = new THREE.Box3().setFromObject(model);
                         const size = box.getSize(new THREE.Vector3());
                         const maxDim = Math.max(size.x, size.y, size.z);
                         const scale = 4 / maxDim;
                         model.scale.set(scale, scale, scale);
-                        
+
                         // Center and position
                         const center = box.getCenter(new THREE.Vector3());
                         model.position.set(-center.x * scale, -box.min.y * scale * 1.1, -center.z * scale);
-                        
+
                         // Rotate 180 degrees to face forward
                         model.rotation.y = Math.PI;
-                        
+
                         // Enable shadows
                         model.traverse(child => {
                             if (child.isMesh) {
@@ -461,7 +462,18 @@
                                 child.receiveShadow = true;
                             }
                         });
-                        
+
+                        // Setup animation if it exists
+                        if (gltf.animations && gltf.animations.length > 0) {
+                            mixer = new THREE.AnimationMixer(model);
+                            console.log('Found animations:', gltf.animations.map(a => a.name));
+                            const action = mixer.clipAction(gltf.animations[0]);
+                            action.play();
+                            console.log('Playing animation:', gltf.animations[0].name);
+                        } else {
+                            console.log('No animations found in model');
+                        }
+
                         bulk.add(model);
                     },
                     undefined,
@@ -893,6 +905,13 @@
         
         function animate() {
             requestAnimationFrame(animate);
+
+            // Update animation mixer
+            if (mixer) {
+                const delta = clock.getDelta();
+                mixer.update(delta);
+            }
+
             update();
             updateExplosions(); // Always update explosions even after game over
             if (renderer && scene && camera) {
