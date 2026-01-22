@@ -436,14 +436,9 @@
                 }
                 
                 const loader = new THREE.GLTFLoader();
-                loader.load('rigged_bulk.glb',
+                loader.load('bulk.glb',
                     (gltf) => {
                         console.log('GLB loaded!');
-                        console.log('Animations found:', gltf.animations.length);
-                        if (gltf.animations.length > 0) {
-                            console.log('Animation names:', gltf.animations.map(a => a.name));
-                        }
-
                         const model = gltf.scene;
 
                         // Scale based on bounding box
@@ -467,17 +462,6 @@
                                 child.receiveShadow = true;
                             }
                         });
-
-                        // Setup animation if it exists
-                        if (gltf.animations && gltf.animations.length > 0) {
-                            mixer = new THREE.AnimationMixer(model);
-                            // Play all animations or find a running animation
-                            gltf.animations.forEach((clip, i) => {
-                                const action = mixer.clipAction(clip);
-                                action.play();
-                                console.log(`Playing animation ${i}: ${clip.name}`);
-                            });
-                        }
 
                         bulk.add(model);
                     },
