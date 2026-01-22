@@ -354,7 +354,8 @@
     <script>
         // === GAME VARIABLES ===
         let scene, camera, renderer;
-        let bulk, bulkModel;
+        let bulk, bulkModel, mixer;
+        let clock = new THREE.Clock();
         let gameStarted = false;
         let gameOver = false;
         let score = 0;
@@ -689,9 +690,10 @@
                 }
 
                 const loader = new THREE.GLTFLoader();
-                loader.load('bulk.glb',
+                loader.load('run.glb',
                     (gltf) => {
                         console.log('GLB loaded successfully!');
+                        console.log('Animations:', gltf.animations.length);
                         bulkModel = gltf.scene;
 
                         // Scale to appropriate size (larger model)
@@ -703,6 +705,16 @@
 
                         // Rotate to face right (90 degrees)
                         bulkModel.rotation.y = Math.PI / 2;
+
+                        // Setup animations if they exist
+                        if (gltf.animations && gltf.animations.length > 0) {
+                            mixer = new THREE.AnimationMixer(bulkModel);
+                            gltf.animations.forEach((clip, i) => {
+                                const action = mixer.clipAction(clip);
+                                action.play();
+                                console.log(`Playing animation ${i}: ${clip.name}`);
+                            });
+                        }
 
                         bulk.add(bulkModel);
                     },
@@ -1435,6 +1447,12 @@
         function animate() {
             requestAnimationFrame(animate);
             animationTime += 0.016; // ~60fps
+
+            // Update animation mixer
+            if (mixer) {
+                const delta = clock.getDelta();
+                mixer.update(delta);
+            }
 
             // Pulse glow effect on Bulk
             if (bulk) {
