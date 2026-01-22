@@ -701,13 +701,21 @@
             background: rgba(0, 0, 20, 0.7);
             z-index: 5;
             display: none;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             font-size: 4rem;
+            cursor: pointer;
         }
 
         .sleep-overlay.active {
             display: flex;
+        }
+
+        .wake-up-hint {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 20px;
         }
 
         #revival-screen {
@@ -782,8 +790,10 @@
             <div id="toy-container"></div>
             <div id="poop-container"></div>
             <div id="day-night-overlay"></div>
-            <div class="sleep-overlay" id="sleep-overlay">
+            <div class="sleep-overlay" id="sleep-overlay" onclick="tapToWakeUp()">
                 💤
+                <div class="wake-up-hint">TAP TO WAKE UP</div>
+                <div class="wake-up-hint" id="wake-up-counter" style="display: none; font-size: 1rem; color: #ffd93d;"></div>
             </div>
             <div id="revival-screen">
                 <div style="font-size: clamp(1.5rem, 5vw, 3rem); text-align: center;">😭</div>
@@ -872,6 +882,8 @@
         let lastActionTime = 0;
         let isSleeping = false;
         let isDead = false;
+        let wakeUpTaps = 0;
+        const wakeUpTapsNeeded = 10;
         let totalCareActions = 0;
         let achievements = {};
         let level = 1;
@@ -1297,6 +1309,48 @@
             } else {
                 isSleeping = false;
                 sleepOverlay.classList.remove('active');
+                wakeUpTaps = 0;
+                document.getElementById('wake-up-counter').style.display = 'none';
+            }
+        }
+
+        // Wake up Bulk by tapping
+        function tapToWakeUp() {
+            if (!isSleeping) return;
+
+            wakeUpTaps++;
+            const counter = document.getElementById('wake-up-counter');
+            counter.textContent = `${wakeUpTaps}/${wakeUpTapsNeeded} TAPS`;
+            counter.style.display = 'block';
+
+            if (wakeUpTaps >= wakeUpTapsNeeded) {
+                // Wake up angry!
+                isSleeping = false;
+                wakeUpTaps = 0;
+                document.getElementById('sleep-overlay').classList.remove('active');
+                counter.style.display = 'none';
+
+                // Random stat gets reset to 0 (he's ANGRY!)
+                const stats = ['hunger', 'happiness', 'cleanliness'];
+                const resetStat = stats[Math.floor(Math.random() * stats.length)];
+
+                if (resetStat === 'hunger') {
+                    hunger = 0;
+                    showMessage("😡 BULK IS ANGRY! YOU WOKE HIM UP! HUNGER = 0!");
+                } else if (resetStat === 'happiness') {
+                    happiness = 0;
+                    showMessage("😡 BULK IS ANGRY! YOU WOKE HIM UP! HAPPINESS = 0!");
+                } else {
+                    cleanliness = 0;
+                    showMessage("😡 BULK IS ANGRY! YOU WOKE HIM UP! CLEANLINESS = 0!");
+                }
+
+                // Create angry particles
+                createParticles('#ff0000', 50);
+                playSound('clean'); // Use a sound effect
+
+                updateUI();
+                saveState();
             }
         }
 
