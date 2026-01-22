@@ -25,11 +25,11 @@
 
         #game-container {
             position: relative;
-            width: min(92vw, 1000px);
+            width: min(98vw, 1400px);
             height: min(82vh, 700px);
             background: #000;
-            border: 12px solid #9b30ff;
-            border-radius: 20px;
+            border: 8px solid #9b30ff;
+            border-radius: 15px;
             box-shadow:
                 0 0 30px #9b30ff,
                 inset 0 0 20px rgba(155, 48, 255, 0.3);
@@ -258,9 +258,9 @@
             }
 
             #game-container {
-                width: 85vw;
+                width: 98vw;
                 height: 78vh;
-                border-width: 8px;
+                border-width: 6px;
             }
 
             .title-main {
@@ -282,9 +282,9 @@
             }
 
             #game-container {
-                width: 80vw;
+                width: 98vw;
                 height: 75vh;
-                border-width: 6px;
+                border-width: 4px;
             }
 
             .title-main {
@@ -467,7 +467,7 @@
 
             // Camera - Orthographic for 2D look
             const aspect = container.clientWidth / container.clientHeight;
-            const viewSize = 400;
+            const viewSize = 500;
             camera = new THREE.OrthographicCamera(
                 -viewSize * aspect, viewSize * aspect,
                 viewSize, -viewSize,
@@ -782,7 +782,7 @@
         function onWindowResize() {
             const container = document.getElementById('game-container');
             const aspect = container.clientWidth / container.clientHeight;
-            const viewSize = 400;
+            const viewSize = 500;
 
             camera.left = -viewSize * aspect;
             camera.right = viewSize * aspect;
