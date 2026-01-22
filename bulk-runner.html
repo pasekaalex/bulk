@@ -436,7 +436,7 @@
                 }
                 
                 const loader = new THREE.GLTFLoader();
-                loader.load('run.glb',
+                loader.load('bulk.glb',
                     (gltf) => {
                         console.log('GLB loaded!');
                         const model = gltf.scene;
@@ -462,17 +462,6 @@
                                 child.receiveShadow = true;
                             }
                         });
-
-                        // Setup animation if it exists
-                        if (gltf.animations && gltf.animations.length > 0) {
-                            mixer = new THREE.AnimationMixer(model);
-                            console.log('Found animations:', gltf.animations.map(a => a.name));
-                            const action = mixer.clipAction(gltf.animations[0]);
-                            action.play();
-                            console.log('Playing animation:', gltf.animations[0].name);
-                        } else {
-                            console.log('No animations found in model');
-                        }
 
                         bulk.add(model);
                     },
