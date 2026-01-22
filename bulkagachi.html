@@ -570,6 +570,73 @@
             transform: scale(0.95);
         }
 
+        #menu-modal, #collection-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 150;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        #menu-modal.active, #collection-modal.active {
+            display: flex;
+        }
+
+        .menu-option-btn {
+            background: linear-gradient(135deg, #9b30ff, #6600cc);
+            border: 3px solid #fff;
+            border-radius: 12px;
+            padding: 15px 20px;
+            color: #fff;
+            font-size: clamp(0.5rem, 2vw, 0.7rem);
+            cursor: pointer;
+            text-shadow: 2px 2px 0 #000;
+            font-family: 'Press Start 2P', monospace;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .menu-option-btn:active {
+            transform: scale(0.95);
+        }
+
+        .menu-option-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        #toy-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 30;
+        }
+
+        .toy {
+            position: absolute;
+            font-size: 3rem;
+            pointer-events: all;
+            cursor: pointer;
+            animation: toyBounce 1s ease-in-out infinite;
+            z-index: 30;
+        }
+
+        @keyframes toyBounce {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+        }
+
         .floating-emoji {
             position: absolute;
             font-size: 2rem;
@@ -711,6 +778,8 @@
                 </div>
             </div>
             <button id="achievements-btn" onclick="showAchievements()" style="position: absolute; top: 50px; right: 10px; background: linear-gradient(135deg, #ffd700, #ff8c00); border: 3px solid #fff; border-radius: 50%; width: 50px; height: 50px; font-size: 1.5rem; cursor: pointer; z-index: 10; box-shadow: 0 0 15px rgba(255, 215, 0, 0.6);">🏆</button>
+            <button id="menu-btn" onclick="showMenu()" style="position: absolute; top: 110px; right: 10px; background: linear-gradient(135deg, #9b30ff, #6600cc); border: 3px solid #fff; border-radius: 50%; width: 50px; height: 50px; font-size: 1.5rem; cursor: pointer; z-index: 10; box-shadow: 0 0 15px rgba(155, 48, 255, 0.6);">☰</button>
+            <div id="toy-container"></div>
             <div id="poop-container"></div>
             <div id="day-night-overlay"></div>
             <div class="sleep-overlay" id="sleep-overlay">
@@ -726,6 +795,28 @@
                 <div style="font-size: clamp(1rem, 4vw, 1.5rem); color: #ffd700; margin-bottom: 15px;">🏆 ACHIEVEMENTS 🏆</div>
                 <div id="achievements-list"></div>
                 <button class="close-modal-btn" onclick="closeAchievements()">CLOSE</button>
+            </div>
+            <div id="menu-modal">
+                <div style="font-size: clamp(1rem, 4vw, 1.5rem); color: #9b30ff; margin-bottom: 20px;">☰ MENU ☰</div>
+                <div style="display: flex; flex-direction: column; gap: 15px; width: 100%;">
+                    <button class="menu-option-btn" onclick="showCollectionBook()">📖 COLLECTION BOOK</button>
+                    <button class="menu-option-btn" onclick="toggleMusic()">
+                        <span id="music-toggle-text">🎵 MUSIC: OFF</span>
+                    </button>
+                    <button class="menu-option-btn" onclick="requestNotifications()">
+                        <span id="notif-toggle-text">🔔 NOTIFICATIONS</span>
+                    </button>
+                    <button class="menu-option-btn" onclick="showRebirthOption()" id="rebirth-option-btn">
+                        🌟 REBIRTH
+                    </button>
+                </div>
+                <button class="close-modal-btn" onclick="closeMenu()" style="margin-top: 20px;">CLOSE</button>
+            </div>
+            <div id="collection-modal">
+                <div style="font-size: clamp(1rem, 4vw, 1.5rem); color: #00ff88; margin-bottom: 20px;">📖 COLLECTION BOOK 📖</div>
+                <div id="collection-stats" style="text-align: left; font-size: clamp(0.4rem, 2vw, 0.6rem); line-height: 2; color: #fff; width: 100%; max-width: 300px;">
+                </div>
+                <button class="close-modal-btn" onclick="closeCollection()">CLOSE</button>
             </div>
         </div>
 
@@ -789,8 +880,35 @@
         let lastPoopTime = Date.now();
         let poopUrgency = 0;
 
+        // New features
+        let rebirthCount = 0;
+        let currentToy = null;
+        let toys = [];
+        let collection = {
+            foodsEaten: 0,
+            totalPets: 0,
+            totalPlays: 0,
+            totalCleans: 0,
+            goldenPoopsFound: 0,
+            maxCombo: 0,
+            achievementCount: 0
+        };
+        let musicEnabled = false;
+        let backgroundMusic = null;
+        let notificationsEnabled = false;
+        let lastNotificationCheck = Date.now();
+
         // Audio Context for sound effects
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        // Toy types
+        const toyTypes = [
+            { emoji: '⚽', name: 'Ball', happiness: 10, duration: 8000 },
+            { emoji: '🎾', name: 'Tennis Ball', happiness: 8, duration: 7000 },
+            { emoji: '🧸', name: 'Teddy', happiness: 15, duration: 10000 },
+            { emoji: '🎮', name: 'Game', happiness: 12, duration: 9000 },
+            { emoji: '🪀', name: 'Yo-Yo', happiness: 10, duration: 8000 }
+        ];
 
         // Load saved state
         function loadState() {
@@ -809,6 +927,18 @@
                 xp = state.xp || 0;
                 poopCount = state.poopCount || 0;
                 poopUrgency = state.poopUrgency || 0;
+                rebirthCount = state.rebirthCount || 0;
+                collection = state.collection || {
+                    foodsEaten: 0,
+                    totalPets: 0,
+                    totalPlays: 0,
+                    totalCleans: 0,
+                    goldenPoopsFound: 0,
+                    maxCombo: 0,
+                    achievementCount: 0
+                };
+                musicEnabled = state.musicEnabled || false;
+                notificationsEnabled = state.notificationsEnabled || false;
 
                 // Calculate decay since last visit
                 const timePassed = (Date.now() - lastUpdateTime) / 1000; // seconds
@@ -874,7 +1004,11 @@
                 level,
                 xp,
                 poopCount,
-                poopUrgency
+                poopUrgency,
+                rebirthCount,
+                collection,
+                musicEnabled,
+                notificationsEnabled
             };
             localStorage.setItem('bulkagachi', JSON.stringify(state));
         }
@@ -1048,6 +1182,7 @@
         // Pet Bulk interaction
         function petBulk(x, y) {
             happiness = Math.min(100, happiness + 5);
+            collection.totalPets++;
             playSound('play');
             playHappyAnimation();
             createFloatingEmoji('💜', x, y);
@@ -1288,6 +1423,7 @@
                     xpReward = 10;
                     cleanBonus = 10;
                     message = "✨ GOLDEN POOP CLEANED! ✨";
+                    collection.goldenPoopsFound++;
                     createParticles('#ffd700', 30);
                     if (!achievements.goldenPoop) {
                         unlockAchievement('goldenPoop');
@@ -1528,6 +1664,7 @@
             happiness = Math.min(100, happiness + 10);
             poopUrgency = Math.min(100, poopUrgency + 20);
             totalCareActions++;
+            collection.foodsEaten++;
             addXP(5);
             showMessage(messages[Math.floor(Math.random() * messages.length)]);
             playSound('feed');
@@ -1555,6 +1692,7 @@
             happiness = Math.min(100, happiness + 40);
             hunger = Math.max(0, hunger - 5);
             totalCareActions++;
+            collection.totalPlays++;
             addXP(7);
             showMessage(messages[Math.floor(Math.random() * messages.length)]);
             playSound('play');
@@ -1582,6 +1720,7 @@
             cleanliness = Math.min(100, cleanliness + 50);
             happiness = Math.min(100, happiness + 5);
             totalCareActions++;
+            collection.totalCleans++;
             addXP(6);
             showMessage(messages[Math.floor(Math.random() * messages.length)]);
             playSound('clean');
@@ -1747,8 +1886,262 @@
             setTimeout(() => msg.classList.remove('show'), 2000);
         }
 
+        // Menu System
+        function showMenu() {
+            document.getElementById('menu-modal').classList.add('active');
+            updateMenuUI();
+        }
+
+        function closeMenu() {
+            document.getElementById('menu-modal').classList.remove('active');
+        }
+
+        function updateMenuUI() {
+            document.getElementById('music-toggle-text').textContent = musicEnabled ? '🎵 MUSIC: ON' : '🎵 MUSIC: OFF';
+            document.getElementById('notif-toggle-text').textContent = notificationsEnabled ? '🔔 NOTIFICATIONS: ON' : '🔔 NOTIFICATIONS: OFF';
+
+            // Check rebirth eligibility
+            const ageInDays = (Date.now() - birthTime) / (1000 * 60 * 60 * 24);
+            const canRebirth = level >= 20 && ageInDays >= 7;
+            const rebirthBtn = document.getElementById('rebirth-option-btn');
+            rebirthBtn.disabled = !canRebirth;
+            if (!canRebirth) {
+                rebirthBtn.title = `Requires Level 20 and 7 days old (Current: Lv${level}, ${Math.floor(ageInDays)}d)`;
+            }
+        }
+
+        // Collection Book
+        function showCollectionBook() {
+            closeMenu();
+            const modal = document.getElementById('collection-modal');
+            modal.classList.add('active');
+
+            const stats = document.getElementById('collection-stats');
+            const ageInDays = Math.floor((Date.now() - birthTime) / (1000 * 60 * 60 * 24));
+            const ageInHours = Math.floor((Date.now() - birthTime) / (1000 * 60 * 60)) % 24;
+            const achievementCount = Object.values(achievements).filter(a => a).length;
+
+            stats.innerHTML = `
+                🥤 FOODS EATEN: ${collection.foodsEaten}<br>
+                💜 TOTAL PETS: ${collection.totalPets}<br>
+                🎮 TOTAL PLAYS: ${collection.totalPlays}<br>
+                🧼 TOTAL CLEANS: ${collection.totalCleans}<br>
+                ✨ GOLDEN POOPS: ${collection.goldenPoopsFound}<br>
+                🔥 MAX COMBO: ${collection.maxCombo}x<br>
+                🏆 ACHIEVEMENTS: ${achievementCount}/11<br>
+                📅 AGE: ${ageInDays}d ${ageInHours}h<br>
+                🔄 REBIRTHS: ${rebirthCount}<br>
+                ⭐ LEVEL: ${level}<br>
+                💯 XP: ${xp}
+            `;
+        }
+
+        function closeCollection() {
+            document.getElementById('collection-modal').classList.remove('active');
+        }
+
+        // Background Music
+        function toggleMusic() {
+            musicEnabled = !musicEnabled;
+            updateMenuUI();
+
+            if (musicEnabled) {
+                if (!backgroundMusic) {
+                    createBackgroundMusic();
+                }
+                backgroundMusic.start();
+            } else {
+                if (backgroundMusic) {
+                    backgroundMusic.stop();
+                }
+            }
+
+            saveState();
+        }
+
+        function createBackgroundMusic() {
+            // Create a simple, calm looping melody using Web Audio API
+            const notes = [261.63, 293.66, 329.63, 392.00, 329.63, 293.66]; // C, D, E, G, E, D
+            let currentNote = 0;
+            let oscillator = null;
+            let gainNode = null;
+            let isPlaying = false;
+
+            backgroundMusic = {
+                start: function() {
+                    if (isPlaying) return;
+                    isPlaying = true;
+                    this.playNextNote();
+                },
+                stop: function() {
+                    isPlaying = false;
+                    if (oscillator) {
+                        try {
+                            oscillator.stop();
+                        } catch (e) {}
+                    }
+                },
+                playNextNote: function() {
+                    if (!isPlaying || !musicEnabled) return;
+
+                    oscillator = audioContext.createOscillator();
+                    gainNode = audioContext.createGain();
+
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+
+                    oscillator.frequency.value = notes[currentNote];
+                    oscillator.type = 'sine';
+                    gainNode.gain.value = 0.05; // Very quiet
+
+                    oscillator.start();
+                    oscillator.stop(audioContext.currentTime + 0.5);
+
+                    currentNote = (currentNote + 1) % notes.length;
+
+                    setTimeout(() => this.playNextNote(), 600);
+                }
+            };
+        }
+
+        // Notifications
+        function requestNotifications() {
+            if (!('Notification' in window)) {
+                showMessage('NOTIFICATIONS NOT SUPPORTED!');
+                return;
+            }
+
+            Notification.requestPermission().then(permission => {
+                if (permission === 'granted') {
+                    notificationsEnabled = true;
+                    showMessage('NOTIFICATIONS ENABLED! 🔔');
+                } else {
+                    notificationsEnabled = false;
+                    showMessage('NOTIFICATIONS DENIED!');
+                }
+                updateMenuUI();
+                saveState();
+            });
+        }
+
+        function checkNotifications() {
+            if (!notificationsEnabled || !('Notification' in window) || Notification.permission !== 'granted') return;
+
+            const now = Date.now();
+            if (now - lastNotificationCheck < 60000) return; // Only check every minute
+            lastNotificationCheck = now;
+
+            if (hunger < 30 || happiness < 30 || cleanliness < 30) {
+                new Notification('BULK NEEDS ATTENTION!', {
+                    body: hunger < 30 ? 'Bulk is hungry!' : happiness < 30 ? 'Bulk is sad!' : 'Bulk is dirty!',
+                    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="75" font-size="75">💜</text></svg>'
+                });
+            }
+        }
+
+        // Toy System
+        function spawnToy() {
+            if (currentToy || isDead || isSleeping) return;
+
+            const toy = toyTypes[Math.floor(Math.random() * toyTypes.length)];
+            const container = document.getElementById('toy-container');
+            const toyElement = document.createElement('div');
+            toyElement.className = 'toy';
+            toyElement.textContent = toy.emoji;
+            toyElement.style.left = (Math.random() * 60 + 20) + '%';
+            toyElement.style.top = (Math.random() * 60 + 20) + '%';
+            toyElement.onclick = () => playWithToy(toy, toyElement);
+
+            container.appendChild(toyElement);
+            currentToy = { toy, element: toyElement };
+
+            setTimeout(() => {
+                if (currentToy && currentToy.element === toyElement) {
+                    toyElement.remove();
+                    currentToy = null;
+                }
+            }, toy.duration);
+        }
+
+        function playWithToy(toy, element) {
+            if (isDead || isSleeping) return;
+
+            happiness = Math.min(100, happiness + toy.happiness);
+            collection.totalPlays++;
+            element.remove();
+            currentToy = null;
+
+            playSound('play');
+            createFloatingEmoji(toy.emoji, parseInt(element.style.left), parseInt(element.style.top));
+            showMessage(`BULK PLAYED WITH ${toy.name.toUpperCase()}! +${toy.happiness} HAPPY`);
+            updateUI();
+            saveState();
+        }
+
+        // Rebirth System
+        function showRebirthOption() {
+            const ageInDays = (Date.now() - birthTime) / (1000 * 60 * 60 * 24);
+
+            if (level < 20 || ageInDays < 7) {
+                showMessage(`NEED LV20 & 7 DAYS! (${level}/20, ${Math.floor(ageInDays)}/7d)`);
+                return;
+            }
+
+            const confirmed = confirm(`REBIRTH BULK?\n\nThis will reset Bulk to Level 1 but give you:\n- +1 Rebirth Count\n- Keep all achievements\n- Keep collection stats\n\nCurrent Level: ${level}\nCurrent Age: ${Math.floor(ageInDays)} days\n\nContinue?`);
+
+            if (confirmed) {
+                performRebirth();
+            }
+        }
+
+        function performRebirth() {
+            rebirthCount++;
+            level = 1;
+            xp = 0;
+            birthTime = Date.now();
+            hunger = 100;
+            happiness = 100;
+            cleanliness = 100;
+            totalCareActions = 0;
+            poopCount = 0;
+            poopUrgency = 0;
+            isDead = false;
+            isSleeping = false;
+
+            // Clear poops
+            document.getElementById('poop-container').innerHTML = '';
+
+            closeMenu();
+            showMessage(`🌟 REBIRTH ${rebirthCount}! BULK IS REBORN! 🌟`);
+            updateLevelDisplay();
+            updateUI();
+            saveState();
+        }
+
+        // Update collection stats
+        function updateCollection() {
+            collection.maxCombo = Math.max(collection.maxCombo, comboCount);
+            collection.achievementCount = Object.values(achievements).filter(a => a).length;
+        }
+
         // Initialize game
+        loadState();
         init();
+
+        // Start toy spawning
+        setInterval(spawnToy, 30000); // Spawn toy every 30 seconds
+
+        // Check notifications
+        setInterval(checkNotifications, 60000); // Check every minute
+
+        // Update collection periodically
+        setInterval(updateCollection, 5000);
+
+        // Start music if enabled
+        if (musicEnabled) {
+            createBackgroundMusic();
+            backgroundMusic.start();
+        }
     </script>
 </body>
 </html>
