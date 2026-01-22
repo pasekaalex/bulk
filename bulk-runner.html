@@ -155,6 +155,7 @@
             <div class="subtitle">INFINITE RUNNER</div>
             <div class="instructions">
                 ← → or SWIPE to change lanes<br>
+                SPACE or TAP to jump<br>
                 Avoid obstacles! Collect drinks!
             </div>
             <button class="start-btn" onclick="startGame()">START</button>
@@ -201,9 +202,20 @@
         let money = 0;
         let buildings = [];
         let explosions = [];
-        
+
+        // Jump mechanics
+        let isJumping = false;
+        let jumpVelocity = 0;
+        const gravity = -0.02;
+        const jumpStrength = 0.35;
+        const groundLevel = 0.2;
+
         // Touch controls
         let touchStartX = 0, touchStartY = 0;
+
+        // Car spawn prevention
+        let lastSpawnTime = {};  // Track last spawn time per lane
+        const minSpawnInterval = 1500; // Minimum ms between spawns in same lane
         
         function init() {
             // Scene - night city atmosphere
@@ -536,7 +548,24 @@
         }
         
         function createObstacle() {
-            const lane = Math.floor(Math.random() * 3);
+            // Pick a lane, but avoid lanes that spawned recently
+            const now = Date.now();
+            const availableLanes = [];
+
+            for (let i = 0; i < 3; i++) {
+                const timeSinceLastSpawn = now - (lastSpawnTime[i] || 0);
+                if (timeSinceLastSpawn > minSpawnInterval) {
+                    availableLanes.push(i);
+                }
+            }
+
+            // If no lanes available (all spawned recently), skip this spawn
+            if (availableLanes.length === 0) return;
+
+            // Pick random available lane
+            const lane = availableLanes[Math.floor(Math.random() * availableLanes.length)];
+            lastSpawnTime[lane] = now;
+
             const car = new THREE.Group();
             
             // Random car colors
@@ -730,9 +759,9 @@
             // Keyboard
             window.addEventListener('keydown', (e) => {
                 if (!gameStarted || gameOver) return;
-                
+
                 const key = e.key.toLowerCase();
-                
+
                 // A or Left Arrow = move LEFT (decrease lane)
                 if (e.key === 'ArrowLeft' || key === 'a') {
                     if (currentLane > 0) currentLane--;
@@ -741,26 +770,40 @@
                 else if (e.key === 'ArrowRight' || key === 'd') {
                     if (currentLane < 2) currentLane++;
                 }
+                // Space = JUMP
+                else if (e.key === ' ' || key === 'w' || e.key === 'ArrowUp') {
+                    if (!isJumping) {
+                        isJumping = true;
+                        jumpVelocity = jumpStrength;
+                    }
+                }
             });
-            
+
             // Touch
             const container = document.getElementById('game-container');
-            
+
             container.addEventListener('touchstart', (e) => {
                 touchStartX = e.touches[0].clientX;
                 touchStartY = e.touches[0].clientY;
             });
-            
+
             container.addEventListener('touchend', (e) => {
                 if (!gameStarted || gameOver) return;
-                
+
                 const dx = e.changedTouches[0].clientX - touchStartX;
                 const dy = e.changedTouches[0].clientY - touchStartY;
-                
-                if (Math.abs(dx) > 30) {
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (Math.abs(dx) > 30 && distance > 30) {
                     // Horizontal swipe
                     if (dx > 0 && currentLane < 2) currentLane++;
                     else if (dx < 0 && currentLane > 0) currentLane--;
+                } else if (distance < 30) {
+                    // Tap = JUMP
+                    if (!isJumping) {
+                        isJumping = true;
+                        jumpVelocity = jumpStrength;
+                    }
                 }
             });
         }
@@ -780,9 +823,22 @@
             // Move Bulk to lane
             const targetX = lanePositions[currentLane];
             bulk.position.x += (targetX - bulk.position.x) * 0.2;
-            
-            // Running animation (subtle bob) + raised to prevent feet clipping
-            bulk.position.y = 0.2 + Math.sin(Date.now() * 0.02) * 0.05;
+
+            // Jump physics
+            if (isJumping) {
+                jumpVelocity += gravity;
+                bulk.position.y += jumpVelocity;
+
+                // Land on ground
+                if (bulk.position.y <= groundLevel) {
+                    bulk.position.y = groundLevel;
+                    isJumping = false;
+                    jumpVelocity = 0;
+                }
+            } else {
+                // Running animation (subtle bob) + raised to prevent feet clipping
+                bulk.position.y = groundLevel + Math.sin(Date.now() * 0.02) * 0.05;
+            }
             
             // Move ground
             ground.forEach(tile => {
@@ -842,21 +898,25 @@
             for (let i = obstacles.length - 1; i >= 0; i--) {
                 const obs = obstacles[i];
                 obs.position.z += speed;
-                
-                // Collision check (lane-based only)
+
+                // Collision check (lane-based and height-based)
                 if (obs.position.z > -2 && obs.position.z < 2) {
                     if (Math.abs(bulk.position.x - obs.position.x) < 2) {
-                        // Hit! Create explosion at car position
-                        createExplosion(obs.position.x, obs.position.y + 1, obs.position.z);
-                        scene.remove(obs);
-                        obstacles.splice(i, 1);
-                        // Delay game over so explosion can be seen
-                        setTimeout(endGame, 500);
-                        gameOver = true; // Stop updates immediately
-                        return;
+                        // Check if player is jumping high enough to clear the car (car height ~2)
+                        const carHeight = 2;
+                        if (bulk.position.y < carHeight) {
+                            // Hit! Create explosion at car position
+                            createExplosion(obs.position.x, obs.position.y + 1, obs.position.z);
+                            scene.remove(obs);
+                            obstacles.splice(i, 1);
+                            // Delay game over so explosion can be seen
+                            setTimeout(endGame, 500);
+                            gameOver = true; // Stop updates immediately
+                            return;
+                        }
                     }
                 }
-                
+
                 // Remove passed obstacles
                 if (obs.position.z > 10) {
                     scene.remove(obs);
