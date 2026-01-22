@@ -436,10 +436,13 @@
                 }
                 
                 const loader = new THREE.GLTFLoader();
-                loader.load('rigged_bulk.glb',
+                loader.load('run.glb',
                     (gltf) => {
                         console.log('GLB loaded!');
                         console.log('Animations:', gltf.animations.length);
+                        if (gltf.animations.length > 0) {
+                            console.log('Animation names:', gltf.animations.map(a => a.name));
+                        }
                         const model = gltf.scene;
 
                         // Scale based on bounding box
