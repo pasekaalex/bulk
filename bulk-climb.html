@@ -191,8 +191,6 @@
 </head>
 <body>
     <div id="game-container">
-        <canvas id="gameCanvas"></canvas>
-
         <div id="title-screen">
             <div class="title-main">BULK CLIMB</div>
             <div class="subtitle">⬆️ ENDLESS SKYSCRAPER ⬆️</div>
@@ -223,6 +221,8 @@
     <script>
         let scene, camera, renderer;
         let bulk, bulkModel;
+        let mixer, runAction;
+        let clock = new THREE.Clock();
         let obstacles = [];
         let gameStarted = false;
         let gameOver = false;
@@ -231,21 +231,23 @@
         let bulkX = 0;
         let climbSpeed = 2;
         let obstacleSpeed = 3;
+        let bgMusic;
 
         const LANE_POSITIONS = [-150, 0, 150]; // Three lanes
         let currentLane = 1; // Start in middle
         let targetX = 0;
+        let facingRight = true;
 
         // Building elements
         let buildingSegments = [];
         let windows = [];
 
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-
         function init() {
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x001428);
+            scene.background = new THREE.Color(0x000820);
+
+            // Add fog for depth
+            scene.fog = new THREE.Fog(0x000820, 200, 1000);
 
             const aspect = window.innerWidth / window.innerHeight;
             const viewSize = 500;
@@ -259,15 +261,32 @@
 
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             document.getElementById('game-container').appendChild(renderer.domElement);
 
             // Lighting
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            const ambientLight = new THREE.AmbientLight(0x6666ff, 0.4);
             scene.add(ambientLight);
 
             const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
             directionalLight.position.set(200, 500, 300);
+            directionalLight.castShadow = true;
             scene.add(directionalLight);
+
+            // Point lights for atmosphere
+            const purpleLight = new THREE.PointLight(0x9b30ff, 0.5, 500);
+            purpleLight.position.set(-200, 0, 100);
+            scene.add(purpleLight);
+
+            const goldLight = new THREE.PointLight(0xffd700, 0.3, 500);
+            goldLight.position.set(200, 0, 100);
+            scene.add(goldLight);
+
+            // Background music
+            bgMusic = new Audio('bgm.mp3');
+            bgMusic.loop = true;
+            bgMusic.volume = 0.3;
 
             // Create building background
             createBuilding();
@@ -285,23 +304,31 @@
                 const segmentHeight = 200;
                 const y = i * segmentHeight - 400;
 
-                // Building wall
+                // Building wall with metallic material
                 const wallGeometry = new THREE.PlaneGeometry(600, segmentHeight);
-                const wallMaterial = new THREE.MeshPhongMaterial({
-                    color: 0x2a2a4a,
+                const wallMaterial = new THREE.MeshStandardMaterial({
+                    color: 0x1a1a3a,
+                    metalness: 0.3,
+                    roughness: 0.7,
                     side: THREE.DoubleSide
                 });
                 const wall = new THREE.Mesh(wallGeometry, wallMaterial);
                 wall.position.set(0, y, -100);
+                wall.receiveShadow = true;
                 scene.add(wall);
                 buildingSegments.push(wall);
 
-                // Windows
+                // Windows with glow effect
                 for (let row = 0; row < 4; row++) {
                     for (let col = 0; col < 6; col++) {
                         const windowGeometry = new THREE.PlaneGeometry(30, 40);
-                        const windowMaterial = new THREE.MeshBasicMaterial({
-                            color: Math.random() > 0.3 ? 0xffff00 : 0x333333
+                        const isLit = Math.random() > 0.3;
+                        const windowMaterial = new THREE.MeshStandardMaterial({
+                            color: isLit ? 0xffff66 : 0x1a1a2a,
+                            emissive: isLit ? 0xffff00 : 0x000000,
+                            emissiveIntensity: isLit ? 0.8 : 0,
+                            metalness: 0.1,
+                            roughness: 0.2
                         });
                         const windowMesh = new THREE.Mesh(windowGeometry, windowMaterial);
                         windowMesh.position.set(
@@ -311,6 +338,25 @@
                         );
                         scene.add(windowMesh);
                         windows.push(windowMesh);
+
+                        // Add glow for lit windows
+                        if (isLit) {
+                            const glowGeometry = new THREE.PlaneGeometry(35, 45);
+                            const glowMaterial = new THREE.MeshBasicMaterial({
+                                color: 0xffff00,
+                                transparent: true,
+                                opacity: 0.2,
+                                side: THREE.DoubleSide
+                            });
+                            const glow = new THREE.Mesh(glowGeometry, glowMaterial);
+                            glow.position.set(
+                                (col - 2.5) * 80,
+                                y + (row - 1.5) * 50,
+                                -98.5
+                            );
+                            scene.add(glow);
+                            windows.push(glow);
+                        }
                     }
                 }
             }
@@ -318,7 +364,7 @@
 
         function loadBulk() {
             const loader = new THREE.GLTFLoader();
-            loader.load('bulk.glb', (gltf) => {
+            loader.load('run.glb', (gltf) => {
                 bulkModel = gltf.scene;
 
                 const box = new THREE.Box3().setFromObject(bulkModel);
@@ -328,7 +374,22 @@
                 bulkModel.scale.set(scale, scale, scale);
 
                 bulkModel.position.set(0, -300, 0);
-                bulkModel.rotation.y = Math.PI;
+                bulkModel.rotation.y = Math.PI / 2; // Face right
+
+                // Set up animations
+                if (gltf.animations && gltf.animations.length > 0) {
+                    mixer = new THREE.AnimationMixer(bulkModel);
+                    runAction = mixer.clipAction(gltf.animations[0]);
+                    runAction.play();
+                }
+
+                // Add glow effect to Bulk
+                bulkModel.traverse((child) => {
+                    if (child.isMesh) {
+                        child.castShadow = true;
+                        child.receiveShadow = true;
+                    }
+                });
 
                 scene.add(bulkModel);
                 bulk = bulkModel;
@@ -346,11 +407,15 @@
                     if (currentLane > 0) {
                         currentLane--;
                         targetX = LANE_POSITIONS[currentLane];
+                        facingRight = false;
+                        if (bulk) bulk.rotation.y = -Math.PI / 2; // Face left
                     }
                 } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
                     if (currentLane < 2) {
                         currentLane++;
                         targetX = LANE_POSITIONS[currentLane];
+                        facingRight = true;
+                        if (bulk) bulk.rotation.y = Math.PI / 2; // Face right
                     }
                 }
             });
@@ -371,9 +436,13 @@
                     if (diff < 0 && currentLane > 0) {
                         currentLane--;
                         targetX = LANE_POSITIONS[currentLane];
+                        facingRight = false;
+                        if (bulk) bulk.rotation.y = -Math.PI / 2;
                     } else if (diff > 0 && currentLane < 2) {
                         currentLane++;
                         targetX = LANE_POSITIONS[currentLane];
+                        facingRight = true;
+                        if (bulk) bulk.rotation.y = Math.PI / 2;
                     }
                 }
             });
@@ -388,9 +457,13 @@
                 if (x < centerX && currentLane > 0) {
                     currentLane--;
                     targetX = LANE_POSITIONS[currentLane];
+                    facingRight = false;
+                    if (bulk) bulk.rotation.y = -Math.PI / 2;
                 } else if (x > centerX && currentLane < 2) {
                     currentLane++;
                     targetX = LANE_POSITIONS[currentLane];
+                    facingRight = true;
+                    if (bulk) bulk.rotation.y = Math.PI / 2;
                 }
             });
         }
@@ -403,20 +476,50 @@
 
             if (type === 'box') {
                 geometry = new THREE.BoxGeometry(60, 60, 60);
-                material = new THREE.MeshPhongMaterial({ color: 0xff4444 });
+                material = new THREE.MeshStandardMaterial({
+                    color: 0xff3333,
+                    metalness: 0.5,
+                    roughness: 0.3,
+                    emissive: 0xff0000,
+                    emissiveIntensity: 0.3
+                });
             } else if (type === 'beam') {
                 geometry = new THREE.BoxGeometry(80, 20, 40);
-                material = new THREE.MeshPhongMaterial({ color: 0xffaa00 });
+                material = new THREE.MeshStandardMaterial({
+                    color: 0xff9900,
+                    metalness: 0.7,
+                    roughness: 0.2,
+                    emissive: 0xff6600,
+                    emissiveIntensity: 0.2
+                });
             } else {
                 geometry = new THREE.CylinderGeometry(30, 30, 60, 16);
-                material = new THREE.MeshPhongMaterial({ color: 0x666666 });
+                material = new THREE.MeshStandardMaterial({
+                    color: 0x555555,
+                    metalness: 0.8,
+                    roughness: 0.4
+                });
             }
 
             obstacle = new THREE.Mesh(geometry, material);
+            obstacle.castShadow = true;
+            obstacle.receiveShadow = true;
 
             const lane = Math.floor(Math.random() * 3);
             obstacle.position.set(LANE_POSITIONS[lane], 400, 0);
             obstacle.userData.type = type;
+
+            // Add warning glow
+            const glowGeometry = geometry.clone();
+            const glowMaterial = new THREE.MeshBasicMaterial({
+                color: 0xff0000,
+                transparent: true,
+                opacity: 0.3,
+                side: THREE.BackSide
+            });
+            const glow = new THREE.Mesh(glowGeometry, glowMaterial);
+            glow.scale.multiplyScalar(1.2);
+            obstacle.add(glow);
 
             scene.add(obstacle);
             obstacles.push(obstacle);
@@ -430,12 +533,20 @@
             height = 0;
             currentLane = 1;
             targetX = LANE_POSITIONS[1];
+            facingRight = true;
             obstacles.forEach(obs => scene.remove(obs));
             obstacles = [];
 
             if (bulk) {
                 bulk.position.set(0, -300, 0);
+                bulk.rotation.y = Math.PI / 2;
                 bulkX = 0;
+            }
+
+            // Play background music
+            if (bgMusic) {
+                bgMusic.currentTime = 0;
+                bgMusic.play().catch(e => console.log('Audio play failed:', e));
             }
 
             animate();
@@ -451,6 +562,11 @@
             document.getElementById('final-score-value').textContent = score;
             document.getElementById('final-height-value').textContent = height;
             document.getElementById('game-over-screen').classList.add('active');
+
+            // Stop background music
+            if (bgMusic) {
+                bgMusic.pause();
+            }
         }
 
         function onWindowResize() {
@@ -471,15 +587,17 @@
 
             requestAnimationFrame(animate);
 
+            // Update animation mixer
+            const delta = clock.getDelta();
+            if (mixer) {
+                mixer.update(delta);
+            }
+
             // Move bulk to target lane
             if (bulk) {
                 const diff = targetX - bulkX;
                 bulkX += diff * 0.15;
                 bulk.position.x = bulkX;
-
-                // Subtle climbing animation
-                bulk.position.y = -300 + Math.sin(Date.now() * 0.01) * 5;
-                bulk.rotation.z = Math.sin(Date.now() * 0.005) * 0.05;
             }
 
             // Move building down (camera moves up)
