@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BULK BREAKER - Break All The Bricks!</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: linear-gradient(to bottom, #0a0a1f 0%, #1a1a3f 100%);
+            overflow: hidden;
+            font-family: 'Orbitron', monospace;
+            touch-action: none;
+            -webkit-user-select: none;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        #game-container {
+            position: relative;
+            width: min(95vw, 800px);
+            height: min(90vh, 900px);
+            background: #000;
+            border: 10px solid #9b30ff;
+            border-radius: 20px;
+            box-shadow: 0 0 50px #9b30ff, inset 0 0 40px rgba(155, 48, 255, 0.3);
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        #title-screen {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: linear-gradient(135deg, #1a0a2e 0%, #0a0515 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        #title-screen.hidden { display: none; }
+
+        .title-main {
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            color: #9b30ff;
+            text-shadow: 0 0 30px #ff00ff, 4px 4px 0 #000;
+            letter-spacing: 0.1em;
+            animation: pulse 1s ease-in-out infinite alternate;
+            margin-bottom: 20px;
+        }
+
+        @keyframes pulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.05); }
+        }
+
+        .subtitle {
+            font-size: clamp(0.8rem, 2vw, 1.2rem);
+            color: #ffd700;
+            margin-bottom: 30px;
+        }
+
+        .instructions {
+            font-size: 0.5rem;
+            color: #fff;
+            text-align: center;
+            line-height: 2.5;
+            max-width: 90%;
+            margin-bottom: 30px;
+        }
+
+        .start-btn {
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            background: linear-gradient(180deg, #9b30ff 0%, #6b0099 100%);
+            color: white;
+            border: 3px solid #ffd700;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+            transition: all 0.2s;
+            font-family: 'Orbitron', monospace;
+        }
+
+        .start-btn:hover { transform: scale(1.1); }
+        .start-btn:active { transform: scale(0.95); }
+
+        #hud {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            z-index: 50;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 30px;
+            font-size: 1.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+
+        #score {
+            color: #ffd700;
+        }
+
+        #lives {
+            color: #ff0066;
+        }
+
+        #game-over-screen {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        #game-over-screen.active { display: flex; }
+
+        .game-over-title {
+            font-size: 3rem;
+            color: #ff0066;
+            text-shadow: 0 0 20px #ff0066;
+            margin-bottom: 20px;
+        }
+
+        .win-title {
+            font-size: 3rem;
+            color: #39FF14;
+            text-shadow: 0 0 20px #39FF14;
+            margin-bottom: 20px;
+        }
+
+        .final-score {
+            font-size: 2rem;
+            color: #ffd700;
+            margin-bottom: 30px;
+        }
+
+        .restart-btn {
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            background: linear-gradient(180deg, #39FF14 0%, #2a9e0f 100%);
+            color: black;
+            border: 3px solid #ffd700;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(57, 255, 20, 0.5);
+            transition: all 0.2s;
+            font-family: 'Orbitron', monospace;
+        }
+
+        .restart-btn:hover { transform: scale(1.1); }
+        .restart-btn:active { transform: scale(0.95); }
+
+        @media (max-width: 768px) {
+            #game-container {
+                width: 100vw;
+                height: 100vh;
+                border-radius: 0;
+                border: none;
+            }
+            .title-main { font-size: clamp(2rem, 7vw, 3.5rem); }
+            #hud { font-size: 1.2rem; padding: 0 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+
+        <div id="title-screen">
+            <div class="title-main">BULK BREAKER</div>
+            <div class="subtitle">🧱 BREAK ALL THE BRICKS! 🧱</div>
+            <div class="instructions">
+                MOVE MOUSE/FINGER TO CONTROL BULK<br>
+                BREAK ALL BRICKS TO WIN<br>
+                DON'T DROP THE BALL!
+            </div>
+            <button class="start-btn" onclick="startGame()">START BREAKING</button>
+        </div>
+
+        <div id="hud">
+            <div id="score">SCORE: 0</div>
+            <div id="lives">LIVES: 3</div>
+        </div>
+
+        <div id="game-over-screen">
+            <div class="game-over-title" id="end-title">GAME OVER</div>
+            <div class="final-score">FINAL SCORE: <span id="final-score-value">0</span></div>
+            <button class="restart-btn" onclick="restartGame()">PLAY AGAIN</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+
+    <script>
+        let scene, camera, renderer;
+        let paddle, bulkModel;
+        let ball, ballVelocity;
+        let bricks = [];
+        let gameStarted = false;
+        let gameOver = false;
+        let score = 0;
+        let lives = 3;
+        let paddleX = 0;
+        let targetPaddleX = 0;
+        let bgMusic;
+
+        const PADDLE_SPEED = 0.2;
+        const BALL_SPEED = 5;
+        const BRICK_ROWS = 6;
+        const BRICK_COLS = 8;
+
+        function init() {
+            const canvas = document.getElementById('gameCanvas');
+            const container = document.getElementById('game-container');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x0a0515);
+
+            camera = new THREE.OrthographicCamera(
+                -400, 400,
+                600, -200,
+                1, 1000
+            );
+            camera.position.z = 500;
+            camera.lookAt(0, 0, 0);
+
+            renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+            renderer.setSize(width, height);
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(200, 500, 300);
+            scene.add(directionalLight);
+
+            // Point light for atmosphere
+            const purpleLight = new THREE.PointLight(0x9b30ff, 0.6, 600);
+            purpleLight.position.set(0, 0, 100);
+            scene.add(purpleLight);
+
+            // Background music
+            bgMusic = new Audio('bgm.mp3');
+            bgMusic.loop = true;
+            bgMusic.volume = 0.3;
+
+            // Create ball
+            createBall();
+
+            // Create bricks
+            createBricks();
+
+            // Load Bulk paddle
+            loadBulk();
+
+            // Controls
+            setupControls();
+
+            window.addEventListener('resize', onWindowResize);
+
+            animate();
+        }
+
+        function createBall() {
+            const ballGeometry = new THREE.SphereGeometry(12, 16, 16);
+            const ballMaterial = new THREE.MeshStandardMaterial({
+                color: 0xffd700,
+                emissive: 0xffaa00,
+                emissiveIntensity: 0.5,
+                metalness: 0.8,
+                roughness: 0.2
+            });
+            ball = new THREE.Mesh(ballGeometry, ballMaterial);
+            ball.position.set(0, -150, 0);
+            scene.add(ball);
+
+            ballVelocity = new THREE.Vector3(3, 4, 0);
+        }
+
+        function createBricks() {
+            const brickWidth = 80;
+            const brickHeight = 30;
+            const spacing = 10;
+            const startX = -320;
+            const startY = 400;
+
+            const colors = [
+                0xff0066, // Red
+                0xff6600, // Orange
+                0xffff00, // Yellow
+                0x39FF14, // Green
+                0x00ffff, // Cyan
+                0x9b30ff  // Purple
+            ];
+
+            for (let row = 0; row < BRICK_ROWS; row++) {
+                for (let col = 0; col < BRICK_COLS; col++) {
+                    const brickGeometry = new THREE.BoxGeometry(brickWidth, brickHeight, 20);
+                    const brickMaterial = new THREE.MeshStandardMaterial({
+                        color: colors[row],
+                        metalness: 0.5,
+                        roughness: 0.3
+                    });
+                    const brick = new THREE.Mesh(brickGeometry, brickMaterial);
+
+                    brick.position.set(
+                        startX + col * (brickWidth + spacing),
+                        startY - row * (brickHeight + spacing),
+                        0
+                    );
+
+                    scene.add(brick);
+                    bricks.push(brick);
+                }
+            }
+        }
+
+        function loadBulk() {
+            const loader = new THREE.GLTFLoader();
+            loader.load('bulk.glb', (gltf) => {
+                bulkModel = gltf.scene;
+
+                const box = new THREE.Box3().setFromObject(bulkModel);
+                const size = box.getSize(new THREE.Vector3());
+                const maxDim = Math.max(size.x, size.y, size.z);
+                const scale = 150 / maxDim;
+                bulkModel.scale.set(scale, scale, scale);
+
+                // T-pose laying horizontal as paddle
+                bulkModel.rotation.z = Math.PI / 2; // Rotate 90 degrees
+                bulkModel.position.set(0, -180, 0);
+
+                scene.add(bulkModel);
+                paddle = bulkModel;
+            }, undefined, (error) => {
+                console.error('Error loading model:', error);
+            });
+        }
+
+        function setupControls() {
+            // Mouse controls
+            document.addEventListener('mousemove', (e) => {
+                if (!gameStarted || gameOver) return;
+                const rect = renderer.domElement.getBoundingClientRect();
+                const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+                targetPaddleX = x * 350;
+            });
+
+            // Touch controls
+            document.addEventListener('touchmove', (e) => {
+                if (!gameStarted || gameOver) return;
+                const rect = renderer.domElement.getBoundingClientRect();
+                const touch = e.touches[0];
+                const x = ((touch.clientX - rect.left) / rect.width) * 2 - 1;
+                targetPaddleX = x * 350;
+            });
+        }
+
+        function startGame() {
+            document.getElementById('title-screen').classList.add('hidden');
+            gameStarted = true;
+            gameOver = false;
+            score = 0;
+            lives = 3;
+            paddleX = 0;
+            targetPaddleX = 0;
+
+            // Reset ball
+            ball.position.set(0, -150, 0);
+            ballVelocity.set(3, 4, 0);
+
+            // Recreate bricks
+            bricks.forEach(brick => scene.remove(brick));
+            bricks = [];
+            createBricks();
+
+            if (paddle) {
+                paddle.position.x = 0;
+            }
+
+            // Play background music
+            if (bgMusic) {
+                bgMusic.currentTime = 0;
+                bgMusic.play().catch(e => console.log('Audio play failed:', e));
+            }
+
+            updateHUD();
+        }
+
+        function restartGame() {
+            document.getElementById('game-over-screen').classList.remove('active');
+            startGame();
+        }
+
+        function endGame(won) {
+            gameOver = true;
+            document.getElementById('final-score-value').textContent = score;
+
+            const title = document.getElementById('end-title');
+            if (won) {
+                title.textContent = '🎉 YOU WIN! 🎉';
+                title.className = 'win-title';
+            } else {
+                title.textContent = '💥 GAME OVER 💥';
+                title.className = 'game-over-title';
+            }
+
+            document.getElementById('game-over-screen').classList.add('active');
+
+            // Stop background music
+            if (bgMusic) {
+                bgMusic.pause();
+            }
+        }
+
+        function updateHUD() {
+            document.getElementById('score').textContent = 'SCORE: ' + score;
+            document.getElementById('lives').textContent = 'LIVES: ' + lives;
+        }
+
+        function onWindowResize() {
+            const container = document.getElementById('game-container');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            renderer.setSize(width, height);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (gameStarted && !gameOver) {
+                // Move paddle smoothly to target
+                if (paddle) {
+                    const diff = targetPaddleX - paddleX;
+                    paddleX += diff * PADDLE_SPEED;
+                    paddleX = Math.max(-350, Math.min(350, paddleX));
+                    paddle.position.x = paddleX;
+
+                    // Rotate paddle slightly based on movement
+                    paddle.rotation.y = (targetPaddleX - paddleX) * 0.01;
+                }
+
+                // Move ball
+                ball.position.x += ballVelocity.x;
+                ball.position.y += ballVelocity.y;
+
+                // Ball rotation for effect
+                ball.rotation.x += 0.1;
+                ball.rotation.y += 0.1;
+
+                // Wall collisions
+                if (ball.position.x < -390 || ball.position.x > 390) {
+                    ballVelocity.x *= -1;
+                }
+                if (ball.position.y > 590) {
+                    ballVelocity.y *= -1;
+                }
+
+                // Paddle collision
+                if (paddle && ball.position.y < -160 && ball.position.y > -190) {
+                    if (Math.abs(ball.position.x - paddle.position.x) < 80) {
+                        ballVelocity.y *= -1;
+                        // Add spin based on where ball hits paddle
+                        const hitPos = (ball.position.x - paddle.position.x) / 80;
+                        ballVelocity.x = hitPos * 5;
+                        ball.position.y = -160;
+                    }
+                }
+
+                // Brick collisions
+                bricks.forEach((brick, index) => {
+                    const brickBox = new THREE.Box3().setFromObject(brick);
+                    const ballBox = new THREE.Box3().setFromObject(ball);
+
+                    if (brickBox.intersectsBox(ballBox)) {
+                        scene.remove(brick);
+                        bricks.splice(index, 1);
+                        ballVelocity.y *= -1;
+                        score += 10;
+                        updateHUD();
+
+                        // Check win condition
+                        if (bricks.length === 0) {
+                            endGame(true);
+                        }
+                    }
+                });
+
+                // Lost ball
+                if (ball.position.y < -210) {
+                    lives--;
+                    updateHUD();
+
+                    if (lives <= 0) {
+                        endGame(false);
+                    } else {
+                        // Reset ball
+                        ball.position.set(0, -150, 0);
+                        ballVelocity.set(3, 4, 0);
+                    }
+                }
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        init();
+    </script>
+</body>
+</html>
