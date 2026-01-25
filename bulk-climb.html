@@ -195,9 +195,9 @@
             <div class="title-main">BULK CLIMB</div>
             <div class="subtitle">⬆️ ENDLESS SKYSCRAPER ⬆️</div>
             <div class="instructions">
-                ⬅️ MOVE LEFT • ➡️ MOVE RIGHT<br>
+                ⬅️ ➡️ MOVE BETWEEN 5 LANES<br>
                 TAP LEFT/RIGHT ON MOBILE<br>
-                DODGE FALLING OBSTACLES!
+                DODGE THE FALLING DEBRIS!
             </div>
             <button class="start-btn" onclick="startGame()">START CLIMBING</button>
         </div>
@@ -233,10 +233,12 @@
         let obstacleSpeed = 3;
         let bgMusic;
 
-        const LANE_POSITIONS = [-150, 0, 150]; // Three lanes
-        let currentLane = 1; // Start in middle
+        const LANE_POSITIONS = [-200, -100, 0, 100, 200]; // Five lanes
+        let currentLane = 2; // Start in middle
         let targetX = 0;
         let facingRight = true;
+        let lastObstacleTime = 0;
+        let obstacleSpawnDelay = 1500; // Milliseconds between obstacles
 
         // Building elements
         let buildingSegments = [];
@@ -304,12 +306,12 @@
                 const segmentHeight = 200;
                 const y = i * segmentHeight - 400;
 
-                // Building wall with metallic material
-                const wallGeometry = new THREE.PlaneGeometry(600, segmentHeight);
+                // Building wall with metallic material - wider for 5 lanes
+                const wallGeometry = new THREE.PlaneGeometry(800, segmentHeight);
                 const wallMaterial = new THREE.MeshStandardMaterial({
-                    color: 0x1a1a3a,
-                    metalness: 0.3,
-                    roughness: 0.7,
+                    color: 0x0f0f2a,
+                    metalness: 0.4,
+                    roughness: 0.6,
                     side: THREE.DoubleSide
                 });
                 const wall = new THREE.Mesh(wallGeometry, wallMaterial);
@@ -318,21 +320,38 @@
                 scene.add(wall);
                 buildingSegments.push(wall);
 
-                // Windows with glow effect
+                // Add vertical support beams
+                for (let beam = -3; beam <= 3; beam++) {
+                    const beamGeometry = new THREE.BoxGeometry(8, segmentHeight, 5);
+                    const beamMaterial = new THREE.MeshStandardMaterial({
+                        color: 0x2a2a4a,
+                        metalness: 0.8,
+                        roughness: 0.2
+                    });
+                    const beamMesh = new THREE.Mesh(beamGeometry, beamMaterial);
+                    beamMesh.position.set(beam * 100, y, -95);
+                    scene.add(beamMesh);
+                    buildingSegments.push(beamMesh);
+                }
+
+                // Windows with glow effect - more windows
                 for (let row = 0; row < 4; row++) {
-                    for (let col = 0; col < 6; col++) {
+                    for (let col = 0; col < 8; col++) {
                         const windowGeometry = new THREE.PlaneGeometry(30, 40);
-                        const isLit = Math.random() > 0.3;
+                        const isLit = Math.random() > 0.25;
+                        const windowColor = isLit ? (Math.random() > 0.8 ? 0x66ffff : 0xffff66) : 0x0a0a1a;
+                        const emissiveColor = isLit ? (windowColor === 0x66ffff ? 0x00ffff : 0xffff00) : 0x000000;
+
                         const windowMaterial = new THREE.MeshStandardMaterial({
-                            color: isLit ? 0xffff66 : 0x1a1a2a,
-                            emissive: isLit ? 0xffff00 : 0x000000,
-                            emissiveIntensity: isLit ? 0.8 : 0,
+                            color: windowColor,
+                            emissive: emissiveColor,
+                            emissiveIntensity: isLit ? 1.0 : 0,
                             metalness: 0.1,
-                            roughness: 0.2
+                            roughness: 0.1
                         });
                         const windowMesh = new THREE.Mesh(windowGeometry, windowMaterial);
                         windowMesh.position.set(
-                            (col - 2.5) * 80,
+                            (col - 3.5) * 80,
                             y + (row - 1.5) * 50,
                             -99
                         );
@@ -341,18 +360,19 @@
 
                         // Add glow for lit windows
                         if (isLit) {
-                            const glowGeometry = new THREE.PlaneGeometry(35, 45);
+                            const glowGeometry = new THREE.PlaneGeometry(38, 48);
+                            const glowColor = windowColor === 0x66ffff ? 0x00ffff : 0xffff00;
                             const glowMaterial = new THREE.MeshBasicMaterial({
-                                color: 0xffff00,
+                                color: glowColor,
                                 transparent: true,
-                                opacity: 0.2,
+                                opacity: 0.3,
                                 side: THREE.DoubleSide
                             });
                             const glow = new THREE.Mesh(glowGeometry, glowMaterial);
                             glow.position.set(
-                                (col - 2.5) * 80,
+                                (col - 3.5) * 80,
                                 y + (row - 1.5) * 50,
-                                -98.5
+                                -98
                             );
                             scene.add(glow);
                             windows.push(glow);
@@ -411,7 +431,7 @@
                         if (bulk) bulk.rotation.y = -Math.PI / 2; // Face left
                     }
                 } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
-                    if (currentLane < 2) {
+                    if (currentLane < 4) {
                         currentLane++;
                         targetX = LANE_POSITIONS[currentLane];
                         facingRight = true;
@@ -438,7 +458,7 @@
                         targetX = LANE_POSITIONS[currentLane];
                         facingRight = false;
                         if (bulk) bulk.rotation.y = -Math.PI / 2;
-                    } else if (diff > 0 && currentLane < 2) {
+                    } else if (diff > 0 && currentLane < 4) {
                         currentLane++;
                         targetX = LANE_POSITIONS[currentLane];
                         facingRight = true;
@@ -459,7 +479,7 @@
                     targetX = LANE_POSITIONS[currentLane];
                     facingRight = false;
                     if (bulk) bulk.rotation.y = -Math.PI / 2;
-                } else if (x > centerX && currentLane < 2) {
+                } else if (x > centerX && currentLane < 4) {
                     currentLane++;
                     targetX = LANE_POSITIONS[currentLane];
                     facingRight = true;
@@ -505,7 +525,7 @@
             obstacle.castShadow = true;
             obstacle.receiveShadow = true;
 
-            const lane = Math.floor(Math.random() * 3);
+            const lane = Math.floor(Math.random() * 5);
             obstacle.position.set(LANE_POSITIONS[lane], 400, 0);
             obstacle.userData.type = type;
 
@@ -531,9 +551,10 @@
             gameOver = false;
             score = 0;
             height = 0;
-            currentLane = 1;
-            targetX = LANE_POSITIONS[1];
+            currentLane = 2;
+            targetX = LANE_POSITIONS[2];
             facingRight = true;
+            lastObstacleTime = Date.now();
             obstacles.forEach(obs => scene.remove(obs));
             obstacles = [];
 
@@ -639,9 +660,11 @@
                 }
             });
 
-            // Spawn obstacles
-            if (Math.random() < 0.02) {
+            // Spawn obstacles with controlled spacing
+            const currentTime = Date.now();
+            if (currentTime - lastObstacleTime > obstacleSpawnDelay) {
                 createObstacle();
+                lastObstacleTime = currentTime;
             }
 
             // Update score and height
@@ -653,6 +676,7 @@
             // Gradually increase difficulty
             climbSpeed = 2 + height * 0.01;
             obstacleSpeed = 3 + height * 0.015;
+            obstacleSpawnDelay = Math.max(800, 1500 - height * 10); // Faster spawns as you climb
 
             renderer.render(scene, camera);
         }
