@@ -338,33 +338,38 @@
                 // Windows with glow effect - more windows
                 for (let row = 0; row < 4; row++) {
                     for (let col = 0; col < 8; col++) {
-                        const windowGeometry = new THREE.PlaneGeometry(30, 40);
-                        const isLit = Math.random() > 0.25;
-                        const windowColor = isLit ? (Math.random() > 0.8 ? 0x66ffff : 0xffff66) : 0x0a0a1a;
-                        const emissiveColor = isLit ? (windowColor === 0x66ffff ? 0x00ffff : 0xffff00) : 0x000000;
+                        // Vary pattern based on position to avoid repetition
+                        const seed = Math.sin(i * 12.9898 + row * 78.233 + col * 43.758) * 43758.5453;
+                        const randomVal = seed - Math.floor(seed);
+                        const isLit = randomVal > 0.25;
 
-                        const windowMaterial = new THREE.MeshStandardMaterial({
-                            color: windowColor,
-                            emissive: emissiveColor,
-                            emissiveIntensity: isLit ? 1.0 : 0,
-                            metalness: 0.1,
-                            roughness: 0.1
-                        });
-                        const windowMesh = new THREE.Mesh(windowGeometry, windowMaterial);
-                        windowMesh.position.set(
-                            (col - 3.5) * 80,
-                            y + (row - 1.5) * 50,
-                            -99
-                        );
-                        scene.add(windowMesh);
-                        windows.push(windowMesh);
-
-                        // Add glow for lit windows
                         if (isLit) {
+                            // Create lit window
+                            const windowGeometry = new THREE.PlaneGeometry(30, 40);
+                            const isBlue = randomVal > 0.8;
+                            const windowColor = isBlue ? 0x66ffff : 0xffff66;
+                            const emissiveColor = isBlue ? 0x00ffff : 0xffff00;
+
+                            const windowMaterial = new THREE.MeshStandardMaterial({
+                                color: windowColor,
+                                emissive: emissiveColor,
+                                emissiveIntensity: 1.0,
+                                metalness: 0.1,
+                                roughness: 0.1
+                            });
+                            const windowMesh = new THREE.Mesh(windowGeometry, windowMaterial);
+                            windowMesh.position.set(
+                                (col - 3.5) * 80,
+                                y + (row - 1.5) * 50,
+                                -99
+                            );
+                            scene.add(windowMesh);
+                            windows.push(windowMesh);
+
+                            // Add glow for lit windows
                             const glowGeometry = new THREE.PlaneGeometry(38, 48);
-                            const glowColor = windowColor === 0x66ffff ? 0x00ffff : 0xffff00;
                             const glowMaterial = new THREE.MeshBasicMaterial({
-                                color: glowColor,
+                                color: emissiveColor,
                                 transparent: true,
                                 opacity: 0.3,
                                 side: THREE.DoubleSide
@@ -377,6 +382,22 @@
                             );
                             scene.add(glow);
                             windows.push(glow);
+                        } else {
+                            // Create brick where no window
+                            const brickGeometry = new THREE.BoxGeometry(30, 40, 8);
+                            const brickMaterial = new THREE.MeshStandardMaterial({
+                                color: 0x3a2a4a,
+                                metalness: 0.2,
+                                roughness: 0.8
+                            });
+                            const brickMesh = new THREE.Mesh(brickGeometry, brickMaterial);
+                            brickMesh.position.set(
+                                (col - 3.5) * 80,
+                                y + (row - 1.5) * 50,
+                                -99
+                            );
+                            scene.add(brickMesh);
+                            windows.push(brickMesh);
                         }
                     }
                 }
