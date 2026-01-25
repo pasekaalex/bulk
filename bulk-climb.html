@@ -239,6 +239,7 @@
         let facingRight = true;
         let lastObstacleTime = 0;
         let obstacleSpawnDelay = 1500; // Milliseconds between obstacles
+        let lastObstacleLane = -1; // Track last lane to avoid repeats
 
         // Building elements
         let buildingSegments = [];
@@ -525,7 +526,13 @@
             obstacle.castShadow = true;
             obstacle.receiveShadow = true;
 
-            const lane = Math.floor(Math.random() * 5);
+            // Pick a lane different from the last one
+            let lane;
+            do {
+                lane = Math.floor(Math.random() * 5);
+            } while (lane === lastObstacleLane && LANE_POSITIONS.length > 1);
+
+            lastObstacleLane = lane;
             obstacle.position.set(LANE_POSITIONS[lane], 400, 0);
             obstacle.userData.type = type;
 
@@ -555,6 +562,7 @@
             targetX = LANE_POSITIONS[2];
             facingRight = true;
             lastObstacleTime = Date.now();
+            lastObstacleLane = -1; // Reset lane tracking
             obstacles.forEach(obs => scene.remove(obs));
             obstacles = [];
 
