@@ -341,7 +341,7 @@
                         // Vary pattern based on position to avoid repetition
                         const seed = Math.sin(i * 12.9898 + row * 78.233 + col * 43.758) * 43758.5453;
                         const randomVal = seed - Math.floor(seed);
-                        const isLit = randomVal > 0.25;
+                        const isLit = randomVal > 0.75; // Much fewer windows
 
                         if (isLit) {
                             // Create lit window
