@@ -297,7 +297,7 @@
                 roughness: 0.2
             });
             ball = new THREE.Mesh(ballGeometry, ballMaterial);
-            ball.position.set(0, -70, 0);
+            ball.position.set(0, -40, 0);
             scene.add(ball);
 
             ballVelocity = new THREE.Vector3(3, 4, 0);
@@ -355,7 +355,7 @@
                 // T-pose laying horizontal as paddle
                 bulkModel.rotation.z = Math.PI; // Rotate 180 degrees
                 bulkModel.rotation.x = Math.PI; // Flip to face feet down
-                bulkModel.position.set(0, -100, 0);
+                bulkModel.position.set(0, -120, 0);
 
                 scene.add(bulkModel);
                 paddle = bulkModel;
@@ -393,7 +393,7 @@
             targetPaddleX = 0;
 
             // Reset ball
-            ball.position.set(0, -70, 0);
+            ball.position.set(0, -40, 0);
             ballVelocity.set(3, 4, 0);
 
             // Recreate bricks
@@ -484,13 +484,13 @@
                 }
 
                 // Paddle collision
-                if (paddle && ball.position.y < -80 && ball.position.y > -110) {
+                if (paddle && ball.position.y < -50 && ball.position.y > -80) {
                     if (Math.abs(ball.position.x - paddle.position.x) < 80) {
                         ballVelocity.y *= -1;
                         // Add spin based on where ball hits paddle
                         const hitPos = (ball.position.x - paddle.position.x) / 80;
                         ballVelocity.x = hitPos * 5;
-                        ball.position.y = -80;
+                        ball.position.y = -50;
                     }
                 }
 
@@ -514,7 +514,7 @@
                 });
 
                 // Lost ball
-                if (ball.position.y < -130) {
+                if (ball.position.y < -180) {
                     lives--;
                     updateHUD();
 
@@ -522,7 +522,7 @@
                         endGame(false);
                     } else {
                         // Reset ball
-                        ball.position.set(0, -70, 0);
+                        ball.position.set(0, -40, 0);
                         ballVelocity.set(3, 4, 0);
                     }
                 }
