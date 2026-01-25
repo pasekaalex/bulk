@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BULK CLIMB - Endless Skyscraper</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: linear-gradient(to bottom, #0a0a1f 0%, #1a1a3f 100%);
+            overflow: hidden;
+            font-family: 'Orbitron', monospace;
+            touch-action: none;
+            -webkit-user-select: none;
+            user-select: none;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            min-height: 100vh;
+            padding-top: 10px;
+        }
+
+        #game-container {
+            position: relative;
+            width: min(98vw, 1200px);
+            height: min(90vh, 800px);
+            background: linear-gradient(to bottom, #000428 0%, #004e92 100%);
+            border: 8px solid #9b30ff;
+            border-radius: 15px;
+            box-shadow: 0 0 40px #9b30ff, inset 0 0 30px rgba(155, 48, 255, 0.2);
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        #title-screen {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: linear-gradient(135deg, #1a0a2e 0%, #0a0515 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        #title-screen.hidden { display: none; }
+
+        .title-main {
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            color: #9b30ff;
+            text-shadow: 0 0 30px #ff00ff, 4px 4px 0 #000;
+            letter-spacing: 0.1em;
+            animation: pulse 1s ease-in-out infinite alternate;
+            margin-bottom: 20px;
+        }
+
+        @keyframes pulse {
+            from { transform: scale(1); text-shadow: 0 0 30px #ff00ff, 4px 4px 0 #000; }
+            to { transform: scale(1.05); text-shadow: 0 0 50px #ff00ff, 4px 4px 0 #000; }
+        }
+
+        .subtitle {
+            font-size: clamp(0.8rem, 2vw, 1.2rem);
+            color: #ffd700;
+            margin-bottom: 30px;
+        }
+
+        .instructions {
+            font-size: 0.5rem;
+            color: #fff;
+            text-align: center;
+            line-height: 2.5;
+            max-width: 90%;
+            margin-bottom: 30px;
+        }
+
+        .start-btn {
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            background: linear-gradient(180deg, #9b30ff 0%, #6b0099 100%);
+            color: white;
+            border: 3px solid #ffd700;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+            transition: all 0.2s;
+            font-family: 'Orbitron', monospace;
+        }
+
+        .start-btn:hover { transform: scale(1.1); box-shadow: 0 0 30px rgba(255, 215, 0, 0.8); }
+        .start-btn:active { transform: scale(0.95); }
+
+        #hud {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 50;
+            color: white;
+            font-size: 1.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+
+        #score {
+            font-size: 2rem;
+            color: #ffd700;
+            margin-bottom: 10px;
+        }
+
+        #height {
+            font-size: 1.2rem;
+            color: #39FF14;
+        }
+
+        #game-over-screen {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        #game-over-screen.active { display: flex; }
+
+        .game-over-title {
+            font-size: 3rem;
+            color: #ff0066;
+            text-shadow: 0 0 20px #ff0066;
+            margin-bottom: 20px;
+        }
+
+        .final-score {
+            font-size: 2rem;
+            color: #ffd700;
+            margin-bottom: 30px;
+        }
+
+        .restart-btn {
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            background: linear-gradient(180deg, #39FF14 0%, #2a9e0f 100%);
+            color: black;
+            border: 3px solid #ffd700;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(57, 255, 20, 0.5);
+            transition: all 0.2s;
+            font-family: 'Orbitron', monospace;
+        }
+
+        .restart-btn:hover { transform: scale(1.1); }
+        .restart-btn:active { transform: scale(0.95); }
+
+        @media (max-width: 768px) {
+            body { padding-top: 10px; }
+            #game-container {
+                width: 98vw;
+                height: 85vh;
+                border-width: 6px;
+            }
+            .title-main { font-size: clamp(2rem, 7vw, 3.5rem); }
+            #score { font-size: 1.5rem; }
+            #height { font-size: 1rem; }
+        }
+
+        @media (max-width: 480px) {
+            #game-container {
+                width: 98vw;
+                height: 85vh;
+                border-width: 4px;
+            }
+            .title-main { font-size: 2rem; }
+            .game-over-title { font-size: 2rem; }
+            .final-score { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+
+        <div id="title-screen">
+            <div class="title-main">BULK CLIMB</div>
+            <div class="subtitle">⬆️ ENDLESS SKYSCRAPER ⬆️</div>
+            <div class="instructions">
+                ⬅️ MOVE LEFT • ➡️ MOVE RIGHT<br>
+                TAP LEFT/RIGHT ON MOBILE<br>
+                DODGE FALLING OBSTACLES!
+            </div>
+            <button class="start-btn" onclick="startGame()">START CLIMBING</button>
+        </div>
+
+        <div id="hud">
+            <div id="score">SCORE: 0</div>
+            <div id="height">HEIGHT: 0m</div>
+        </div>
+
+        <div id="game-over-screen">
+            <div class="game-over-title">💥 GAME OVER 💥</div>
+            <div class="final-score">FINAL SCORE: <span id="final-score-value">0</span></div>
+            <div class="final-score">HEIGHT: <span id="final-height-value">0</span>m</div>
+            <button class="restart-btn" onclick="restartGame()">CLIMB AGAIN</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+
+    <script>
+        let scene, camera, renderer;
+        let bulk, bulkModel;
+        let obstacles = [];
+        let gameStarted = false;
+        let gameOver = false;
+        let score = 0;
+        let height = 0;
+        let bulkX = 0;
+        let climbSpeed = 2;
+        let obstacleSpeed = 3;
+
+        const LANE_POSITIONS = [-150, 0, 150]; // Three lanes
+        let currentLane = 1; // Start in middle
+        let targetX = 0;
+
+        // Building elements
+        let buildingSegments = [];
+        let windows = [];
+
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x001428);
+
+            const aspect = window.innerWidth / window.innerHeight;
+            const viewSize = 500;
+            camera = new THREE.OrthographicCamera(
+                -viewSize * aspect, viewSize * aspect,
+                viewSize, -viewSize,
+                1, 1000
+            );
+            camera.position.z = 500;
+            camera.lookAt(0, 0, 0);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.getElementById('game-container').appendChild(renderer.domElement);
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(200, 500, 300);
+            scene.add(directionalLight);
+
+            // Create building background
+            createBuilding();
+
+            // Load Bulk model
+            loadBulk();
+
+            window.addEventListener('resize', onWindowResize);
+            setupControls();
+        }
+
+        function createBuilding() {
+            // Create repeating building segments
+            for (let i = 0; i < 10; i++) {
+                const segmentHeight = 200;
+                const y = i * segmentHeight - 400;
+
+                // Building wall
+                const wallGeometry = new THREE.PlaneGeometry(600, segmentHeight);
+                const wallMaterial = new THREE.MeshPhongMaterial({
+                    color: 0x2a2a4a,
+                    side: THREE.DoubleSide
+                });
+                const wall = new THREE.Mesh(wallGeometry, wallMaterial);
+                wall.position.set(0, y, -100);
+                scene.add(wall);
+                buildingSegments.push(wall);
+
+                // Windows
+                for (let row = 0; row < 4; row++) {
+                    for (let col = 0; col < 6; col++) {
+                        const windowGeometry = new THREE.PlaneGeometry(30, 40);
+                        const windowMaterial = new THREE.MeshBasicMaterial({
+                            color: Math.random() > 0.3 ? 0xffff00 : 0x333333
+                        });
+                        const windowMesh = new THREE.Mesh(windowGeometry, windowMaterial);
+                        windowMesh.position.set(
+                            (col - 2.5) * 80,
+                            y + (row - 1.5) * 50,
+                            -99
+                        );
+                        scene.add(windowMesh);
+                        windows.push(windowMesh);
+                    }
+                }
+            }
+        }
+
+        function loadBulk() {
+            const loader = new THREE.GLTFLoader();
+            loader.load('bulk.glb', (gltf) => {
+                bulkModel = gltf.scene;
+
+                const box = new THREE.Box3().setFromObject(bulkModel);
+                const size = box.getSize(new THREE.Vector3());
+                const maxDim = Math.max(size.x, size.y, size.z);
+                const scale = 120 / maxDim;
+                bulkModel.scale.set(scale, scale, scale);
+
+                bulkModel.position.set(0, -300, 0);
+                bulkModel.rotation.y = Math.PI;
+
+                scene.add(bulkModel);
+                bulk = bulkModel;
+            }, undefined, (error) => {
+                console.error('Error loading model:', error);
+            });
+        }
+
+        function setupControls() {
+            // Keyboard
+            document.addEventListener('keydown', (e) => {
+                if (!gameStarted || gameOver) return;
+
+                if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+                    if (currentLane > 0) {
+                        currentLane--;
+                        targetX = LANE_POSITIONS[currentLane];
+                    }
+                } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+                    if (currentLane < 2) {
+                        currentLane++;
+                        targetX = LANE_POSITIONS[currentLane];
+                    }
+                }
+            });
+
+            // Touch controls
+            let touchStartX = 0;
+            renderer.domElement.addEventListener('touchstart', (e) => {
+                if (!gameStarted || gameOver) return;
+                touchStartX = e.touches[0].clientX;
+            });
+
+            renderer.domElement.addEventListener('touchend', (e) => {
+                if (!gameStarted || gameOver) return;
+                const touchEndX = e.changedTouches[0].clientX;
+                const diff = touchEndX - touchStartX;
+
+                if (Math.abs(diff) > 30) {
+                    if (diff < 0 && currentLane > 0) {
+                        currentLane--;
+                        targetX = LANE_POSITIONS[currentLane];
+                    } else if (diff > 0 && currentLane < 2) {
+                        currentLane++;
+                        targetX = LANE_POSITIONS[currentLane];
+                    }
+                }
+            });
+
+            // Mouse controls
+            renderer.domElement.addEventListener('click', (e) => {
+                if (!gameStarted || gameOver) return;
+                const rect = renderer.domElement.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const centerX = rect.width / 2;
+
+                if (x < centerX && currentLane > 0) {
+                    currentLane--;
+                    targetX = LANE_POSITIONS[currentLane];
+                } else if (x > centerX && currentLane < 2) {
+                    currentLane++;
+                    targetX = LANE_POSITIONS[currentLane];
+                }
+            });
+        }
+
+        function createObstacle() {
+            const types = ['box', 'beam', 'barrel'];
+            const type = types[Math.floor(Math.random() * types.length)];
+
+            let geometry, material, obstacle;
+
+            if (type === 'box') {
+                geometry = new THREE.BoxGeometry(60, 60, 60);
+                material = new THREE.MeshPhongMaterial({ color: 0xff4444 });
+            } else if (type === 'beam') {
+                geometry = new THREE.BoxGeometry(80, 20, 40);
+                material = new THREE.MeshPhongMaterial({ color: 0xffaa00 });
+            } else {
+                geometry = new THREE.CylinderGeometry(30, 30, 60, 16);
+                material = new THREE.MeshPhongMaterial({ color: 0x666666 });
+            }
+
+            obstacle = new THREE.Mesh(geometry, material);
+
+            const lane = Math.floor(Math.random() * 3);
+            obstacle.position.set(LANE_POSITIONS[lane], 400, 0);
+            obstacle.userData.type = type;
+
+            scene.add(obstacle);
+            obstacles.push(obstacle);
+        }
+
+        function startGame() {
+            document.getElementById('title-screen').classList.add('hidden');
+            gameStarted = true;
+            gameOver = false;
+            score = 0;
+            height = 0;
+            currentLane = 1;
+            targetX = LANE_POSITIONS[1];
+            obstacles.forEach(obs => scene.remove(obs));
+            obstacles = [];
+
+            if (bulk) {
+                bulk.position.set(0, -300, 0);
+                bulkX = 0;
+            }
+
+            animate();
+        }
+
+        function restartGame() {
+            document.getElementById('game-over-screen').classList.remove('active');
+            startGame();
+        }
+
+        function endGame() {
+            gameOver = true;
+            document.getElementById('final-score-value').textContent = score;
+            document.getElementById('final-height-value').textContent = height;
+            document.getElementById('game-over-screen').classList.add('active');
+        }
+
+        function onWindowResize() {
+            const aspect = window.innerWidth / window.innerHeight;
+            const viewSize = 500;
+
+            camera.left = -viewSize * aspect;
+            camera.right = viewSize * aspect;
+            camera.top = viewSize;
+            camera.bottom = -viewSize;
+            camera.updateProjectionMatrix();
+
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate() {
+            if (!gameStarted || gameOver) return;
+
+            requestAnimationFrame(animate);
+
+            // Move bulk to target lane
+            if (bulk) {
+                const diff = targetX - bulkX;
+                bulkX += diff * 0.15;
+                bulk.position.x = bulkX;
+
+                // Subtle climbing animation
+                bulk.position.y = -300 + Math.sin(Date.now() * 0.01) * 5;
+                bulk.rotation.z = Math.sin(Date.now() * 0.005) * 0.05;
+            }
+
+            // Move building down (camera moves up)
+            buildingSegments.forEach(seg => {
+                seg.position.y -= climbSpeed;
+                if (seg.position.y < -600) {
+                    seg.position.y += 2000;
+                }
+            });
+
+            windows.forEach(win => {
+                win.position.y -= climbSpeed;
+                if (win.position.y < -600) {
+                    win.position.y += 2000;
+                }
+            });
+
+            // Move obstacles down
+            obstacles.forEach((obs, index) => {
+                obs.position.y -= obstacleSpeed;
+                obs.rotation.x += 0.02;
+                obs.rotation.y += 0.03;
+
+                // Check collision
+                if (bulk) {
+                    const distX = Math.abs(obs.position.x - bulk.position.x);
+                    const distY = Math.abs(obs.position.y - bulk.position.y);
+
+                    if (distX < 50 && distY < 50) {
+                        endGame();
+                    }
+                }
+
+                // Remove if off screen
+                if (obs.position.y < -600) {
+                    scene.remove(obs);
+                    obstacles.splice(index, 1);
+                    score += 10;
+                }
+            });
+
+            // Spawn obstacles
+            if (Math.random() < 0.02) {
+                createObstacle();
+            }
+
+            // Update score and height
+            score += 1;
+            height = Math.floor(score / 10);
+            document.getElementById('score').textContent = 'SCORE: ' + score;
+            document.getElementById('height').textContent = 'HEIGHT: ' + height + 'm';
+
+            // Gradually increase difficulty
+            climbSpeed = 2 + height * 0.01;
+            obstacleSpeed = 3 + height * 0.015;
+
+            renderer.render(scene, camera);
+        }
+
+        init();
+    </script>
+</body>
+</html>
