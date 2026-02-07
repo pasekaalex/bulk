@@ -1,0 +1,73 @@
+import { useRef, useState, useEffect, useCallback } from 'react'
+import { ThreeCanvas } from '../../components/three/ThreeCanvas'
+import { BackButton } from '../../components/layout/BackButton'
+import { TitleScreen } from '../../components/ui/TitleScreen'
+import { GameOverScreen } from '../../components/ui/GameOverScreen'
+import { HUD } from '../../components/ui/HUD'
+import { FlappyBulkEngine } from '../../engines/FlappyBulkEngine'
+
+export default function FlappyBulk() {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const engineRef = useRef<FlappyBulkEngine | null>(null)
+  const [gameState, setGameState] = useState<'title' | 'playing' | 'gameover' | 'win'>('title')
+  const [score, setScore] = useState(0)
+  const [highScore, setHighScore] = useState(0)
+  const [rage, setRage] = useState(0)
+
+  useEffect(() => {
+    if (!containerRef.current) return
+    const engine = new FlappyBulkEngine(containerRef.current, {
+      onScoreChange: setScore,
+      onStateChange: setGameState,
+      onHighScoreChange: setHighScore,
+      onRageChange: setRage,
+    })
+    engineRef.current = engine
+    engine.init()
+    return () => engine.dispose()
+  }, [])
+
+  const handleStart = useCallback(() => {
+    engineRef.current?.start()
+  }, [])
+
+  const handleRestart = useCallback(() => {
+    engineRef.current?.restart()
+  }, [])
+
+  return (
+    <ThreeCanvas ref={containerRef}>
+      <BackButton />
+      {gameState === 'title' && (
+        <TitleScreen
+          title="FLAPPY BULK"
+          subtitle="Fly through the city!"
+          instructions={['Space / Click / Tap to flap', 'Collect orbs for RAGE MODE']}
+          onStart={handleStart}
+        />
+      )}
+      {gameState === 'playing' && (
+        <>
+          <HUD items={[{ label: 'Score', value: score }]} />
+          <div className="absolute top-4 right-4 z-20 w-32">
+            <div className="text-xs text-purple-DEFAULT font-bold mb-1">RAGE</div>
+            <div className="w-full h-3 bg-purple-darker rounded-full overflow-hidden border border-purple-DEFAULT/50">
+              <div
+                className="h-full bg-gradient-to-r from-purple-DEFAULT to-[#ff00ff] rounded-full transition-all"
+                style={{ width: `${rage}%` }}
+              />
+            </div>
+          </div>
+        </>
+      )}
+      {gameState === 'gameover' && (
+        <GameOverScreen
+          title="GAME OVER"
+          score={score}
+          highScore={highScore}
+          onRestart={handleRestart}
+        />
+      )}
+    </ThreeCanvas>
+  )
+}

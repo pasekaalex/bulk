@@ -1,0 +1,187 @@
+import { useState, useRef, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useMarketData } from '../hooks/useMarketData'
+import { Modal } from '../components/ui/Modal'
+import { SoundToggle } from '../components/layout/SoundToggle'
+import { CONTRACT_ADDRESS, API_URLS, SOCIAL_LINKS, ASSET_PATHS, GAMES } from '../constants'
+
+export default function Landing() {
+  const [gamesMenuOpen, setGamesMenuOpen] = useState(false)
+  const [socialsMenuOpen, setSocialsMenuOpen] = useState(false)
+  const [soundOn, setSoundOn] = useState(false)
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const navigate = useNavigate()
+  const { marketCap } = useMarketData()
+
+  const toggleSound = useCallback(() => {
+    setSoundOn((prev) => {
+      const next = !prev
+      if (videoRef.current) videoRef.current.muted = !next
+      return next
+    })
+  }, [])
+
+  const copyContract = useCallback(() => {
+    navigator.clipboard.writeText(CONTRACT_ADDRESS).then(() => {
+      alert('Contract address copied!')
+    })
+  }, [])
+
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center text-center p-5 relative">
+      {/* Background Video */}
+      <video
+        ref={videoRef}
+        src={ASSET_PATHS.video.bulk}
+        className="fixed top-[62.5%] left-1/2 -translate-x-1/2 -translate-y-1/2 scale-75 min-w-full min-h-full w-auto h-auto z-[1] opacity-30 object-cover"
+        autoPlay
+        loop
+        muted
+        playsInline
+      />
+
+      {/* Mobile Top Banner */}
+      <div className="fixed top-0 left-0 right-0 z-[100] text-center p-2.5 bg-gradient-to-b from-black/95 via-black/85 to-transparent md:hidden">
+        <video
+          src={ASSET_PATHS.video.title}
+          className="w-[40%] max-w-[40%] mx-auto block animate-scale-in"
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="auto"
+        />
+      </div>
+
+      {/* Main Content */}
+      <div className="relative z-10 max-w-[600px] w-full flex flex-col items-center gap-6 pt-[120px] md:pt-0">
+        {/* Desktop Title */}
+        <video
+          src={ASSET_PATHS.video.title}
+          className="hidden md:block w-1/3 max-w-[33.33%] -mt-8 animate-scale-in"
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="auto"
+        />
+
+        {/* Contract Address */}
+        <code
+          onClick={copyContract}
+          className="font-mono text-white text-sm sm:text-base break-all py-3.5 px-4.5 border-2 border-purple-DEFAULT/50 rounded-lg cursor-pointer transition-all bg-bulk-bg/30 shadow-[0_0_15px_rgba(155,77,202,0.2)] hover:border-purple-DEFAULT/80 hover:bg-purple-DEFAULT/15 hover:shadow-[0_0_25px_rgba(155,77,202,0.4)] hover:scale-[1.02] animate-fade-in-up"
+          title="Click to copy"
+        >
+          {CONTRACT_ADDRESS}
+        </code>
+
+        {/* Buttons */}
+        <div className="flex flex-col items-center gap-5">
+          <a
+            href={API_URLS.jupiterSwap}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-3 py-4 px-6 w-[300px] bg-gradient-to-br from-gold-DEFAULT to-gold-dark border-3 border-purple-DEFAULT rounded-xl text-black font-bold text-base no-underline font-[family-name:var(--font-display)] shadow-[0_0_30px_rgba(255,215,0,0.6),0_0_60px_rgba(155,77,202,0.4)] transition-all animate-pulse-glow min-h-[44px] hover:scale-110 hover:-rotate-2"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
+              <circle cx="9" cy="21" r="1" />
+              <circle cx="20" cy="21" r="1" />
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+            </svg>
+            BUY NOW
+          </a>
+
+          <button
+            onClick={() => setGamesMenuOpen(true)}
+            className="flex items-center justify-center gap-3 py-4 px-6 w-[300px] bg-gradient-to-br from-purple-DEFAULT to-purple-dark border-3 border-gold-DEFAULT rounded-xl text-white font-bold text-base font-[family-name:var(--font-display)] shadow-[0_0_30px_rgba(155,77,202,0.6),0_0_60px_rgba(255,215,0,0.3)] transition-all animate-pulse-glow min-h-[44px] cursor-pointer hover:scale-110 hover:rotate-1"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <path d="M9 3v18M15 3v18M3 9h18M3 15h18" />
+            </svg>
+            PLAY GAMES
+          </button>
+
+          <button
+            onClick={() => setSocialsMenuOpen(true)}
+            className="flex items-center justify-center gap-3 py-4 px-6 w-[300px] bg-gradient-to-br from-purple-DEFAULT to-purple-dark border-3 border-gold-DEFAULT rounded-xl text-white font-bold text-base font-[family-name:var(--font-display)] shadow-[0_0_30px_rgba(155,77,202,0.6),0_0_60px_rgba(255,215,0,0.3)] transition-all animate-pulse-glow min-h-[44px] cursor-pointer hover:scale-110 hover:rotate-1"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
+              <path d="M17 2H7a5 5 0 0 0-5 5v10a5 5 0 0 0 5 5h10a5 5 0 0 0 5-5V7a5 5 0 0 0-5-5z" />
+              <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+              <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+            </svg>
+            SOCIALS
+          </button>
+        </div>
+
+        {/* Market Cap */}
+        <a
+          href={SOCIAL_LINKS.dexScreener}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-3 py-3.5 px-5 bg-gradient-to-r from-bulk-bg to-bulk-bg-dark border-2 border-purple-DEFAULT/60 rounded-lg text-white text-base shadow-[0_0_15px_rgba(155,77,202,0.4)] whitespace-nowrap animate-fade-in-up no-underline hover:border-purple-DEFAULT hover:shadow-[0_0_25px_rgba(155,77,202,0.6)] transition-all hover:scale-[1.02]"
+        >
+          <span className="text-white/70 text-sm mr-1">MARKET CAP:</span>
+          <span className="font-bold font-mono text-xl">${marketCap}</span>
+        </a>
+      </div>
+
+      {/* Games Menu Modal */}
+      <Modal open={gamesMenuOpen} onClose={() => setGamesMenuOpen(false)} title="GAMES">
+        <div className="flex flex-col gap-4">
+          {GAMES.map((game) => (
+            <button
+              key={game.path}
+              onClick={() => {
+                setGamesMenuOpen(false)
+                navigate(game.path)
+              }}
+              className="flex items-center justify-center gap-3 py-4 px-6 bg-gradient-to-r from-purple-DEFAULT to-purple-dark border-3 border-gold-DEFAULT rounded-xl text-white font-bold text-base font-[family-name:var(--font-display)] shadow-[0_0_30px_rgba(155,77,202,0.6),0_0_60px_rgba(255,215,0,0.3)] transition-all animate-pulse-glow min-h-[44px] cursor-pointer hover:scale-105 hover:shadow-[0_0_50px_rgba(155,77,202,0.9),0_0_100px_rgba(255,215,0,0.6)]"
+            >
+              {game.name}
+            </button>
+          ))}
+        </div>
+      </Modal>
+
+      {/* Socials Menu Modal */}
+      <Modal open={socialsMenuOpen} onClose={() => setSocialsMenuOpen(false)} title="SOCIALS">
+        <div className="flex flex-col gap-4">
+          <a
+            href={SOCIAL_LINKS.dexScreener}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-3 py-4 px-6 bg-gradient-to-r from-purple-DEFAULT to-purple-dark border-3 border-gold-DEFAULT rounded-xl text-white font-bold text-base font-[family-name:var(--font-display)] shadow-[0_0_30px_rgba(155,77,202,0.6)] transition-all min-h-[44px] hover:scale-105 no-underline"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
+              <polyline points="23 6 13.5 15.5 8.5 10.5 1 17" />
+              <polyline points="17 6 23 6 23 12" />
+            </svg>
+            DEXSCREENER
+          </a>
+          <a
+            href={SOCIAL_LINKS.twitter}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-3 py-4 px-6 bg-gradient-to-r from-purple-DEFAULT to-purple-dark border-3 border-gold-DEFAULT rounded-xl text-white font-bold text-base font-[family-name:var(--font-display)] shadow-[0_0_30px_rgba(155,77,202,0.6)] transition-all min-h-[44px] hover:scale-105 no-underline"
+          >
+            <span className="text-xl">&#120143;</span>
+            TWITTER / X
+          </a>
+          <a
+            href={SOCIAL_LINKS.community}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-3 py-4 px-6 bg-gradient-to-r from-purple-DEFAULT to-purple-dark border-3 border-gold-DEFAULT rounded-xl text-white font-bold text-base font-[family-name:var(--font-display)] shadow-[0_0_30px_rgba(155,77,202,0.6)] transition-all min-h-[44px] hover:scale-105 no-underline"
+          >
+            X COMMUNITY
+          </a>
+        </div>
+      </Modal>
+
+      {/* Sound Toggle */}
+      <SoundToggle soundOn={soundOn} onToggle={toggleSound} />
+    </div>
+  )
+}
