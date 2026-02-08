@@ -486,7 +486,7 @@ export default function BulkRampage() {
 
           {/* Joystick (bottom left, mobile only) */}
           <div
-            className="absolute bottom-5 left-5 w-[150px] h-[150px] z-[1000] sm:hidden"
+            className="absolute bottom-20 left-5 w-[150px] h-[150px] z-[1000] sm:hidden"
             onTouchStart={handleJoystickStart}
             onTouchMove={handleJoystickMove}
             onTouchEnd={handleJoystickEnd}
@@ -498,7 +498,7 @@ export default function BulkRampage() {
           </div>
 
           {/* Action buttons (bottom right, mobile only) */}
-          <div className="absolute bottom-5 right-5 flex flex-col gap-3 z-[1000] sm:hidden">
+          <div className="absolute bottom-20 right-5 flex flex-col gap-3 z-[1000] sm:hidden">
             <button
               className="w-16 h-16 rounded-full border-3 flex items-center justify-center text-xl font-bold text-white bg-gradient-to-br from-red-600 to-orange-500 border-yellow-400 shadow-[0_0_25px_rgba(255,0,0,0.6)] active:scale-90 touch-manipulation"
               onTouchStart={(e) => {

@@ -68,19 +68,21 @@ export class BulkRunnerEngine extends BaseGameEngine {
     this.scene.background = new THREE.Color(0x0a0a15)
     this.scene.fog = new THREE.Fog(0x0a0a15, 50, 200)
 
-    // Camera - behind and above player
+    // Camera - behind and above player, wider FOV on mobile
+    const aspect = this.container.clientWidth / this.container.clientHeight
+    const fov = aspect < 1 ? 80 : 60
     const cam = new THREE.PerspectiveCamera(
-      60,
-      this.container.clientWidth / this.container.clientHeight,
+      fov,
+      aspect,
       0.1,
       1000,
     )
-    cam.position.set(0, 5, 10)
+    cam.position.set(0, 6, 12)
     cam.lookAt(0, 2, 0)
     this.camera = cam
 
-    // Renderer shadows
-    this.renderer.shadowMap.enabled = true
+    // Disable shadows for mobile performance
+    this.renderer.shadowMap.enabled = false
 
     // Lights - city night lighting
     const ambient = new THREE.AmbientLight(0x404060, 0.3)
@@ -569,8 +571,8 @@ export class BulkRunnerEngine extends BaseGameEngine {
 
   private setupControls(): void {
     window.addEventListener('keydown', this.boundKeyDown)
-    this.container.addEventListener('touchstart', this.boundTouchStart, { passive: true })
-    this.container.addEventListener('touchend', this.boundTouchEnd, { passive: true })
+    this.container.addEventListener('touchstart', this.boundTouchStart, { passive: false })
+    this.container.addEventListener('touchend', this.boundTouchEnd, { passive: false })
   }
 
   private handleKeyDown(e: KeyboardEvent): void {
@@ -591,6 +593,7 @@ export class BulkRunnerEngine extends BaseGameEngine {
   }
 
   private handleTouchStart(e: TouchEvent): void {
+    e.preventDefault()
     this.touchStartX = e.touches[0].clientX
     this.touchStartY = e.touches[0].clientY
   }

@@ -31,7 +31,8 @@ export abstract class BaseGameEngine {
     this.clock = new THREE.Clock()
     this.renderer = new THREE.WebGLRenderer({ antialias: true })
     this.renderer.setSize(container.clientWidth, container.clientHeight)
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+    const isMobile = container.clientWidth < 768
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.5 : 2))
     container.appendChild(this.renderer.domElement)
 
     this._onResize = this._onResize.bind(this)

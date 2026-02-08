@@ -187,11 +187,11 @@ export default function Bulkagachi() {
         className="flex flex-col relative overflow-hidden"
         style={{
           width: 'min(90vw, 500px)',
-          height: '100vh',
-          maxHeight: '100vh',
+          height: '100dvh',
+          maxHeight: '100dvh',
           background: '#0d0d0d',
-          border: '8px solid #9b30ff',
-          borderRadius: '30px',
+          border: '4px solid #9b30ff',
+          borderRadius: '20px',
           boxShadow: '0 0 40px rgba(155, 48, 255, 0.8), inset 0 0 30px rgba(155, 48, 255, 0.2)',
         }}
       >
@@ -200,10 +200,10 @@ export default function Bulkagachi() {
           className="text-center text-white font-bold"
           style={{
             background: 'linear-gradient(135deg, #9b30ff, #ff00ff)',
-            padding: '15px',
+            padding: '10px',
             fontSize: 'clamp(0.8rem, 4vw, 1.2rem)',
             textShadow: '2px 2px 0 #000',
-            borderBottom: '4px solid #ff00ff',
+            borderBottom: '3px solid #ff00ff',
             fontFamily: "'Press Start 2P', monospace",
           }}
         >
@@ -597,11 +597,11 @@ export default function Bulkagachi() {
 
         {/* Stats Bars */}
         <div
-          className="flex flex-col gap-2.5"
+          className="flex flex-col gap-1.5"
           style={{
             background: '#0a0a0a',
-            padding: '15px',
-            borderTop: '4px solid #9b30ff',
+            padding: '8px 15px',
+            borderTop: '3px solid #9b30ff',
           }}
         >
           <StatBar label="HUNGER" value={hunger} type="hunger" />
@@ -611,10 +611,10 @@ export default function Bulkagachi() {
 
         {/* Action Buttons */}
         <div
-          className="grid grid-cols-3 gap-2.5"
+          className="grid grid-cols-3 gap-2"
           style={{
             background: '#0a0a0a',
-            padding: '15px',
+            padding: '8px 15px 12px',
             borderTop: '2px solid #9b30ff',
           }}
         >
@@ -830,7 +830,7 @@ function ActionButton({ emoji, label, onClick }: { emoji: string; label: string;
         background: 'linear-gradient(135deg, #9b30ff, #6a0dad)',
         border: '3px solid #ff00ff',
         borderRadius: '15px',
-        padding: '15px 10px',
+        padding: '10px 8px',
         color: '#fff',
         fontFamily: "'Press Start 2P', monospace",
         fontSize: 'clamp(0.5rem, 2vw, 0.7rem)',

@@ -58,8 +58,8 @@ export class BulkClimbEngine extends BaseGameEngine {
   }
 
   createScene(): void {
-    this.scene.background = new THREE.Color(0x000820)
-    this.scene.fog = new THREE.Fog(0x000820, 200, 1000)
+    this.scene.background = new THREE.Color(0x87ceeb)
+    this.scene.fog = new THREE.Fog(0x87ceeb, 400, 1200)
 
     // Orthographic camera
     const aspect = this.container.clientWidth / this.container.clientHeight
@@ -75,26 +75,17 @@ export class BulkClimbEngine extends BaseGameEngine {
     this.camera.position.z = 500
     this.camera.lookAt(0, 0, 0)
 
-    // Lighting
-    const ambientLight = new THREE.AmbientLight(0x6666ff, 0.4)
+    // Lighting - bright daytime
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7)
     this.scene.add(ambientLight)
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8)
-    directionalLight.position.set(200, 500, 300)
-    directionalLight.castShadow = true
-    this.scene.add(directionalLight)
+    const sunLight = new THREE.DirectionalLight(0xfff5e0, 1.2)
+    sunLight.position.set(200, 500, 300)
+    this.scene.add(sunLight)
 
-    const purpleLight = new THREE.PointLight(0x9b30ff, 0.5, 500)
-    purpleLight.position.set(-200, 0, 100)
-    this.scene.add(purpleLight)
-
-    const goldLight = new THREE.PointLight(0xffd700, 0.3, 500)
-    goldLight.position.set(200, 0, 100)
-    this.scene.add(goldLight)
-
-    // Enable shadow maps on the renderer
-    this.renderer.shadowMap.enabled = true
-    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap
+    const fillLight = new THREE.DirectionalLight(0x88bbff, 0.4)
+    fillLight.position.set(-200, 200, 100)
+    this.scene.add(fillLight)
 
     // Audio
     this.audio.loadBGM(ASSET_PATHS.audio.bgm, 0.3)
@@ -120,9 +111,9 @@ export class BulkClimbEngine extends BaseGameEngine {
       // Building wall
       const wallGeometry = new THREE.PlaneGeometry(800, this.SEGMENT_HEIGHT)
       const wallMaterial = new THREE.MeshStandardMaterial({
-        color: 0x0f0f2a,
-        metalness: 0.4,
-        roughness: 0.6,
+        color: 0x8899aa,
+        metalness: 0.3,
+        roughness: 0.7,
         side: THREE.DoubleSide,
       })
       const wall = new THREE.Mesh(wallGeometry, wallMaterial)
@@ -135,9 +126,9 @@ export class BulkClimbEngine extends BaseGameEngine {
       for (let beam = -3; beam <= 3; beam++) {
         const beamGeometry = new THREE.BoxGeometry(8, this.SEGMENT_HEIGHT, 5)
         const beamMaterial = new THREE.MeshStandardMaterial({
-          color: 0x2a2a4a,
-          metalness: 0.8,
-          roughness: 0.2,
+          color: 0x667788,
+          metalness: 0.6,
+          roughness: 0.3,
         })
         const beamMesh = new THREE.Mesh(beamGeometry, beamMaterial)
         beamMesh.position.set(beam * 100, y, -95)
@@ -155,17 +146,14 @@ export class BulkClimbEngine extends BaseGameEngine {
           const isLit = randomVal > 0.75
 
           if (isLit) {
-            // Lit window
+            // Window with glass reflection
             const windowGeometry = new THREE.PlaneGeometry(30, 40)
             const isBlue = randomVal > 0.8
-            const windowColor = isBlue ? 0x66ffff : 0xffff66
-            const emissiveColor = isBlue ? 0x00ffff : 0xffff00
+            const windowColor = isBlue ? 0x88ccdd : 0xaaddee
 
             const windowMaterial = new THREE.MeshStandardMaterial({
               color: windowColor,
-              emissive: emissiveColor,
-              emissiveIntensity: 1.0,
-              metalness: 0.1,
+              metalness: 0.5,
               roughness: 0.1,
             })
             const windowMesh = new THREE.Mesh(windowGeometry, windowMaterial)
@@ -176,30 +164,13 @@ export class BulkClimbEngine extends BaseGameEngine {
             )
             this.scene.add(windowMesh)
             this.windows.push(windowMesh)
-
-            // Glow halo
-            const glowGeometry = new THREE.PlaneGeometry(38, 48)
-            const glowMaterial = new THREE.MeshBasicMaterial({
-              color: emissiveColor,
-              transparent: true,
-              opacity: 0.3,
-              side: THREE.DoubleSide,
-            })
-            const glow = new THREE.Mesh(glowGeometry, glowMaterial)
-            glow.position.set(
-              (col - 3.5) * 80,
-              y + (row - 1.5) * 50,
-              -98,
-            )
-            this.scene.add(glow)
-            this.windows.push(glow)
           } else {
-            // Brick / dark window
+            // Brick / concrete
             const brickGeometry = new THREE.BoxGeometry(30, 40, 8)
             const brickMaterial = new THREE.MeshStandardMaterial({
-              color: 0x3a2a4a,
-              metalness: 0.2,
-              roughness: 0.8,
+              color: 0x9a8a7a,
+              metalness: 0.1,
+              roughness: 0.9,
             })
             const brickMesh = new THREE.Mesh(brickGeometry, brickMaterial)
             brickMesh.position.set(
@@ -252,8 +223,8 @@ export class BulkClimbEngine extends BaseGameEngine {
 
   private setupControls(): void {
     document.addEventListener('keydown', this.boundKeyDown)
-    this.renderer.domElement.addEventListener('touchstart', this.boundTouchStart)
-    this.renderer.domElement.addEventListener('touchend', this.boundTouchEnd)
+    this.renderer.domElement.addEventListener('touchstart', this.boundTouchStart, { passive: false })
+    this.renderer.domElement.addEventListener('touchend', this.boundTouchEnd, { passive: false })
     this.renderer.domElement.addEventListener('click', this.boundClick)
   }
 
@@ -268,11 +239,13 @@ export class BulkClimbEngine extends BaseGameEngine {
   }
 
   private handleTouchStart(e: TouchEvent): void {
+    e.preventDefault()
     if (!this.gameStarted || this.gameOver) return
     this.touchStartX = e.touches[0].clientX
   }
 
   private handleTouchEnd(e: TouchEvent): void {
+    e.preventDefault()
     if (!this.gameStarted || this.gameOver) return
     const touchEndX = e.changedTouches[0].clientX
     const diff = touchEndX - this.touchStartX

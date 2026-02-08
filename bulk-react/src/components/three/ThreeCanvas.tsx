@@ -12,7 +12,7 @@ export const ThreeCanvas = forwardRef<HTMLDivElement, ThreeCanvasProps>(
     useImperativeHandle(ref, () => containerRef.current!)
 
     return (
-      <div className={`relative w-full h-screen overflow-hidden bg-black ${className}`}>
+      <div className={`relative w-full h-dvh overflow-hidden bg-black touch-none ${className}`}>
         <div ref={containerRef} className="absolute inset-0" />
         {children}
       </div>

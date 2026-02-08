@@ -256,16 +256,17 @@ export class BulkRampageEngine extends BaseGameEngine {
     cam.position.set(0, 15, 30)
     this.camera = cam
 
-    this.renderer.shadowMap.enabled = true
+    const isMobile = this.container.clientWidth < 768
+    this.renderer.shadowMap.enabled = !isMobile
 
     // Lighting
-    this.scene.add(new THREE.AmbientLight(0xffffff, 0.6))
+    this.scene.add(new THREE.AmbientLight(0xffffff, isMobile ? 0.8 : 0.6))
 
     const sun = new THREE.DirectionalLight(0xffffff, 1)
     sun.position.set(50, 100, 50)
-    sun.castShadow = true
-    sun.shadow.mapSize.width = 2048
-    sun.shadow.mapSize.height = 2048
+    sun.castShadow = !isMobile
+    sun.shadow.mapSize.width = 1024
+    sun.shadow.mapSize.height = 1024
     sun.shadow.camera.near = 0.5
     sun.shadow.camera.far = 500
     sun.shadow.camera.left = -150
