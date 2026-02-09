@@ -4,9 +4,10 @@ interface GameOverScreenProps {
   highScore?: number
   stats?: Record<string, string | number>
   onRestart: () => void
+  gameName?: string
 }
 
-export function GameOverScreen({ title = 'GAME OVER', score, highScore, stats, onRestart }: GameOverScreenProps) {
+export function GameOverScreen({ title = 'GAME OVER', score, highScore, stats, onRestart, gameName }: GameOverScreenProps) {
   return (
     <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm">
       <div className="text-center animate-scale-in">
@@ -28,6 +29,21 @@ export function GameOverScreen({ title = 'GAME OVER', score, highScore, stats, o
         >
           PLAY AGAIN
         </button>
+        {gameName && (
+          <button
+            onClick={() => {
+              const statsText = stats
+                ? ' ' + Object.entries(stats).map(([k, v]) => `${k}: ${v}`).join(' | ')
+                : ''
+              const text = `I scored ${score} in ${gameName}!${statsText}\n\n#BULK #bulkedlol`
+              const url = `https://x.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent('https://bulked.lol')}`
+              window.open(url, '_blank', 'noopener,noreferrer')
+            }}
+            className="mt-3 px-8 py-3 bg-gradient-to-r from-black to-neutral-800 border-2 border-white/30 rounded-xl text-white text-sm font-bold hover:scale-105 transition-transform cursor-pointer"
+          >
+            SHARE TO X
+          </button>
+        )}
       </div>
     </div>
   )

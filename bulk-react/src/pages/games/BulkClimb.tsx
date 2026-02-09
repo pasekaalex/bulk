@@ -4,7 +4,9 @@ import { BackButton } from '../../components/layout/BackButton'
 import { TitleScreen } from '../../components/ui/TitleScreen'
 import { GameOverScreen } from '../../components/ui/GameOverScreen'
 import { HUD } from '../../components/ui/HUD'
+import { AchievementToast } from '../../components/ui/AchievementToast'
 import { BulkClimbEngine } from '../../engines/BulkClimbEngine'
+import { checkAndUnlock, type AchievementDef } from '../../lib/achievements'
 
 export default function BulkClimb() {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -12,6 +14,17 @@ export default function BulkClimb() {
   const [gameState, setGameState] = useState<'title' | 'playing' | 'gameover' | 'win'>('title')
   const [score, setScore] = useState(0)
   const [height, setHeight] = useState(0)
+  const [achievementQueue, setAchievementQueue] = useState<AchievementDef[]>([])
+
+  useEffect(() => {
+    if (gameState !== 'gameover') return
+    const newlyUnlocked = checkAndUnlock([
+      { id: 'climb_100', condition: height >= 100 },
+      { id: 'climb_500', condition: height >= 500 },
+      { id: 'climb_1000', condition: height >= 1000 },
+    ])
+    if (newlyUnlocked.length > 0) setAchievementQueue((q) => [...q, ...newlyUnlocked])
+  }, [gameState, height])
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -56,6 +69,13 @@ export default function BulkClimb() {
           score={score}
           stats={{ Height: `${height}m` }}
           onRestart={handleRestart}
+          gameName="BULK CLIMB"
+        />
+      )}
+      {achievementQueue.length > 0 && (
+        <AchievementToast
+          achievement={achievementQueue[0]}
+          onDone={() => setAchievementQueue((q) => q.slice(1))}
         />
       )}
     </ThreeCanvas>

@@ -103,6 +103,20 @@ export default function Landing() {
           </button>
 
           <button
+            onClick={() => navigate('/achievements')}
+            className="flex items-center justify-center gap-3 py-4 px-6 w-[300px] bg-gradient-to-br from-purple-DEFAULT to-purple-dark border-3 border-gold-DEFAULT rounded-xl text-white font-bold text-base font-[family-name:var(--font-display)] shadow-[0_0_30px_rgba(155,77,202,0.6),0_0_60px_rgba(255,215,0,0.3)] transition-all animate-pulse-glow min-h-[44px] cursor-pointer hover:scale-110 hover:rotate-1"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
+              <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5C7 4 6 9 6 9z" />
+              <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5C17 4 18 9 18 9z" />
+              <path d="M4 22h16" />
+              <path d="M10 22V2h4v20" />
+              <path d="M6 9h12v4a8 8 0 0 1-12 0V9z" />
+            </svg>
+            ACHIEVEMENTS
+          </button>
+
+          <button
             onClick={() => setSocialsMenuOpen(true)}
             className="flex items-center justify-center gap-3 py-4 px-6 w-[300px] bg-gradient-to-br from-purple-DEFAULT to-purple-dark border-3 border-gold-DEFAULT rounded-xl text-white font-bold text-base font-[family-name:var(--font-display)] shadow-[0_0_30px_rgba(155,77,202,0.6),0_0_60px_rgba(255,215,0,0.3)] transition-all animate-pulse-glow min-h-[44px] cursor-pointer hover:scale-110 hover:rotate-1"
           >

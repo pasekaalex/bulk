@@ -3,7 +3,9 @@ import { ThreeCanvas } from '../../components/three/ThreeCanvas'
 import { BackButton } from '../../components/layout/BackButton'
 import { TitleScreen } from '../../components/ui/TitleScreen'
 import { GameOverScreen } from '../../components/ui/GameOverScreen'
+import { AchievementToast } from '../../components/ui/AchievementToast'
 import { BulkRampageEngine, type RampageCallbacks } from '../../engines/BulkRampageEngine'
+import { checkAndUnlock, type AchievementDef } from '../../lib/achievements'
 
 interface FloatingText {
   id: number
@@ -69,6 +71,18 @@ export default function BulkRampage() {
   const [totalKills, setTotalKills] = useState(0)
   const [maxCombo, setMaxCombo] = useState(0)
   const [destroyedBuildings, setDestroyedBuildings] = useState(0)
+  const [achievementQueue, setAchievementQueue] = useState<AchievementDef[]>([])
+
+  useEffect(() => {
+    if (gameState !== 'gameover') return
+    const newlyUnlocked = checkAndUnlock([
+      { id: 'rampage_wave3', condition: wave >= 3 },
+      { id: 'rampage_wave5', condition: wave >= 5 },
+      { id: 'rampage_kills50', condition: totalKills >= 50 },
+      { id: 'rampage_combo20', condition: maxCombo >= 20 },
+    ])
+    if (newlyUnlocked.length > 0) setAchievementQueue((q) => [...q, ...newlyUnlocked])
+  }, [gameState, wave, totalKills, maxCombo])
 
   // Joystick state
   const joystickTouchIdRef = useRef<number | null>(null)
@@ -559,6 +573,13 @@ export default function BulkRampage() {
             'Buildings Destroyed': destroyedBuildings,
           }}
           onRestart={handleRestart}
+          gameName="BULK RAMPAGE"
+        />
+      )}
+      {achievementQueue.length > 0 && (
+        <AchievementToast
+          achievement={achievementQueue[0]}
+          onDone={() => setAchievementQueue((q) => q.slice(1))}
         />
       )}
     </ThreeCanvas>

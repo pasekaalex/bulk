@@ -4,7 +4,9 @@ import { BackButton } from '../../components/layout/BackButton'
 import { TitleScreen } from '../../components/ui/TitleScreen'
 import { GameOverScreen } from '../../components/ui/GameOverScreen'
 import { HUD } from '../../components/ui/HUD'
+import { AchievementToast } from '../../components/ui/AchievementToast'
 import { FlappyBulkEngine } from '../../engines/FlappyBulkEngine'
+import { checkAndUnlock, type AchievementDef } from '../../lib/achievements'
 
 export default function FlappyBulk() {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -13,6 +15,18 @@ export default function FlappyBulk() {
   const [score, setScore] = useState(0)
   const [highScore, setHighScore] = useState(0)
   const [rage, setRage] = useState(0)
+  const [achievementQueue, setAchievementQueue] = useState<AchievementDef[]>([])
+
+  useEffect(() => {
+    if (gameState !== 'gameover') return
+    const newlyUnlocked = checkAndUnlock([
+      { id: 'flappy_first', condition: score >= 1 },
+      { id: 'flappy_10', condition: score >= 10 },
+      { id: 'flappy_25', condition: score >= 25 },
+      { id: 'flappy_50', condition: score >= 50 },
+    ])
+    if (newlyUnlocked.length > 0) setAchievementQueue((q) => [...q, ...newlyUnlocked])
+  }, [gameState, score])
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -66,6 +80,13 @@ export default function FlappyBulk() {
           score={score}
           highScore={highScore}
           onRestart={handleRestart}
+          gameName="FLAPPY BULK"
+        />
+      )}
+      {achievementQueue.length > 0 && (
+        <AchievementToast
+          achievement={achievementQueue[0]}
+          onDone={() => setAchievementQueue((q) => q.slice(1))}
         />
       )}
     </ThreeCanvas>

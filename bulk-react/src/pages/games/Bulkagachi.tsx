@@ -8,6 +8,7 @@ import {
   type AchievementDef,
   type PoopData,
 } from '../../engines/BulkagachiEngine'
+import { syncBulkagachi } from '../../lib/achievements'
 
 const GROWTH_STAGE_EMOJI: Record<string, string> = {
   BABY: '\u{1F37C}',
@@ -93,10 +94,11 @@ export default function Bulkagachi() {
       },
       onComboChange: setCombo,
       onMessageChange: setMessage,
-      onAchievementUnlocked: (_id, title) => {
+      onAchievementUnlocked: (id, title) => {
         if (engineRef.current) {
           setAchievements(engineRef.current.getAchievements())
         }
+        syncBulkagachi({ [id]: true })
         setAchievementToast(title)
         setTimeout(() => setAchievementToast(null), 3000)
       },
@@ -116,6 +118,7 @@ export default function Bulkagachi() {
     engine.init()
     setAchievementsList(engine.getAchievementsList())
     setAchievements(engine.getAchievements())
+    syncBulkagachi(engine.getAchievements())
     setPoops(engine.getPoops())
 
     return () => {
