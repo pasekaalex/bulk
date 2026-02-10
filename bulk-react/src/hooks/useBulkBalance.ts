@@ -24,14 +24,18 @@ export function useBulkBalance() {
       .getParsedTokenAccountsByOwner(publicKey, { mint: BULK_MINT })
       .then((result) => {
         if (cancelled) return
+        console.log('[useBulkBalance] Found', result.value.length, 'token accounts')
         let total = 0
         for (const account of result.value) {
           const amount = account.account.data.parsed?.info?.tokenAmount?.uiAmount
+          console.log('[useBulkBalance] Account amount:', amount)
           if (typeof amount === 'number') total += amount
         }
+        console.log('[useBulkBalance] Total balance:', total)
         setBalance(total)
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('[useBulkBalance] Error fetching balance:', err)
         if (!cancelled) setBalance(null)
       })
       .finally(() => {

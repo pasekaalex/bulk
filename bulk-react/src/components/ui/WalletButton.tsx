@@ -7,6 +7,8 @@ export function WalletButton() {
   const { setVisible } = useWalletModal()
   const { balance, isHolder, loading } = useBulkBalance()
 
+  console.log('[WalletButton] publicKey:', publicKey?.toBase58(), 'balance:', balance, 'isHolder:', isHolder, 'loading:', loading)
+
   if (!publicKey) {
     return (
       <button
