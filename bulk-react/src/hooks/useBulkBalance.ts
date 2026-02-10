@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react'
-import { useConnection, useWallet } from '@solana/wallet-adapter-react'
+import { useWallet } from '@solana/wallet-adapter-react'
 import { PublicKey } from '@solana/web3.js'
-import { CONTRACT_ADDRESS, BULK_REQUIRED } from '../constants'
+import { CONTRACT_ADDRESS, BULK_REQUIRED, SOLANA_RPC_URL } from '../constants'
 
 const BULK_MINT = new PublicKey(CONTRACT_ADDRESS)
 // pump.fun tokens use Token-2022
 const TOKEN_PROGRAM_ID = new PublicKey('TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb')
+const ASSOCIATED_TOKEN_PROGRAM_ID = new PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL')
 
 function getAssociatedTokenAddress(wallet: PublicKey, mint: PublicKey): PublicKey {
-  const ASSOCIATED_TOKEN_PROGRAM_ID = new PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL')
   const [ata] = PublicKey.findProgramAddressSync(
     [wallet.toBuffer(), TOKEN_PROGRAM_ID.toBuffer(), mint.toBuffer()],
     ASSOCIATED_TOKEN_PROGRAM_ID,
@@ -16,8 +16,32 @@ function getAssociatedTokenAddress(wallet: PublicKey, mint: PublicKey): PublicKe
   return ata
 }
 
+async function fetchTokenBalance(walletAddress: PublicKey): Promise<number> {
+  const ata = getAssociatedTokenAddress(walletAddress, BULK_MINT)
+
+  const res = await fetch(SOLANA_RPC_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'getTokenAccountBalance',
+      params: [ata.toBase58()],
+    }),
+  })
+
+  const json = await res.json()
+
+  if (json.error) {
+    // Account not found = no tokens
+    console.log('[useBulkBalance] RPC error (likely no token account):', json.error.message)
+    return 0
+  }
+
+  return json.result?.value?.uiAmount ?? 0
+}
+
 export function useBulkBalance() {
-  const { connection } = useConnection()
   const { publicKey } = useWallet()
   const [balance, setBalance] = useState<number | null>(null)
   const [loading, setLoading] = useState(false)
@@ -31,21 +55,15 @@ export function useBulkBalance() {
     let cancelled = false
     setLoading(true)
 
-    const ata = getAssociatedTokenAddress(publicKey, BULK_MINT)
-    console.log('[useBulkBalance] Checking ATA:', ata.toBase58(), 'for wallet:', publicKey.toBase58())
-
-    connection
-      .getTokenAccountBalance(ata)
-      .then((result) => {
+    fetchTokenBalance(publicKey)
+      .then((amount) => {
         if (cancelled) return
-        const amount = result.value.uiAmount ?? 0
-        console.log('[useBulkBalance] Balance:', amount)
+        console.log('[useBulkBalance] Balance for', publicKey.toBase58(), ':', amount)
         setBalance(amount)
       })
       .catch((err) => {
-        console.error('[useBulkBalance] Error:', err?.message || err)
-        // Account doesn't exist = 0 balance
-        if (!cancelled) setBalance(0)
+        console.error('[useBulkBalance] Fetch failed:', err)
+        if (!cancelled) setBalance(null)
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
@@ -54,7 +72,7 @@ export function useBulkBalance() {
     return () => {
       cancelled = true
     }
-  }, [publicKey, connection])
+  }, [publicKey])
 
   return {
     balance,

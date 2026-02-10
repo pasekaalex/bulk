@@ -76,7 +76,7 @@ export default function Landing() {
       </div>
 
       {/* Wallet Button */}
-      <div className="fixed top-3 right-3 z-[101] relative">
+      <div className="fixed top-3 right-3 z-[99] hidden md:block">
         <WalletButton />
       </div>
 
@@ -102,6 +102,11 @@ export default function Landing() {
           <span className="relative z-10">{CONTRACT_ADDRESS}</span>
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-purple-DEFAULT/10 to-transparent animate-shimmer" />
         </code>
+
+        {/* Mobile Wallet Button */}
+        <div className="md:hidden">
+          <WalletButton />
+        </div>
 
         {/* Buttons */}
         <div className="flex flex-col items-center gap-5">
