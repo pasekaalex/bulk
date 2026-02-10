@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMarketData } from '../hooks/useMarketData'
 import { Modal } from '../components/ui/Modal'
@@ -9,9 +9,18 @@ export default function Landing() {
   const [gamesMenuOpen, setGamesMenuOpen] = useState(false)
   const [socialsMenuOpen, setSocialsMenuOpen] = useState(false)
   const [soundOn, setSoundOn] = useState(false)
+  const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 })
   const videoRef = useRef<HTMLVideoElement>(null)
   const navigate = useNavigate()
   const { marketCap } = useMarketData()
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setCursorPos({ x: e.clientX, y: e.clientY })
+    }
+    window.addEventListener('mousemove', handleMouseMove)
+    return () => window.removeEventListener('mousemove', handleMouseMove)
+  }, [])
 
   const toggleSound = useCallback(() => {
     setSoundOn((prev) => {
@@ -28,7 +37,17 @@ export default function Landing() {
   }, [])
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center text-center p-5 relative">
+    <div className="min-h-screen flex flex-col items-center justify-center text-center p-5 relative overflow-hidden">
+      {/* Purple oozing cursor effect */}
+      <div
+        className="pointer-events-none fixed w-80 h-80 rounded-full opacity-30 blur-[100px] transition-all duration-300 ease-out z-[2]"
+        style={{
+          background: 'radial-gradient(circle, rgba(155,77,202,0.8) 0%, rgba(155,77,202,0.4) 40%, transparent 70%)',
+          left: cursorPos.x - 160,
+          top: cursorPos.y - 160,
+        }}
+      />
+
       {/* Background Video */}
       <video
         ref={videoRef}
@@ -69,10 +88,11 @@ export default function Landing() {
         {/* Contract Address */}
         <code
           onClick={copyContract}
-          className="font-mono text-white text-sm sm:text-base break-all py-3.5 px-4.5 border-2 border-purple-DEFAULT/50 rounded-lg cursor-pointer transition-all bg-bulk-bg/30 shadow-[0_0_15px_rgba(155,77,202,0.2)] hover:border-purple-DEFAULT/80 hover:bg-purple-DEFAULT/15 hover:shadow-[0_0_25px_rgba(155,77,202,0.4)] hover:scale-[1.02] animate-fade-in-up"
+          className="font-mono text-white text-sm sm:text-base break-all py-3.5 px-4.5 border-2 border-purple-DEFAULT rounded-lg cursor-pointer transition-all bg-bulk-bg/40 shadow-[0_0_20px_rgba(155,77,202,0.5),0_0_40px_rgba(155,77,202,0.2)] hover:border-gold-DEFAULT hover:bg-purple-DEFAULT/20 hover:shadow-[0_0_35px_rgba(255,215,0,0.6),0_0_60px_rgba(155,77,202,0.5)] hover:scale-[1.04] animate-pulse-glow relative overflow-hidden"
           title="Click to copy"
         >
-          {CONTRACT_ADDRESS}
+          <span className="relative z-10">{CONTRACT_ADDRESS}</span>
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-purple-DEFAULT/10 to-transparent animate-shimmer" />
         </code>
 
         {/* Buttons */}
