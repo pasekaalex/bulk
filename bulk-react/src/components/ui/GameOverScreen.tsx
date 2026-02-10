@@ -35,7 +35,7 @@ export function GameOverScreen({ title = 'GAME OVER', score, highScore, stats, o
               const statsText = stats
                 ? ' ' + Object.entries(stats).map(([k, v]) => `${k}: ${v}`).join(' | ')
                 : ''
-              const text = `I scored ${score} in ${gameName}!${statsText}\n\n#BULK #bulkedlol`
+              const text = `I scored ${score} in ${gameName}!${statsText}\n\n$BULK`
               const url = `https://x.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent('https://bulked.lol')}`
               window.open(url, '_blank', 'noopener,noreferrer')
             }}
