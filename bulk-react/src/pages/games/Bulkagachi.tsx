@@ -225,9 +225,6 @@ export default function Bulkagachi() {
               CONNECT WALLET
             </button>
           )}
-          <p className="text-white/30 text-[0.55rem]" style={{ fontFamily: "'Press Start 2P', monospace" }}>
-            Read-only — no transactions
-          </p>
         </div>
         <style>{`@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');`}</style>
       </div>

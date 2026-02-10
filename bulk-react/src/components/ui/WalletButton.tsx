@@ -48,7 +48,6 @@ export function WalletButton() {
           X
         </button>
       </div>
-      <span className="text-white/30 text-[0.5rem]">Read-only — no transactions</span>
     </div>
   )
 }

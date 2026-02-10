@@ -1,6 +1,6 @@
 export const CONTRACT_ADDRESS = 'F4TJfiMVi7zFGRJj4FVC1Zuj7fdCo6skKa4SnAU4pump'
 
-export const SOLANA_RPC_URL = 'https://api.mainnet-beta.solana.com'
+export const SOLANA_RPC_URL = 'https://solana-rpc.publicnode.com'
 export const BULK_REQUIRED = 10_000
 
 export const API_URLS = {
