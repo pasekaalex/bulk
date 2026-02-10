@@ -1,4 +1,7 @@
 import { useRef, useState, useEffect, useCallback } from 'react'
+import { useWallet } from '@solana/wallet-adapter-react'
+import { useWalletModal } from '@solana/wallet-adapter-react-ui'
+import { useBulkBalance } from '../../hooks/useBulkBalance'
 import { BackButton } from '../../components/layout/BackButton'
 import {
   BulkagachiEngine,
@@ -25,6 +28,10 @@ const MOOD_CONFIG: Record<string, { emoji: string; text: string }> = {
 }
 
 export default function Bulkagachi() {
+  const { publicKey } = useWallet()
+  const { setVisible } = useWalletModal()
+  const { isHolder, loading: balanceLoading } = useBulkBalance()
+
   const sceneRef = useRef<HTMLDivElement>(null)
   const engineRef = useRef<BulkagachiEngine | null>(null)
 
@@ -181,6 +188,51 @@ export default function Bulkagachi() {
   }, [])
 
   const dayNightPhase = engineRef.current?.getDayNightPhase() ?? 'day'
+
+  if (!isHolder) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #1a0a2e 0%, #2d1b4e 50%, #1a0a2e 100%)' }}>
+        <BackButton />
+        <div className="flex flex-col items-center gap-6 text-center px-8">
+          <div className="text-6xl">
+            {'\u{1F512}'}
+          </div>
+          <h1
+            className="text-gold-DEFAULT text-xl font-bold"
+            style={{ fontFamily: "'Press Start 2P', monospace", textShadow: '0 0 20px rgba(255,215,0,0.5)' }}
+          >
+            TOKEN GATED
+          </h1>
+          <p
+            className="text-white/70 text-sm max-w-[300px]"
+            style={{ fontFamily: "'Press Start 2P', monospace", lineHeight: '2' }}
+          >
+            {publicKey
+              ? balanceLoading
+                ? 'CHECKING BALANCE...'
+                : 'HOLD 10,000 $BULK TO UNLOCK BULKAGACHI'
+              : 'CONNECT YOUR WALLET & HOLD 10,000 $BULK TO PLAY'}
+          </p>
+          {!publicKey && (
+            <button
+              onClick={() => setVisible(true)}
+              className="flex items-center justify-center gap-3 py-4 px-6 bg-gradient-to-br from-purple-DEFAULT to-purple-dark border-3 border-gold-DEFAULT rounded-xl text-white font-bold text-base font-[family-name:var(--font-display)] shadow-[0_0_30px_rgba(155,77,202,0.6),0_0_60px_rgba(255,215,0,0.3)] transition-all cursor-pointer hover:scale-110"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
+                <rect x="2" y="6" width="20" height="12" rx="2" />
+                <path d="M2 10h20" />
+              </svg>
+              CONNECT WALLET
+            </button>
+          )}
+          <p className="text-white/30 text-[0.55rem]" style={{ fontFamily: "'Press Start 2P', monospace" }}>
+            Read-only — no transactions
+          </p>
+        </div>
+        <style>{`@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');`}</style>
+      </div>
+    )
+  }
 
   return (
     <div className="fixed inset-0 flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #1a0a2e 0%, #2d1b4e 50%, #1a0a2e 100%)' }}>

@@ -1,8 +1,10 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMarketData } from '../hooks/useMarketData'
+import { useBulkBalance } from '../hooks/useBulkBalance'
 import { Modal } from '../components/ui/Modal'
 import { SoundToggle } from '../components/layout/SoundToggle'
+import { WalletButton } from '../components/ui/WalletButton'
 import { CONTRACT_ADDRESS, API_URLS, SOCIAL_LINKS, ASSET_PATHS, GAMES } from '../constants'
 
 export default function Landing() {
@@ -13,6 +15,7 @@ export default function Landing() {
   const videoRef = useRef<HTMLVideoElement>(null)
   const navigate = useNavigate()
   const { marketCap } = useMarketData()
+  const { isHolder } = useBulkBalance()
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -70,6 +73,11 @@ export default function Landing() {
           playsInline
           preload="auto"
         />
+      </div>
+
+      {/* Wallet Button */}
+      <div className="fixed top-3 right-3 z-[101] relative">
+        <WalletButton />
       </div>
 
       {/* Main Content */}
@@ -164,18 +172,37 @@ export default function Landing() {
       {/* Games Menu Modal */}
       <Modal open={gamesMenuOpen} onClose={() => setGamesMenuOpen(false)} title="GAMES">
         <div className="flex flex-col gap-4">
-          {GAMES.map((game) => (
-            <button
-              key={game.path}
-              onClick={() => {
-                setGamesMenuOpen(false)
-                navigate(game.path)
-              }}
-              className="flex items-center justify-center gap-3 py-4 px-6 bg-gradient-to-r from-purple-DEFAULT to-purple-dark border-3 border-gold-DEFAULT rounded-xl text-white font-bold text-base font-[family-name:var(--font-display)] shadow-[0_0_30px_rgba(155,77,202,0.6),0_0_60px_rgba(255,215,0,0.3)] transition-all animate-pulse-glow min-h-[44px] cursor-pointer hover:scale-105 hover:shadow-[0_0_50px_rgba(155,77,202,0.9),0_0_100px_rgba(255,215,0,0.6)]"
-            >
-              {game.name}
-            </button>
-          ))}
+          {GAMES.map((game) => {
+            const isBulkagachi = game.path === '/games/bulkagachi'
+            const locked = isBulkagachi && !isHolder
+
+            return (
+              <button
+                key={game.path}
+                onClick={() => {
+                  if (locked) return
+                  setGamesMenuOpen(false)
+                  navigate(game.path)
+                }}
+                className={`flex items-center justify-center gap-3 py-4 px-6 border-3 rounded-xl font-bold text-base font-[family-name:var(--font-display)] transition-all min-h-[44px] ${
+                  locked
+                    ? 'bg-gradient-to-r from-purple-DEFAULT/40 to-purple-dark/40 border-purple-DEFAULT/50 text-white/50 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-purple-DEFAULT to-purple-dark border-gold-DEFAULT text-white shadow-[0_0_30px_rgba(155,77,202,0.6),0_0_60px_rgba(255,215,0,0.3)] animate-pulse-glow cursor-pointer hover:scale-105 hover:shadow-[0_0_50px_rgba(155,77,202,0.9),0_0_100px_rgba(255,215,0,0.6)]'
+                }`}
+              >
+                {locked && (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4 opacity-60">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                  </svg>
+                )}
+                {game.name}
+                {locked && (
+                  <span className="text-[0.6rem] text-gold-DEFAULT/70 font-normal ml-1">HOLD 10K $BULK</span>
+                )}
+              </button>
+            )
+          })}
         </div>
       </Modal>
 
