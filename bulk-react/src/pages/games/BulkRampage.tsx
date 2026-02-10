@@ -6,6 +6,7 @@ import { GameOverScreen } from '../../components/ui/GameOverScreen'
 import { AchievementToast } from '../../components/ui/AchievementToast'
 import { BulkRampageEngine, type RampageCallbacks } from '../../engines/BulkRampageEngine'
 import { checkAndUnlock, type AchievementDef } from '../../lib/achievements'
+import { useScoreSubmission } from '../../hooks/useLeaderboard'
 
 interface FloatingText {
   id: number
@@ -72,9 +73,11 @@ export default function BulkRampage() {
   const [maxCombo, setMaxCombo] = useState(0)
   const [destroyedBuildings, setDestroyedBuildings] = useState(0)
   const [achievementQueue, setAchievementQueue] = useState<AchievementDef[]>([])
+  const { submit, state: submitState, reset: resetSubmit, wallet } = useScoreSubmission()
 
   useEffect(() => {
     if (gameState !== 'gameover') return
+    resetSubmit()
     const newlyUnlocked = checkAndUnlock([
       { id: 'rampage_wave3', condition: wave >= 3 },
       { id: 'rampage_wave5', condition: wave >= 5 },
@@ -170,6 +173,15 @@ export default function BulkRampage() {
   const handleRestart = useCallback(() => {
     engineRef.current?.restart()
   }, [])
+
+  const handleSubmitScore = useCallback(() => {
+    submit('rampage', score, {
+      wave,
+      kills: totalKills,
+      maxCombo,
+      buildings: destroyedBuildings,
+    })
+  }, [submit, score, wave, totalKills, maxCombo, destroyedBuildings])
 
   // Mobile handlers
   const handleJoystickStart = useCallback((e: React.TouchEvent) => {
@@ -574,6 +586,8 @@ export default function BulkRampage() {
           }}
           onRestart={handleRestart}
           gameName="BULK RAMPAGE"
+          onSubmitScore={wallet ? handleSubmitScore : undefined}
+          submitState={submitState}
         />
       )}
       {achievementQueue.length > 0 && (

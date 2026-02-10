@@ -1,3 +1,5 @@
+import type { SubmitState } from '../../hooks/useLeaderboard'
+
 interface GameOverScreenProps {
   title?: string
   score: number
@@ -5,9 +7,27 @@ interface GameOverScreenProps {
   stats?: Record<string, string | number>
   onRestart: () => void
   gameName?: string
+  onSubmitScore?: () => void
+  submitState?: SubmitState
 }
 
-export function GameOverScreen({ title = 'GAME OVER', score, highScore, stats, onRestart, gameName }: GameOverScreenProps) {
+const submitLabels: Record<SubmitState, string> = {
+  idle: 'SUBMIT SCORE',
+  submitting: 'SUBMITTING...',
+  submitted: 'SUBMITTED!',
+  error: 'FAILED - RETRY',
+}
+
+export function GameOverScreen({
+  title = 'GAME OVER',
+  score,
+  highScore,
+  stats,
+  onRestart,
+  gameName,
+  onSubmitScore,
+  submitState = 'idle',
+}: GameOverScreenProps) {
   return (
     <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm">
       <div className="text-center animate-scale-in">
@@ -29,6 +49,26 @@ export function GameOverScreen({ title = 'GAME OVER', score, highScore, stats, o
         >
           PLAY AGAIN
         </button>
+        {onSubmitScore && (
+          <button
+            onClick={submitState !== 'submitting' ? onSubmitScore : undefined}
+            disabled={submitState === 'submitting'}
+            className={`mt-3 px-8 py-3 border-2 rounded-xl text-sm font-bold transition-transform cursor-pointer block mx-auto ${
+              submitState === 'submitted'
+                ? 'bg-gradient-to-r from-green-600 to-green-700 border-green-400 text-white'
+                : submitState === 'error'
+                  ? 'bg-gradient-to-r from-red-600 to-red-700 border-red-400 text-white hover:scale-105'
+                  : submitState === 'submitting'
+                    ? 'bg-gradient-to-r from-gold-DEFAULT/60 to-gold-dark/60 border-gold-DEFAULT/60 text-black/60 animate-pulse'
+                    : 'bg-gradient-to-r from-gold-DEFAULT to-gold-dark border-gold-DEFAULT text-black hover:scale-105'
+            }`}
+          >
+            {submitLabels[submitState]}
+          </button>
+        )}
+        {!onSubmitScore && gameName && (
+          <p className="mt-2 text-xs text-white/40">Connect wallet to submit score</p>
+        )}
         {gameName && (
           <button
             onClick={() => {

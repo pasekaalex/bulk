@@ -63,10 +63,10 @@ export default function Landing() {
       />
 
       {/* Mobile Top Banner */}
-      <div className="fixed top-0 left-0 right-0 z-[100] text-center p-2.5 bg-gradient-to-b from-black/95 via-black/85 to-transparent md:hidden">
+      <div className="fixed top-0 left-0 right-0 z-[100] flex justify-center p-2.5 bg-gradient-to-b from-black/95 via-black/85 to-transparent md:hidden">
         <video
           src={ASSET_PATHS.video.title}
-          className="w-[40%] max-w-[40%] mx-auto block animate-scale-in"
+          className="w-[30%] max-w-[30%] animate-scale-in"
           autoPlay
           loop
           muted
@@ -147,6 +147,16 @@ export default function Landing() {
               <path d="M6 9h12v4a8 8 0 0 1-12 0V9z" />
             </svg>
             ACHIEVEMENTS
+          </button>
+
+          <button
+            onClick={() => navigate('/leaderboard')}
+            className="flex items-center justify-center gap-3 py-4 px-6 w-[300px] bg-gradient-to-br from-purple-DEFAULT to-purple-dark border-3 border-gold-DEFAULT rounded-xl text-white font-bold text-base font-[family-name:var(--font-display)] shadow-[0_0_30px_rgba(155,77,202,0.6),0_0_60px_rgba(255,215,0,0.3)] transition-all animate-pulse-glow min-h-[44px] cursor-pointer hover:scale-110 hover:rotate-1"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+            </svg>
+            LEADERBOARD
           </button>
 
           <button

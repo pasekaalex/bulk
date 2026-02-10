@@ -7,6 +7,7 @@ import { HUD } from '../../components/ui/HUD'
 import { AchievementToast } from '../../components/ui/AchievementToast'
 import { FlappyBulkEngine } from '../../engines/FlappyBulkEngine'
 import { checkAndUnlock, type AchievementDef } from '../../lib/achievements'
+import { useScoreSubmission } from '../../hooks/useLeaderboard'
 
 export default function FlappyBulk() {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -16,9 +17,11 @@ export default function FlappyBulk() {
   const [highScore, setHighScore] = useState(0)
   const [rage, setRage] = useState(0)
   const [achievementQueue, setAchievementQueue] = useState<AchievementDef[]>([])
+  const { submit, state: submitState, reset: resetSubmit, wallet } = useScoreSubmission()
 
   useEffect(() => {
     if (gameState !== 'gameover') return
+    resetSubmit()
     const newlyUnlocked = checkAndUnlock([
       { id: 'flappy_first', condition: score >= 1 },
       { id: 'flappy_10', condition: score >= 10 },
@@ -48,6 +51,10 @@ export default function FlappyBulk() {
   const handleRestart = useCallback(() => {
     engineRef.current?.restart()
   }, [])
+
+  const handleSubmitScore = useCallback(() => {
+    submit('flappy', score)
+  }, [submit, score])
 
   return (
     <ThreeCanvas ref={containerRef}>
@@ -81,6 +88,8 @@ export default function FlappyBulk() {
           highScore={highScore}
           onRestart={handleRestart}
           gameName="FLAPPY BULK"
+          onSubmitScore={wallet ? handleSubmitScore : undefined}
+          submitState={submitState}
         />
       )}
       {achievementQueue.length > 0 && (

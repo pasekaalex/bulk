@@ -7,6 +7,7 @@ import { HUD } from '../../components/ui/HUD'
 import { AchievementToast } from '../../components/ui/AchievementToast'
 import { BulkClimbEngine } from '../../engines/BulkClimbEngine'
 import { checkAndUnlock, type AchievementDef } from '../../lib/achievements'
+import { useScoreSubmission } from '../../hooks/useLeaderboard'
 
 export default function BulkClimb() {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -15,9 +16,11 @@ export default function BulkClimb() {
   const [score, setScore] = useState(0)
   const [height, setHeight] = useState(0)
   const [achievementQueue, setAchievementQueue] = useState<AchievementDef[]>([])
+  const { submit, state: submitState, reset: resetSubmit, wallet } = useScoreSubmission()
 
   useEffect(() => {
     if (gameState !== 'gameover') return
+    resetSubmit()
     const newlyUnlocked = checkAndUnlock([
       { id: 'climb_100', condition: height >= 100 },
       { id: 'climb_500', condition: height >= 500 },
@@ -46,6 +49,10 @@ export default function BulkClimb() {
     engineRef.current?.restart()
   }, [])
 
+  const handleSubmitScore = useCallback(() => {
+    submit('climb', score, { height })
+  }, [submit, score, height])
+
   return (
     <ThreeCanvas ref={containerRef}>
       <BackButton />
@@ -70,6 +77,8 @@ export default function BulkClimb() {
           stats={{ Height: `${height}m` }}
           onRestart={handleRestart}
           gameName="BULK CLIMB"
+          onSubmitScore={wallet ? handleSubmitScore : undefined}
+          submitState={submitState}
         />
       )}
       {achievementQueue.length > 0 && (

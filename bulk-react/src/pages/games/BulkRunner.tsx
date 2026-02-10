@@ -7,6 +7,7 @@ import { HUD } from '../../components/ui/HUD'
 import { AchievementToast } from '../../components/ui/AchievementToast'
 import { BulkRunnerEngine } from '../../engines/BulkRunnerEngine'
 import { checkAndUnlock, type AchievementDef } from '../../lib/achievements'
+import { useScoreSubmission } from '../../hooks/useLeaderboard'
 
 export default function BulkRunner() {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -16,9 +17,11 @@ export default function BulkRunner() {
   const [money, setMoney] = useState(0)
   const [distance, setDistance] = useState(0)
   const [achievementQueue, setAchievementQueue] = useState<AchievementDef[]>([])
+  const { submit, state: submitState, reset: resetSubmit, wallet } = useScoreSubmission()
 
   useEffect(() => {
     if (gameState !== 'gameover') return
+    resetSubmit()
     const newlyUnlocked = checkAndUnlock([
       { id: 'runner_500', condition: distance >= 500 },
       { id: 'runner_2000', condition: distance >= 2000 },
@@ -48,6 +51,10 @@ export default function BulkRunner() {
     engineRef.current?.restart()
   }, [])
 
+  const handleSubmitScore = useCallback(() => {
+    submit('runner', score, { money, distance })
+  }, [submit, score, money, distance])
+
   return (
     <ThreeCanvas ref={containerRef}>
       <BackButton />
@@ -73,6 +80,8 @@ export default function BulkRunner() {
           stats={{ Money: `$${money}`, Distance: `${distance}m` }}
           onRestart={handleRestart}
           gameName="BULK RUNNER"
+          onSubmitScore={wallet ? handleSubmitScore : undefined}
+          submitState={submitState}
         />
       )}
       {achievementQueue.length > 0 && (
