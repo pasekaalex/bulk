@@ -4,6 +4,17 @@ import { PublicKey } from '@solana/web3.js'
 import { CONTRACT_ADDRESS, BULK_REQUIRED } from '../constants'
 
 const BULK_MINT = new PublicKey(CONTRACT_ADDRESS)
+// pump.fun tokens use Token-2022
+const TOKEN_PROGRAM_ID = new PublicKey('TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb')
+
+function getAssociatedTokenAddress(wallet: PublicKey, mint: PublicKey): PublicKey {
+  const ASSOCIATED_TOKEN_PROGRAM_ID = new PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL')
+  const [ata] = PublicKey.findProgramAddressSync(
+    [wallet.toBuffer(), TOKEN_PROGRAM_ID.toBuffer(), mint.toBuffer()],
+    ASSOCIATED_TOKEN_PROGRAM_ID,
+  )
+  return ata
+}
 
 export function useBulkBalance() {
   const { connection } = useConnection()
@@ -20,23 +31,21 @@ export function useBulkBalance() {
     let cancelled = false
     setLoading(true)
 
+    const ata = getAssociatedTokenAddress(publicKey, BULK_MINT)
+    console.log('[useBulkBalance] Checking ATA:', ata.toBase58(), 'for wallet:', publicKey.toBase58())
+
     connection
-      .getParsedTokenAccountsByOwner(publicKey, { mint: BULK_MINT })
+      .getTokenAccountBalance(ata)
       .then((result) => {
         if (cancelled) return
-        console.log('[useBulkBalance] Found', result.value.length, 'token accounts')
-        let total = 0
-        for (const account of result.value) {
-          const amount = account.account.data.parsed?.info?.tokenAmount?.uiAmount
-          console.log('[useBulkBalance] Account amount:', amount)
-          if (typeof amount === 'number') total += amount
-        }
-        console.log('[useBulkBalance] Total balance:', total)
-        setBalance(total)
+        const amount = result.value.uiAmount ?? 0
+        console.log('[useBulkBalance] Balance:', amount)
+        setBalance(amount)
       })
       .catch((err) => {
-        console.error('[useBulkBalance] Error fetching balance:', err)
-        if (!cancelled) setBalance(null)
+        console.error('[useBulkBalance] Error:', err?.message || err)
+        // Account doesn't exist = 0 balance
+        if (!cancelled) setBalance(0)
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
