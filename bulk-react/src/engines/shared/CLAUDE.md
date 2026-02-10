@@ -7,5 +7,11 @@
 
 | ID | Time | T | Title | Read |
 |----|------|---|-------|------|
+| #74 | 12:22 PM | 🔴 | Enhanced BaseGameEngine dispose method with comprehensive texture cleanup | ~702 |
+| #73 | " | 🔴 | BaseGameEngine resize handler guards against zero-dimension edge case | ~497 |
 | #72 | 12:21 PM | 🔴 | AudioManager disposal improved to clear BGM audio source | ~373 |
+| #70 | " | 🔵 | Comprehensive bug audit identified 39 critical issues across all game engines | ~1232 |
+| #56 | 12:16 PM | 🔵 | InputManager shared utility for unified keyboard, mouse, and touch input handling | ~1158 |
+| #20 | 12:11 AM | 🔵 | AudioManager provides BGM, SFX, and Web Audio API synthesis capabilities | ~634 |
+| #17 | 12:10 AM | 🔵 | BaseGameEngine architecture provides standardized game lifecycle and callbacks | ~585 |
 </claude-mem-context>

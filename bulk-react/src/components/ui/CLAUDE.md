@@ -9,4 +9,11 @@
 |----|------|---|-------|------|
 | #29 | 12:13 AM | 🔵 | TitleScreen React component with gradient overlay and animation classes | ~553 |
 | #25 | 12:12 AM | 🔵 | HUD component provides flexible positioning for game stats display | ~426 |
+
+### Feb 10, 2026
+
+| ID | Time | T | Title | Read |
+|----|------|---|-------|------|
+| #230 | 10:49 AM | 🟣 | Flexible HUD Component for Game Stats Display | ~319 |
+| #229 | " | 🔵 | Comprehensive Wallet Integration and Token-Gating Architecture | ~803 |
 </claude-mem-context>

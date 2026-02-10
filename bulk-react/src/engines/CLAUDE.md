@@ -8,8 +8,6 @@
 | ID | Time | T | Title | Read |
 |----|------|---|-------|------|
 | #65 | 12:20 PM | ✅ | BulkBreaker game files deleted from project | ~327 |
-| #60 | 12:18 PM | ✅ | Bulk Parkour game files removed from project | ~353 |
 | #36 | 12:19 AM | 🔴 | BulkRampageEngine callback reference corrected | ~569 |
-| #31 | 12:15 AM | 🟣 | BulkagachiEngine fully implemented with complete virtual pet game logic | ~1449 |
 | #15 | 12:10 AM | 🟣 | BulkRunner game engine ported to TypeScript | ~791 |
 </claude-mem-context>

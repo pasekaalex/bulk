@@ -57,7 +57,7 @@ export default function BulkRunner() {
 
   return (
     <ThreeCanvas ref={containerRef}>
-      <BackButton />
+      {gameState !== 'playing' && <BackButton />}
       {gameState === 'title' && (
         <TitleScreen
           title="BULK RUNNER"

@@ -55,7 +55,7 @@ export default function BulkClimb() {
 
   return (
     <ThreeCanvas ref={containerRef}>
-      <BackButton />
+      {gameState !== 'playing' && <BackButton />}
       {gameState === 'title' && (
         <TitleScreen
           title="BULK CLIMB"

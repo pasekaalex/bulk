@@ -58,7 +58,7 @@ export default function FlappyBulk() {
 
   return (
     <ThreeCanvas ref={containerRef}>
-      <BackButton />
+      {gameState !== 'playing' && <BackButton />}
       {gameState === 'title' && (
         <TitleScreen
           title="FLAPPY BULK"

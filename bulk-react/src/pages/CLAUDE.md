@@ -9,4 +9,12 @@
 |----|------|---|-------|------|
 | #96 | 11:17 PM | ✅ | Landing page layout refinements and market cap element converted to clickable link | ~577 |
 | #53 | 12:15 PM | 🔵 | Landing page with video background, contract address, modal menus, and market cap display | ~1254 |
+
+### Feb 10, 2026
+
+| ID | Time | T | Title | Read |
+|----|------|---|-------|------|
+| #229 | 10:49 AM | 🔵 | Comprehensive Wallet Integration and Token-Gating Architecture | ~803 |
+| #224 | 10:47 AM | 🟣 | Coming Soon Placeholder Page | ~206 |
+| #212 | 10:45 AM | 🟣 | Achievements Page Implementation | ~376 |
 </claude-mem-context>

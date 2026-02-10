@@ -280,7 +280,7 @@ export default function BulkRampage() {
 
   return (
     <ThreeCanvas ref={containerRef}>
-      <BackButton />
+      {gameState !== 'playing' && <BackButton />}
 
       {/* ─── Title Screen ─── */}
       {gameState === 'title' && (
