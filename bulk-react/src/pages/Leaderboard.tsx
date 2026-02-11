@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { BackButton } from '../components/layout/BackButton'
 import { useLeaderboard } from '../hooks/useLeaderboard'
+import { fetchProfiles } from '../lib/supabase'
 
 const GAMES = [
   { key: 'flappy', label: 'FLAPPY BULK' },
@@ -25,10 +26,17 @@ export default function Leaderboard() {
   const { entries, loading, refresh } = useLeaderboard(activeGame)
   const { publicKey } = useWallet()
   const walletAddress = publicKey?.toBase58() ?? null
+  const [usernames, setUsernames] = useState<Map<string, string>>(new Map())
 
   useEffect(() => {
     refresh()
   }, [activeGame, refresh])
+
+  useEffect(() => {
+    if (entries.length === 0) return
+    const wallets = entries.map((e) => e.wallet_address)
+    fetchProfiles(wallets).then(setUsernames)
+  }, [entries])
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-darker via-bulk-bg to-purple-darker">
@@ -110,12 +118,18 @@ export default function Leaderboard() {
                     {rank}
                   </div>
                   <div
-                    className={`font-mono truncate ${
+                    className={`truncate ${
                       isCurrentUser ? 'text-purple-DEFAULT font-bold' : isFirst ? 'text-gold-DEFAULT' : 'text-white/80'
                     }`}
                     title={entry.wallet_address}
                   >
-                    {truncateWallet(entry.wallet_address)}
+                    {usernames.get(entry.wallet_address) ? (
+                      <span className="font-bold font-[family-name:var(--font-display)]">
+                        {usernames.get(entry.wallet_address)}
+                      </span>
+                    ) : (
+                      <span className="font-mono">{truncateWallet(entry.wallet_address)}</span>
+                    )}
                     {isCurrentUser && (
                       <span className="ml-1 text-[10px] text-purple-DEFAULT/80">(you)</span>
                     )}

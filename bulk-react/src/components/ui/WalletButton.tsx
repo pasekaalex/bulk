@@ -1,11 +1,17 @@
+import { useState } from 'react'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { useWalletModal } from '@solana/wallet-adapter-react-ui'
 import { useBulkBalance } from '../../hooks/useBulkBalance'
+import { useProfile } from '../../hooks/useProfile'
 
 export function WalletButton() {
   const { publicKey, disconnect, connecting } = useWallet()
   const { setVisible } = useWalletModal()
   const { balance, isHolder, loading } = useBulkBalance()
+  const { username, loading: profileLoading, setUsername } = useProfile()
+  const [nameInput, setNameInput] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   if (!publicKey) {
     return (
@@ -25,11 +31,35 @@ export function WalletButton() {
 
   const truncated = publicKey.toBase58().slice(0, 4) + '...' + publicKey.toBase58().slice(-4)
 
+  const handleSetUsername = async () => {
+    const trimmed = nameInput.trim()
+    if (trimmed.length < 2 || trimmed.length > 16) {
+      setError('2-16 characters')
+      return
+    }
+    setSaving(true)
+    setError(null)
+    const result = await setUsername(trimmed)
+    setSaving(false)
+    if (!result.success) {
+      setError(result.error === 'duplicate key value violates unique constraint "profiles_username_key"'
+        ? 'Username taken'
+        : result.error ?? 'Failed')
+    } else {
+      setNameInput('')
+    }
+  }
+
   return (
     <div className="flex flex-col items-center gap-1">
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-2 py-2 px-4 bg-bulk-bg/80 border-2 border-purple-DEFAULT/60 rounded-xl text-white text-xs font-mono">
-          <span>{truncated}</span>
+          {username && (
+            <span className="text-gold-DEFAULT font-bold font-[family-name:var(--font-display)] text-sm not-italic">
+              {username}
+            </span>
+          )}
+          <span className={username ? 'text-white/40' : ''}>{truncated}</span>
           {loading ? (
             <span className="text-white/50">...</span>
           ) : balance !== null ? (
@@ -48,6 +78,27 @@ export function WalletButton() {
           X
         </button>
       </div>
+      {!profileLoading && !username && (
+        <div className="flex items-center gap-1 mt-1">
+          <input
+            type="text"
+            value={nameInput}
+            onChange={(e) => setNameInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSetUsername()}
+            placeholder="Pick a username"
+            maxLength={16}
+            className="w-28 px-2 py-1 bg-bulk-bg/80 border border-purple-DEFAULT/50 rounded-lg text-white text-xs outline-none focus:border-gold-DEFAULT placeholder:text-white/30"
+          />
+          <button
+            onClick={handleSetUsername}
+            disabled={saving}
+            className="px-2 py-1 bg-gradient-to-r from-gold-DEFAULT to-gold-dark text-black text-xs font-bold rounded-lg cursor-pointer hover:scale-105 transition-all disabled:opacity-50"
+          >
+            {saving ? '...' : 'SET'}
+          </button>
+          {error && <span className="text-red-400 text-[10px]">{error}</span>}
+        </div>
+      )}
     </div>
   )
 }

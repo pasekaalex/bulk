@@ -70,3 +70,94 @@ export async function fetchPlayerRank(
   const index = data.findIndex((e) => e.wallet_address === wallet)
   return index >= 0 ? index + 1 : null
 }
+
+// --- Profiles ---
+
+export interface Profile {
+  wallet_address: string
+  username: string
+}
+
+export async function fetchProfile(wallet: string): Promise<Profile | null> {
+  if (!supabase) return null
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('wallet_address, username')
+    .eq('wallet_address', wallet)
+    .single()
+
+  if (error || !data) return null
+  return data
+}
+
+export async function fetchProfiles(wallets: string[]): Promise<Map<string, string>> {
+  const map = new Map<string, string>()
+  if (!supabase || wallets.length === 0) return map
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('wallet_address, username')
+    .in('wallet_address', wallets)
+
+  if (error || !data) return map
+  for (const row of data) {
+    map.set(row.wallet_address, row.username)
+  }
+  return map
+}
+
+export async function setUsername(
+  wallet: string,
+  username: string,
+): Promise<{ success: boolean; error?: string }> {
+  if (!supabase) return { success: false, error: 'Supabase not configured' }
+  const { error } = await supabase.rpc('set_username', {
+    p_wallet: wallet,
+    p_username: username,
+  })
+  if (error) {
+    console.error('Failed to set username:', error)
+    return { success: false, error: error.message }
+  }
+  return { success: true }
+}
+
+// --- Chat ---
+
+export interface ChatMessage {
+  id: string
+  wallet_address: string
+  message: string
+  created_at: string
+}
+
+export async function fetchMessages(limit = 100): Promise<ChatMessage[]> {
+  if (!supabase) return []
+  const { data, error } = await supabase
+    .from('chat_messages')
+    .select('id, wallet_address, message, created_at')
+    .order('created_at', { ascending: false })
+    .limit(limit)
+
+  if (error) {
+    console.error('Failed to fetch messages:', error)
+    return []
+  }
+  // Reverse so newest is at bottom
+  return (data ?? []).reverse()
+}
+
+export async function sendMessage(
+  wallet: string,
+  message: string,
+): Promise<{ success: boolean; error?: string }> {
+  if (!supabase) return { success: false, error: 'Supabase not configured' }
+  const { error } = await supabase.rpc('send_message', {
+    p_wallet: wallet,
+    p_message: message,
+  })
+  if (error) {
+    console.error('Failed to send message:', error)
+    return { success: false, error: error.message }
+  }
+  return { success: true }
+}
