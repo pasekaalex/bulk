@@ -47,8 +47,10 @@ export class BulkRunnerEngine extends BaseGameEngine {
   private gameOverTimer: ReturnType<typeof setTimeout> | null = null
 
   // Biome system
-  private currentBiome: 'city' | 'countryside' | 'desert' = 'city'
+  private currentBiome: 'city' | 'countryside' | 'desert' | 'moon' = 'city'
   private scenery: THREE.Object3D[] = [] // trees, cactuses, farm buildings etc.
+  private starField: THREE.Points | null = null
+  private earthSphere: THREE.Mesh | null = null
 
   // Audio
   private audio = new AudioManager()
@@ -275,7 +277,7 @@ export class BulkRunnerEngine extends BaseGameEngine {
 
   // ─── Biome transitions ────────────────────────────────────────
 
-  private transitionBiome(biome: 'city' | 'countryside' | 'desert'): void {
+  private transitionBiome(biome: 'city' | 'countryside' | 'desert' | 'moon'): void {
     if (this.currentBiome === biome) return
     this.currentBiome = biome
 
@@ -285,11 +287,24 @@ export class BulkRunnerEngine extends BaseGameEngine {
     this.scenery.forEach((s) => this.disposeObject(s))
     this.scenery = []
 
+    // Clean up moon-specific objects from previous biome
+    if (this.starField) {
+      this.scene.remove(this.starField)
+      this.starField.geometry.dispose()
+      ;(this.starField.material as THREE.PointsMaterial).dispose()
+      this.starField = null
+    }
+    if (this.earthSphere) {
+      this.scene.remove(this.earthSphere)
+      this.earthSphere = null
+    }
+
     // Update ground materials
-    const groundColors = {
+    const groundColors: Record<string, { road: number; sidewalk: number; line: number }> = {
       city: { road: 0x1a1a1a, sidewalk: 0x3a3a3a, line: 0xffcc00 },
       countryside: { road: 0x5a4a3a, sidewalk: 0x4a8c3a, line: 0xffffff },
       desert: { road: 0x8a7a5a, sidewalk: 0xc4a84a, line: 0xffffff },
+      moon: { road: 0x3a3a3a, sidewalk: 0x4a4a4a, line: 0x6a6a6a },
     }
     const colors = groundColors[biome]
 
@@ -325,6 +340,10 @@ export class BulkRunnerEngine extends BaseGameEngine {
       this.scene.background = new THREE.Color(0x2a2010)
       this.scene.fog = new THREE.Fog(0x2a2010, 50, 200)
       this.createDesert()
+    } else if (biome === 'moon') {
+      this.scene.background = new THREE.Color(0x000005)
+      this.scene.fog = new THREE.Fog(0x000005, 80, 300)
+      this.createMoon()
     }
   }
 
@@ -509,6 +528,341 @@ export class BulkRunnerEngine extends BaseGameEngine {
     group.position.set(x, 0, z)
     this.scene.add(group)
     this.buildings.push(group)
+  }
+
+  // ─── Moon scenery ─────────────────────────────────────────────
+
+  private createMoon(): void {
+    // Starfield background
+    const starCount = 800
+    const starGeo = new THREE.BufferGeometry()
+    const starPos = new Float32Array(starCount * 3)
+    for (let i = 0; i < starCount; i++) {
+      starPos[i * 3] = (Math.random() - 0.5) * 500
+      starPos[i * 3 + 1] = Math.random() * 200 + 10
+      starPos[i * 3 + 2] = (Math.random() - 0.5) * 500
+    }
+    starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3))
+    const starMat = new THREE.PointsMaterial({
+      color: 0xffffff,
+      size: 0.5,
+      sizeAttenuation: true,
+    })
+    this.starField = new THREE.Points(starGeo, starMat)
+    this.scene.add(this.starField)
+
+    // Earth in the sky
+    const earthGeo = new THREE.SphereGeometry(8, 16, 16)
+    const earthMat = new THREE.MeshStandardMaterial({
+      color: 0x2244aa,
+      emissive: 0x1133aa,
+      emissiveIntensity: 0.6,
+    })
+    this.earthSphere = new THREE.Mesh(earthGeo, earthMat)
+    this.earthSphere.position.set(40, 60, -120)
+    this.scene.add(this.earthSphere)
+
+    // Earth continents (green patches)
+    const continentMat = new THREE.MeshStandardMaterial({
+      color: 0x228833,
+      emissive: 0x115522,
+      emissiveIntensity: 0.4,
+    })
+    for (let i = 0; i < 5; i++) {
+      const cSize = 1.5 + Math.random() * 3
+      const continent = new THREE.Mesh(
+        new THREE.CircleGeometry(cSize, 6),
+        continentMat,
+      )
+      // Position on Earth surface using spherical coords
+      const theta = Math.random() * Math.PI
+      const phi = Math.random() * Math.PI * 2
+      continent.position.set(
+        40 + Math.sin(theta) * Math.cos(phi) * 8.1,
+        60 + Math.cos(theta) * 8.1,
+        -120 + Math.sin(theta) * Math.sin(phi) * 8.1,
+      )
+      continent.lookAt(40, 60, -120)
+      continent.rotateZ(Math.random() * Math.PI)
+      this.scene.add(continent)
+      this.scenery.push(continent as unknown as THREE.Object3D)
+    }
+
+    // Earth atmosphere glow ring
+    const atmosGeo = new THREE.RingGeometry(8, 9.5, 32)
+    const atmosMat = new THREE.MeshBasicMaterial({
+      color: 0x4488ff,
+      transparent: true,
+      opacity: 0.2,
+      side: THREE.DoubleSide,
+    })
+    const atmos = new THREE.Mesh(atmosGeo, atmosMat)
+    atmos.position.copy(this.earthSphere.position)
+    atmos.lookAt(this.camera.position)
+    this.scene.add(atmos)
+    this.scenery.push(atmos as unknown as THREE.Object3D)
+
+    // Moon surface features along the road
+    for (let i = 0; i < 30; i++) {
+      const z = -i * 15
+      // Left side
+      const roll = Math.random()
+      if (roll < 0.35) {
+        this.createCrater(-12 - Math.random() * 12, z)
+      } else if (roll < 0.6) {
+        this.createMoonRock(-12 - Math.random() * 12, z)
+      } else if (roll < 0.75) {
+        this.createLunarModule(-14 - Math.random() * 6, z)
+      } else {
+        this.createMoonSpire(-12 - Math.random() * 12, z)
+      }
+
+      // Right side
+      const roll2 = Math.random()
+      if (roll2 < 0.35) {
+        this.createCrater(12 + Math.random() * 12, z)
+      } else if (roll2 < 0.6) {
+        this.createMoonRock(12 + Math.random() * 12, z)
+      } else if (roll2 < 0.75) {
+        this.createLunarModule(14 + Math.random() * 6, z)
+      } else {
+        this.createMoonSpire(12 + Math.random() * 12, z)
+      }
+    }
+  }
+
+  private createCrater(x: number, z: number): void {
+    const crater = new THREE.Group()
+    const radius = 2 + Math.random() * 4
+
+    // Rim (torus lying flat)
+    const rimGeo = new THREE.TorusGeometry(radius, 0.4 + Math.random() * 0.3, 8, 12)
+    const rimMat = new THREE.MeshStandardMaterial({
+      color: 0x5a5a5a,
+      roughness: 0.9,
+    })
+    const rim = new THREE.Mesh(rimGeo, rimMat)
+    rim.rotation.x = Math.PI / 2
+    rim.position.y = 0.2
+    crater.add(rim)
+
+    // Dark center (recessed disc)
+    const centerGeo = new THREE.CircleGeometry(radius * 0.8, 10)
+    const centerMat = new THREE.MeshStandardMaterial({
+      color: 0x2a2a2a,
+      roughness: 1,
+    })
+    const center = new THREE.Mesh(centerGeo, centerMat)
+    center.rotation.x = -Math.PI / 2
+    center.position.y = -0.1
+    crater.add(center)
+
+    // Scattered rocks on rim
+    for (let i = 0; i < 5; i++) {
+      const angle = (i / 5) * Math.PI * 2 + Math.random() * 0.5
+      const rockSize = 0.2 + Math.random() * 0.4
+      const rock = new THREE.Mesh(
+        new THREE.DodecahedronGeometry(rockSize, 0),
+        rimMat,
+      )
+      rock.position.set(
+        Math.cos(angle) * radius,
+        rockSize * 0.3,
+        Math.sin(angle) * radius,
+      )
+      rock.rotation.set(Math.random(), Math.random(), Math.random())
+      crater.add(rock)
+    }
+
+    crater.position.set(x, 0, z)
+    this.scene.add(crater)
+    this.buildings.push(crater)
+  }
+
+  private createMoonRock(x: number, z: number): void {
+    const group = new THREE.Group()
+    const count = 1 + Math.floor(Math.random() * 3)
+
+    for (let i = 0; i < count; i++) {
+      const s = 0.5 + Math.random() * 2
+      const rockMat = new THREE.MeshStandardMaterial({
+        color: 0x6a6a6a + Math.floor(Math.random() * 0x1a1a1a),
+        roughness: 0.95,
+        metalness: 0.05,
+      })
+      const rock = new THREE.Mesh(
+        new THREE.DodecahedronGeometry(s, 1),
+        rockMat,
+      )
+      rock.position.set(
+        (Math.random() - 0.5) * 3,
+        s * 0.35,
+        (Math.random() - 0.5) * 3,
+      )
+      rock.rotation.set(Math.random() * 2, Math.random() * 2, Math.random())
+      rock.scale.set(1, 0.5 + Math.random() * 0.5, 0.8 + Math.random() * 0.4)
+      group.add(rock)
+    }
+
+    group.position.set(x, 0, z)
+    this.scene.add(group)
+    this.buildings.push(group)
+  }
+
+  private createLunarModule(x: number, z: number): void {
+    const module = new THREE.Group()
+    const metalMat = new THREE.MeshStandardMaterial({
+      color: 0xccccaa,
+      metalness: 0.7,
+      roughness: 0.3,
+    })
+    const goldFoilMat = new THREE.MeshStandardMaterial({
+      color: 0xddaa33,
+      metalness: 0.8,
+      roughness: 0.2,
+      emissive: 0x554411,
+      emissiveIntensity: 0.2,
+    })
+
+    // Body (octagonal approximation)
+    const body = new THREE.Mesh(
+      new THREE.CylinderGeometry(1.5, 1.8, 2, 8),
+      goldFoilMat,
+    )
+    body.position.y = 3
+    module.add(body)
+
+    // Top section
+    const top = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.6, 1.5, 1, 8),
+      metalMat,
+    )
+    top.position.y = 4.5
+    module.add(top)
+
+    // Hatch on top
+    const hatch = new THREE.Mesh(
+      new THREE.SphereGeometry(0.5, 8, 6, 0, Math.PI * 2, 0, Math.PI / 2),
+      metalMat,
+    )
+    hatch.position.y = 5
+    module.add(hatch)
+
+    // Four landing legs
+    const legMat = new THREE.MeshStandardMaterial({ color: 0x888888, metalness: 0.6 })
+    for (let i = 0; i < 4; i++) {
+      const angle = (i / 4) * Math.PI * 2
+      const leg = new THREE.Group()
+
+      // Strut (angled cylinder)
+      const strut = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.08, 0.08, 3, 6),
+        legMat,
+      )
+      strut.position.y = 1.2
+      strut.rotation.z = 0.4
+      leg.add(strut)
+
+      // Foot pad (flat disc)
+      const pad = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.4, 0.5, 0.1, 8),
+        legMat,
+      )
+      pad.position.set(1.2, 0.05, 0)
+      leg.add(pad)
+
+      leg.rotation.y = angle
+      leg.position.set(
+        Math.cos(angle) * 0.8,
+        0,
+        Math.sin(angle) * 0.8,
+      )
+      module.add(leg)
+    }
+
+    // Antenna
+    const antenna = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.03, 0.03, 2, 4),
+      metalMat,
+    )
+    antenna.position.set(0.5, 6, 0)
+    module.add(antenna)
+
+    // Antenna dish
+    const dish = new THREE.Mesh(
+      new THREE.CircleGeometry(0.4, 8),
+      metalMat,
+    )
+    dish.position.set(0.5, 7, 0)
+    dish.rotation.x = -0.3
+    module.add(dish)
+
+    // Flag nearby
+    const flagPole = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.03, 0.03, 3, 4),
+      new THREE.MeshStandardMaterial({ color: 0xcccccc }),
+    )
+    flagPole.position.set(3, 1.5, 0)
+    module.add(flagPole)
+
+    const flag = new THREE.Mesh(
+      new THREE.PlaneGeometry(1.2, 0.8),
+      new THREE.MeshStandardMaterial({
+        color: 0x9b30ff,
+        emissive: 0x6b00ff,
+        emissiveIntensity: 0.5,
+        side: THREE.DoubleSide,
+      }),
+    )
+    flag.position.set(3.6, 2.6, 0)
+    module.add(flag)
+
+    const s = 0.6 + Math.random() * 0.3
+    module.scale.set(s, s, s)
+    module.position.set(x, 0, z)
+    module.rotation.y = Math.random() * Math.PI * 2
+    this.scene.add(module)
+    this.buildings.push(module)
+  }
+
+  private createMoonSpire(x: number, z: number): void {
+    const spire = new THREE.Group()
+    const h = 3 + Math.random() * 8
+    const mat = new THREE.MeshStandardMaterial({
+      color: 0x555560,
+      roughness: 0.8,
+      metalness: 0.1,
+    })
+
+    // Jagged crystalline spire
+    const mainGeo = new THREE.ConeGeometry(0.8 + Math.random() * 0.5, h, 5)
+    const main = new THREE.Mesh(mainGeo, mat)
+    main.position.y = h / 2
+    spire.add(main)
+
+    // Secondary smaller spires leaning
+    for (let i = 0; i < 2; i++) {
+      const sh = h * (0.3 + Math.random() * 0.4)
+      const secondary = new THREE.Mesh(
+        new THREE.ConeGeometry(0.4 + Math.random() * 0.3, sh, 5),
+        mat,
+      )
+      secondary.position.set(
+        (Math.random() - 0.5) * 1.5,
+        sh / 2,
+        (Math.random() - 0.5) * 1.5,
+      )
+      secondary.rotation.set(
+        (Math.random() - 0.5) * 0.3,
+        0,
+        (Math.random() - 0.5) * 0.3,
+      )
+      spire.add(secondary)
+    }
+
+    spire.position.set(x, 0, z)
+    this.scene.add(spire)
+    this.buildings.push(spire)
   }
 
   // ─── Bulk character ────────────────────────────────────────────
@@ -893,6 +1247,19 @@ export class BulkRunnerEngine extends BaseGameEngine {
       this.scenery = []
       this.buildings.forEach((b) => this.disposeObject(b))
       this.buildings = []
+
+      // Clean up moon-specific objects
+      if (this.starField) {
+        this.scene.remove(this.starField)
+        this.starField.geometry.dispose()
+        ;(this.starField.material as THREE.PointsMaterial).dispose()
+        this.starField = null
+      }
+      if (this.earthSphere) {
+        this.scene.remove(this.earthSphere)
+        this.earthSphere = null
+      }
+
       this.currentBiome = 'city'
 
       // Restore city atmosphere
@@ -952,7 +1319,9 @@ export class BulkRunnerEngine extends BaseGameEngine {
     this.speed = 0.5 + this.distance * 0.0001
 
     // Biome transitions
-    if (this.score >= 6000 && this.currentBiome !== 'desert') {
+    if (this.score >= 10000 && this.currentBiome !== 'moon') {
+      this.transitionBiome('moon')
+    } else if (this.score >= 6000 && this.score < 10000 && this.currentBiome !== 'desert') {
       this.transitionBiome('desert')
     } else if (this.score >= 3000 && this.score < 6000 && this.currentBiome !== 'countryside') {
       this.transitionBiome('countryside')
