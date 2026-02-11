@@ -71,7 +71,7 @@ export default function Chat() {
       </div>
 
       {/* Messages area */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 min-h-0 overflow-y-auto">
         <div className="px-4 py-4 flex flex-col gap-2">
           {loading && (
             <div className="text-center text-white/30 text-sm animate-pulse py-16">
@@ -128,8 +128,8 @@ export default function Chat() {
       </div>
 
       {/* Input bar */}
-      <div className="shrink-0 border-t border-purple-DEFAULT/15 bg-[#1a1a2e]/80">
-        <div className="px-3 py-2.5">
+      <div className="shrink-0 border-t border-purple-DEFAULT/15 bg-[#1a1a2e]/80 rounded-b-2xl">
+        <div className="px-3 py-3">
           {!wallet ? (
             <div className="text-center py-2.5 text-white/30 text-sm">
               Connect wallet to chat
