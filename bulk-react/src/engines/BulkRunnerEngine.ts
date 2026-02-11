@@ -1319,11 +1319,11 @@ export class BulkRunnerEngine extends BaseGameEngine {
     this.speed = 0.5 + this.distance * 0.0001
 
     // Biome transitions
-    if (this.score >= 10000 && this.currentBiome !== 'moon') {
+    if (this.score >= 6000 && this.currentBiome !== 'moon') {
       this.transitionBiome('moon')
-    } else if (this.score >= 6000 && this.score < 10000 && this.currentBiome !== 'desert') {
+    } else if (this.score >= 4000 && this.score < 6000 && this.currentBiome !== 'desert') {
       this.transitionBiome('desert')
-    } else if (this.score >= 3000 && this.score < 6000 && this.currentBiome !== 'countryside') {
+    } else if (this.score >= 2000 && this.score < 4000 && this.currentBiome !== 'countryside') {
       this.transitionBiome('countryside')
     }
 
