@@ -72,7 +72,7 @@ export default function Chat() {
 
       {/* Messages area */}
       <div className="flex-1 overflow-y-auto">
-        <div className="px-4 py-4 flex flex-col gap-1">
+        <div className="px-4 py-4 flex flex-col gap-2">
           {loading && (
             <div className="text-center text-white/30 text-sm animate-pulse py-16">
               Loading messages...
@@ -95,27 +95,27 @@ export default function Chat() {
             return (
               <div
                 key={msg.id}
-                className={`flex ${isOwn ? 'justify-end' : 'justify-start'} ${showName ? 'mt-3' : 'mt-0.5'}`}
+                className={`flex ${isOwn ? 'justify-end' : 'justify-start'} ${showName ? 'mt-4' : 'mt-1'}`}
               >
                 <div
-                  className={`relative max-w-[80%] sm:max-w-[70%] px-3 py-1.5 ${
+                  className={`relative max-w-[80%] sm:max-w-[70%] px-3.5 py-2 ${
                     isOwn
-                      ? 'bg-gradient-to-br from-purple-DEFAULT/40 to-purple-DEFAULT/25 rounded-2xl rounded-br-md'
-                      : 'bg-[#1e1e35] rounded-2xl rounded-bl-md'
+                      ? 'bg-gradient-to-br from-purple-DEFAULT/40 to-purple-DEFAULT/25 rounded-2xl rounded-br-sm'
+                      : 'bg-[#1e1e35] rounded-2xl rounded-bl-sm'
                   }`}
                 >
                   {showName && (
-                    <div className={`text-xs font-bold mb-0.5 ${
+                    <div className={`text-xs font-bold mb-1 ${
                       isOwn ? 'text-purple-DEFAULT' : 'text-gold-DEFAULT'
                     } font-[family-name:var(--font-display)]`}>
                       {name || truncateWallet(msg.wallet_address)}
                     </div>
                   )}
-                  <div className="flex items-end gap-2">
-                    <p className="text-[13px] text-white/90 break-words leading-snug flex-1">
+                  <div className="flex items-end gap-3">
+                    <p className="text-sm text-white/90 break-words leading-relaxed flex-1">
                       {msg.message}
                     </p>
-                    <span className="text-[9px] text-white/25 whitespace-nowrap shrink-0 translate-y-[1px]">
+                    <span className="text-[9px] text-white/25 whitespace-nowrap shrink-0 pb-0.5">
                       {formatTime(msg.created_at)}
                     </span>
                   </div>
