@@ -31,11 +31,12 @@ export default function Achievements() {
   }))
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-darker via-bulk-bg to-purple-darker">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-purple-darker via-bulk-bg to-purple-darker">
       <BackButton />
 
-      <div className="max-w-2xl mx-auto px-4 py-16">
-        <h1 className="text-4xl sm:text-5xl font-bold text-gold-DEFAULT text-shadow-gold text-center mb-4 font-[family-name:var(--font-display)]">
+      <div className="w-full max-w-lg mx-4 my-8 bg-[#0e0e1a] rounded-2xl border border-purple-DEFAULT/30 shadow-[0_0_40px_rgba(155,77,202,0.2)] overflow-hidden">
+        <div className="px-5 pt-6 pb-5 max-h-[85dvh] overflow-y-auto">
+        <h1 className="text-3xl sm:text-4xl font-bold text-gold-DEFAULT text-shadow-gold text-center mb-4 font-[family-name:var(--font-display)]">
           ACHIEVEMENTS
         </h1>
 
@@ -84,6 +85,7 @@ export default function Achievements() {
             </div>
           </div>
         ))}
+        </div>
       </div>
     </div>
   )
