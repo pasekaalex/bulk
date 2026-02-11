@@ -49,7 +49,7 @@ export default function Chat() {
       <BackButton />
 
       {/* Chat window */}
-      <div className="flex flex-col w-full max-w-lg h-[min(600px,85dvh)] bg-[#0e0e1a] rounded-2xl border border-purple-DEFAULT/30 shadow-[0_0_40px_rgba(155,77,202,0.2)] overflow-hidden mx-4">
+      <div className="flex flex-col w-full max-w-lg h-dvh sm:h-[min(600px,85dvh)] bg-[#0e0e1a] sm:rounded-2xl sm:border sm:border-purple-DEFAULT/30 sm:shadow-[0_0_40px_rgba(155,77,202,0.2)] overflow-hidden sm:mx-4">
 
       {/* Header bar */}
       <div className="shrink-0 py-3 px-4 bg-[#1a1a2e]/90 border-b border-purple-DEFAULT/20">
@@ -139,7 +139,7 @@ export default function Chat() {
               Hold 10K $BULK to chat
             </div>
           ) : (
-            <div className="flex items-end gap-2">
+            <div className="flex items-center gap-2">
               <input
                 type="text"
                 value={input}

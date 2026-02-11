@@ -46,6 +46,10 @@ export class BulkRunnerEngine extends BaseGameEngine {
   // Game-over delay
   private gameOverTimer: ReturnType<typeof setTimeout> | null = null
 
+  // Biome system
+  private currentBiome: 'city' | 'countryside' | 'desert' = 'city'
+  private scenery: THREE.Object3D[] = [] // trees, cactuses, farm buildings etc.
+
   // Audio
   private audio = new AudioManager()
 
@@ -267,6 +271,244 @@ export class BulkRunnerEngine extends BaseGameEngine {
     building.position.set(x, 0, z)
     this.scene.add(building)
     this.buildings.push(building)
+  }
+
+  // ─── Biome transitions ────────────────────────────────────────
+
+  private transitionBiome(biome: 'city' | 'countryside' | 'desert'): void {
+    if (this.currentBiome === biome) return
+    this.currentBiome = biome
+
+    // Remove old buildings/scenery
+    this.buildings.forEach((b) => this.disposeObject(b))
+    this.buildings = []
+    this.scenery.forEach((s) => this.disposeObject(s))
+    this.scenery = []
+
+    // Update ground materials
+    const groundColors = {
+      city: { road: 0x1a1a1a, sidewalk: 0x3a3a3a, line: 0xffcc00 },
+      countryside: { road: 0x5a4a3a, sidewalk: 0x4a8c3a, line: 0xffffff },
+      desert: { road: 0x8a7a5a, sidewalk: 0xc4a84a, line: 0xffffff },
+    }
+    const colors = groundColors[biome]
+
+    this.groundTiles.forEach((tile) => {
+      const mesh = tile as THREE.Mesh
+      if (!mesh.material) return
+      const mat = mesh.material as THREE.MeshStandardMaterial
+      if (!mat.color) return
+
+      // Identify tile type by current color and geometry
+      const geo = mesh.geometry as THREE.PlaneGeometry
+      if (!geo.parameters) return
+      const w = geo.parameters.width
+
+      if (w === 12) {
+        // Main road
+        mat.color.setHex(colors.road)
+      } else if (w === 4) {
+        // Sidewalks
+        mat.color.setHex(colors.sidewalk)
+      } else if (w === 0.2) {
+        // Center yellow line
+        mat.color.setHex(colors.line)
+      }
+    })
+
+    // Update atmosphere
+    if (biome === 'countryside') {
+      this.scene.background = new THREE.Color(0x1a2a1a)
+      this.scene.fog = new THREE.Fog(0x1a2a1a, 50, 200)
+      this.createCountryside()
+    } else if (biome === 'desert') {
+      this.scene.background = new THREE.Color(0x2a2010)
+      this.scene.fog = new THREE.Fog(0x2a2010, 50, 200)
+      this.createDesert()
+    }
+  }
+
+  // ─── Countryside scenery ─────────────────────────────────────
+
+  private createCountryside(): void {
+    for (let i = 0; i < 30; i++) {
+      // Left side
+      const leftX = -12 - Math.random() * 10
+      const z = -i * 15
+      if (Math.random() > 0.4) {
+        this.createTree(leftX, z)
+      } else {
+        this.createFarmBuilding(leftX, z)
+      }
+
+      // Right side
+      const rightX = 12 + Math.random() * 10
+      if (Math.random() > 0.4) {
+        this.createTree(rightX, z)
+      } else {
+        this.createFarmBuilding(rightX, z)
+      }
+    }
+  }
+
+  private createTree(x: number, z: number): void {
+    const tree = new THREE.Group()
+
+    // Trunk
+    const trunkGeo = new THREE.CylinderGeometry(0.3, 0.5, 3, 6)
+    const trunkMat = new THREE.MeshStandardMaterial({ color: 0x5a3a1a })
+    const trunk = new THREE.Mesh(trunkGeo, trunkMat)
+    trunk.position.y = 1.5
+    tree.add(trunk)
+
+    // Foliage (low-poly layered cones)
+    const leafMat = new THREE.MeshStandardMaterial({
+      color: 0x2a7a2a + Math.floor(Math.random() * 0x1a3a1a),
+    })
+
+    const cone1 = new THREE.Mesh(new THREE.ConeGeometry(2.5, 3, 6), leafMat)
+    cone1.position.y = 4.5
+    tree.add(cone1)
+
+    const cone2 = new THREE.Mesh(new THREE.ConeGeometry(2, 2.5, 6), leafMat)
+    cone2.position.y = 6
+    tree.add(cone2)
+
+    const cone3 = new THREE.Mesh(new THREE.ConeGeometry(1.3, 2, 6), leafMat)
+    cone3.position.y = 7.2
+    tree.add(cone3)
+
+    const s = 0.7 + Math.random() * 0.6
+    tree.scale.set(s, s, s)
+    tree.position.set(x, 0, z)
+    this.scene.add(tree)
+    this.buildings.push(tree) // reuse buildings array for scrolling
+  }
+
+  private createFarmBuilding(x: number, z: number): void {
+    const farm = new THREE.Group()
+
+    const w = 3 + Math.random() * 3
+    const h = 2 + Math.random() * 2
+    const d = 3 + Math.random() * 3
+
+    // Barn body
+    const barnMat = new THREE.MeshStandardMaterial({
+      color: [0x8a3a2a, 0x6a4a3a, 0xa04030][Math.floor(Math.random() * 3)],
+    })
+    const barn = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), barnMat)
+    barn.position.y = h / 2
+    farm.add(barn)
+
+    // Roof (triangular prism via extruded shape)
+    const roofMat = new THREE.MeshStandardMaterial({ color: 0x4a3a2a })
+    const roofGeo = new THREE.ConeGeometry(w * 0.75, 1.5, 4)
+    roofGeo.rotateY(Math.PI / 4)
+    const roof = new THREE.Mesh(roofGeo, roofMat)
+    roof.scale.set(1, 1, d / w)
+    roof.position.y = h + 0.75
+    farm.add(roof)
+
+    farm.position.set(x, 0, z)
+    this.scene.add(farm)
+    this.buildings.push(farm)
+  }
+
+  // ─── Desert scenery ──────────────────────────────────────────
+
+  private createDesert(): void {
+    for (let i = 0; i < 30; i++) {
+      const leftX = -12 - Math.random() * 15
+      const z = -i * 15
+      if (Math.random() > 0.3) {
+        this.createCactus(leftX, z)
+      } else {
+        this.createRock(leftX, z)
+      }
+
+      const rightX = 12 + Math.random() * 15
+      if (Math.random() > 0.3) {
+        this.createCactus(rightX, z)
+      } else {
+        this.createRock(rightX, z)
+      }
+    }
+  }
+
+  private createCactus(x: number, z: number): void {
+    const cactus = new THREE.Group()
+    const cactusMat = new THREE.MeshStandardMaterial({ color: 0x2a6a2a })
+
+    // Main trunk
+    const trunkH = 2 + Math.random() * 3
+    const trunk = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.4, 0.5, trunkH, 8),
+      cactusMat,
+    )
+    trunk.position.y = trunkH / 2
+    cactus.add(trunk)
+
+    // Left arm
+    if (Math.random() > 0.3) {
+      const armH = 1 + Math.random() * 1.5
+      const arm = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.25, 0.3, armH, 8),
+        cactusMat,
+      )
+      // Horizontal piece
+      const joint = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.25, 0.25, 0.8, 8),
+        cactusMat,
+      )
+      joint.rotation.z = Math.PI / 2
+      joint.position.set(-0.7, trunkH * 0.5, 0)
+      cactus.add(joint)
+      arm.position.set(-1.1, trunkH * 0.5 + armH / 2, 0)
+      cactus.add(arm)
+    }
+
+    // Right arm
+    if (Math.random() > 0.3) {
+      const armH = 1 + Math.random() * 1.5
+      const arm = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.25, 0.3, armH, 8),
+        cactusMat,
+      )
+      const joint = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.25, 0.25, 0.8, 8),
+        cactusMat,
+      )
+      joint.rotation.z = Math.PI / 2
+      joint.position.set(0.7, trunkH * 0.6, 0)
+      cactus.add(joint)
+      arm.position.set(1.1, trunkH * 0.6 + armH / 2, 0)
+      cactus.add(arm)
+    }
+
+    cactus.position.set(x, 0, z)
+    this.scene.add(cactus)
+    this.buildings.push(cactus)
+  }
+
+  private createRock(x: number, z: number): void {
+    const rockMat = new THREE.MeshStandardMaterial({
+      color: 0x8a7a6a + Math.floor(Math.random() * 0x1a1a1a),
+      roughness: 0.9,
+    })
+    const s = 1 + Math.random() * 2
+    const rock = new THREE.Mesh(
+      new THREE.DodecahedronGeometry(s, 0),
+      rockMat,
+    )
+    rock.position.y = s * 0.4
+    rock.rotation.set(Math.random(), Math.random(), Math.random())
+    rock.scale.set(1, 0.6 + Math.random() * 0.4, 1)
+
+    const group = new THREE.Group()
+    group.add(rock)
+    group.position.set(x, 0, z)
+    this.scene.add(group)
+    this.buildings.push(group)
   }
 
   // ─── Bulk character ────────────────────────────────────────────
@@ -645,6 +887,36 @@ export class BulkRunnerEngine extends BaseGameEngine {
     this.explosions.forEach((e) => this.scene.remove(e))
     this.explosions = []
 
+    // Reset biome to city
+    if (this.currentBiome !== 'city') {
+      this.scenery.forEach((s) => this.disposeObject(s))
+      this.scenery = []
+      this.buildings.forEach((b) => this.disposeObject(b))
+      this.buildings = []
+      this.currentBiome = 'city'
+
+      // Restore city atmosphere
+      this.scene.background = new THREE.Color(0x0a0a15)
+      this.scene.fog = new THREE.Fog(0x0a0a15, 50, 200)
+
+      // Restore ground colors
+      this.groundTiles.forEach((tile) => {
+        const mesh = tile as THREE.Mesh
+        if (!mesh.material) return
+        const mat = mesh.material as THREE.MeshStandardMaterial
+        if (!mat.color) return
+        const geo = mesh.geometry as THREE.PlaneGeometry
+        if (!geo.parameters) return
+        const w = geo.parameters.width
+        if (w === 12) mat.color.setHex(0x1a1a1a)
+        else if (w === 4) mat.color.setHex(0x3a3a3a)
+        else if (w === 0.2) mat.color.setHex(0xffcc00)
+      })
+
+      // Recreate city buildings
+      this.createCity()
+    }
+
     this.audio.playBGM()
 
     this.callbacks.onScoreChange?.(0)
@@ -678,6 +950,13 @@ export class BulkRunnerEngine extends BaseGameEngine {
 
     // Speed increases with distance
     this.speed = 0.5 + this.distance * 0.0001
+
+    // Biome transitions
+    if (this.score >= 6000 && this.currentBiome !== 'desert') {
+      this.transitionBiome('desert')
+    } else if (this.score >= 3000 && this.score < 6000 && this.currentBiome !== 'countryside') {
+      this.transitionBiome('countryside')
+    }
 
     // Move bulk to current lane smoothly
     if (this.bulk) {
