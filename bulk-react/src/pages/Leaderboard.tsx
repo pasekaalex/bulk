@@ -43,13 +43,13 @@ export default function Leaderboard() {
       <BackButton />
 
       <div className="w-full max-w-lg mx-4 my-8 bg-[#0e0e1a] rounded-2xl border border-purple-DEFAULT/30 shadow-[0_0_40px_rgba(155,77,202,0.2)] overflow-hidden">
-        <div className="px-5 pt-6 pb-5">
-        <h1 className="text-3xl sm:text-4xl font-bold text-gold-DEFAULT text-shadow-gold text-center mb-5 font-[family-name:var(--font-display)]">
+        <div className="px-5 pt-6 pb-6 max-h-[85dvh] overflow-y-auto">
+        <h1 className="text-3xl sm:text-4xl font-bold text-gold-DEFAULT text-shadow-gold text-center mb-6 font-[family-name:var(--font-display)]">
           LEADERBOARD
         </h1>
 
         {/* Game tabs */}
-        <div className="flex flex-wrap gap-2 justify-center mb-5">
+        <div className="flex flex-wrap gap-2 justify-center mb-6">
           {GAMES.map((game) => (
             <button
               key={game.key}
@@ -103,7 +103,7 @@ export default function Leaderboard() {
               return (
                 <div
                   key={entry.wallet_address}
-                  className={`grid grid-cols-[3rem_1fr_5rem_4rem] sm:grid-cols-[3rem_1fr_5rem_6rem_5rem] gap-2 px-4 py-3 border-b border-purple-DEFAULT/10 text-sm transition-colors ${
+                  className={`grid grid-cols-[3rem_1fr_5rem_4rem] sm:grid-cols-[3rem_1fr_5rem_6rem_5rem] gap-2 px-4 py-3.5 border-b border-purple-DEFAULT/10 text-sm transition-colors ${
                     isCurrentUser
                       ? 'bg-purple-DEFAULT/20 border-l-2 border-l-purple-DEFAULT'
                       : isFirst
@@ -154,7 +154,7 @@ export default function Leaderboard() {
         </div>
 
         {!walletAddress && (
-          <p className="text-center text-white/30 text-xs mt-4">
+          <p className="text-center text-white/30 text-xs mt-5">
             Connect wallet to see your rank highlighted
           </p>
         )}
