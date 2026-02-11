@@ -45,12 +45,15 @@ export default function Chat() {
   }
 
   return (
-    <div className="h-dvh flex flex-col bg-[#0e0e1a]">
+    <div className="h-dvh flex items-center justify-center bg-gradient-to-b from-purple-darker via-bulk-bg to-purple-darker">
       <BackButton />
 
+      {/* Chat window */}
+      <div className="flex flex-col w-full max-w-lg h-[min(600px,85dvh)] bg-[#0e0e1a] rounded-2xl border border-purple-DEFAULT/30 shadow-[0_0_40px_rgba(155,77,202,0.2)] overflow-hidden mx-4">
+
       {/* Header bar */}
-      <div className="shrink-0 pt-14 pb-3 px-4 bg-[#1a1a2e]/90 border-b border-purple-DEFAULT/20 backdrop-blur-sm">
-        <div className="max-w-2xl mx-auto flex items-center justify-center gap-3">
+      <div className="shrink-0 py-3 px-4 bg-[#1a1a2e]/90 border-b border-purple-DEFAULT/20">
+        <div className="flex items-center justify-center gap-3">
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-DEFAULT to-gold-DEFAULT flex items-center justify-center shadow-[0_0_15px_rgba(155,77,202,0.4)]">
             <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" className="w-5 h-5">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
@@ -69,7 +72,7 @@ export default function Chat() {
 
       {/* Messages area */}
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-2xl mx-auto px-4 py-4 flex flex-col gap-1">
+        <div className="px-4 py-4 flex flex-col gap-1">
           {loading && (
             <div className="text-center text-white/30 text-sm animate-pulse py-16">
               Loading messages...
@@ -125,8 +128,8 @@ export default function Chat() {
       </div>
 
       {/* Input bar */}
-      <div className="shrink-0 border-t border-purple-DEFAULT/15 bg-[#1a1a2e]/80 backdrop-blur-sm">
-        <div className="max-w-2xl mx-auto px-3 py-2.5">
+      <div className="shrink-0 border-t border-purple-DEFAULT/15 bg-[#1a1a2e]/80">
+        <div className="px-3 py-2.5">
           {!wallet ? (
             <div className="text-center py-2.5 text-white/30 text-sm">
               Connect wallet to chat
@@ -163,6 +166,8 @@ export default function Chat() {
           )}
         </div>
       </div>
+
+      </div>{/* end chat window */}
     </div>
   )
 }
