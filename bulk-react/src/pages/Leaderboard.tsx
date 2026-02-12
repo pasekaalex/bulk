@@ -43,7 +43,7 @@ export default function Leaderboard() {
       <BackButton />
 
       <div className="w-full max-w-lg bg-[#0e0e1a]/95 backdrop-blur-xl rounded-2xl border border-purple-DEFAULT/20 shadow-[0_0_50px_rgba(0,0,0,0.5),0_0_20px_rgba(155,77,202,0.1)] overflow-hidden">
-        <div className="px-6 sm:px-8 pt-8 pb-6 max-h-[90dvh] overflow-y-auto custom-scrollbar">
+        <div className="px-5 sm:px-8 pt-8 pb-6 max-h-[90dvh] overflow-y-auto custom-scrollbar">
         <h1 className="text-3xl sm:text-4xl font-bold text-gold-DEFAULT text-shadow-gold text-center mb-6 font-[family-name:var(--font-display)] tracking-tighter">
           LEADERBOARD
         </h1>
@@ -66,9 +66,9 @@ export default function Leaderboard() {
         </div>
 
         {/* Leaderboard table */}
-        <div className="bg-purple-darker/40 border border-purple-DEFAULT/20 rounded-2xl overflow-hidden shadow-inner">
+        <div className="bg-purple-darker/40 border border-purple-DEFAULT/20 rounded-xl sm:rounded-2xl overflow-hidden shadow-inner">
           {/* Header */}
-          <div className="grid grid-cols-[3rem_1fr_5rem_4rem] sm:grid-cols-[3.5rem_1fr_6rem_6rem_5.5rem] gap-2 px-5 py-4 border-b border-purple-DEFAULT/20 text-[10px] text-white/30 font-bold tracking-[0.2em]">
+          <div className="grid grid-cols-[3rem_1fr_5rem_4rem] sm:grid-cols-[3.5rem_1fr_6rem_6rem_5.5rem] gap-2 px-6 py-4 border-b border-purple-DEFAULT/20 text-[10px] text-white/30 font-bold tracking-[0.2em]">
             <div>RANK</div>
             <div>PLAYER</div>
             <div className="text-right">SCORE</div>
@@ -77,13 +77,13 @@ export default function Leaderboard() {
           </div>
 
           {loading && (
-            <div className="px-5 py-16 text-center text-white/20 text-sm animate-pulse font-bold tracking-widest">
+            <div className="px-6 py-16 text-center text-white/20 text-sm animate-pulse font-bold tracking-widest">
               FETCHING SCORES...
             </div>
           )}
 
           {!loading && entries.length === 0 && (
-            <div className="px-5 py-16 text-center text-white/20 text-sm italic">
+            <div className="px-6 py-16 text-center text-white/20 text-sm italic">
               No scores yet. Be the first!
             </div>
           )}
@@ -103,7 +103,7 @@ export default function Leaderboard() {
               return (
                 <div
                   key={entry.wallet_address}
-                  className={`grid grid-cols-[3rem_1fr_5rem_4rem] sm:grid-cols-[3.5rem_1fr_6rem_6rem_5.5rem] gap-2 px-5 py-4 border-b border-white/[0.03] text-sm transition-all duration-300 ${
+                  className={`grid grid-cols-[3rem_1fr_5rem_4rem] sm:grid-cols-[3.5rem_1fr_6rem_6rem_5.5rem] gap-2 px-6 py-4 border-b border-white/[0.03] text-sm transition-all duration-300 ${
                     isCurrentUser
                       ? 'bg-purple-DEFAULT/15 border-l-4 border-l-purple-DEFAULT shadow-inner'
                       : isFirst
