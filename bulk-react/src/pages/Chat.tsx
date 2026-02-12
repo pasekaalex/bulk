@@ -45,25 +45,25 @@ export default function Chat() {
   }
 
   return (
-    <div className="h-dvh flex items-center justify-center bg-gradient-to-b from-purple-darker via-bulk-bg to-purple-darker">
+    <div className="h-dvh flex items-center justify-center bg-gradient-to-b from-purple-darker via-bulk-bg to-purple-darker p-3 sm:p-4">
       <BackButton />
 
       {/* Chat window */}
-      <div className="flex flex-col w-full max-w-lg h-dvh sm:h-[min(600px,85dvh)] bg-[#0e0e1a] sm:rounded-2xl sm:border sm:border-purple-DEFAULT/30 sm:shadow-[0_0_40px_rgba(155,77,202,0.2)] overflow-hidden sm:mx-4">
+      <div className="flex flex-col w-full max-w-lg h-full sm:h-[min(650px,85dvh)] bg-[#0e0e1a]/95 backdrop-blur-xl rounded-2xl border border-purple-DEFAULT/20 shadow-[0_0_50px_rgba(0,0,0,0.5),0_0_20px_rgba(155,77,202,0.1)] overflow-hidden">
 
       {/* Header bar */}
-      <div className="shrink-0 py-3 px-4 bg-[#1a1a2e]/90 border-b border-purple-DEFAULT/20">
+      <div className="shrink-0 py-4 px-6 bg-[#1a1a2e]/90 border-b border-purple-DEFAULT/20">
         <div className="flex items-center justify-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-DEFAULT to-gold-DEFAULT flex items-center justify-center shadow-[0_0_15px_rgba(155,77,202,0.4)]">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-DEFAULT to-gold-DEFAULT flex items-center justify-center shadow-[0_0_15px_rgba(155,77,202,0.4)] animate-pulse-glow">
             <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" className="w-5 h-5">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
             </svg>
           </div>
           <div className="text-center">
-            <h1 className="text-xl font-bold text-white font-[family-name:var(--font-display)] tracking-wide">
+            <h1 className="text-xl font-bold text-white font-[family-name:var(--font-display)] tracking-widest leading-none mb-1">
               BULK CHAT
             </h1>
-            <p className="text-[10px] text-white/30 tracking-wider">
+            <p className="text-[9px] text-white/40 tracking-[0.2em] font-bold">
               HOLD 10K $BULK TO POST
             </p>
           </div>
@@ -71,8 +71,8 @@ export default function Chat() {
       </div>
 
       {/* Messages area */}
-      <div className="flex-1 min-h-0 overflow-y-auto">
-        <div className="px-4 py-4 flex flex-col gap-2">
+      <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar">
+        <div className="px-6 py-6 flex flex-col gap-4">
           {loading && (
             <div className="text-center text-white/30 text-sm animate-pulse py-16">
               Loading messages...
@@ -95,27 +95,27 @@ export default function Chat() {
             return (
               <div
                 key={msg.id}
-                className={`flex ${isOwn ? 'justify-end' : 'justify-start'} ${showName ? 'mt-4' : 'mt-1'}`}
+                className={`flex ${isOwn ? 'justify-end' : 'justify-start'} ${showName ? 'mt-4' : 'mt-0.5'}`}
               >
                 <div
-                  className={`relative max-w-[80%] sm:max-w-[70%] px-3.5 py-2 ${
+                  className={`relative max-w-[88%] sm:max-w-[80%] px-4 py-3 shadow-lg ${
                     isOwn
-                      ? 'bg-gradient-to-br from-purple-DEFAULT/40 to-purple-DEFAULT/25 rounded-2xl rounded-br-sm'
-                      : 'bg-[#1e1e35] rounded-2xl rounded-bl-sm'
+                      ? 'bg-gradient-to-br from-purple-DEFAULT/25 to-purple-DEFAULT/15 border border-purple-DEFAULT/20 rounded-2xl rounded-tr-sm'
+                      : 'bg-[#1e1e35]/80 border border-white/5 rounded-2xl rounded-tl-sm'
                   }`}
                 >
                   {showName && (
-                    <div className={`text-xs font-bold mb-1 ${
+                    <div className={`text-[11px] font-bold mb-1.5 ${
                       isOwn ? 'text-purple-DEFAULT' : 'text-gold-DEFAULT'
-                    } font-[family-name:var(--font-display)]`}>
+                    } font-[family-name:var(--font-display)] tracking-wider`}>
                       {name || truncateWallet(msg.wallet_address)}
                     </div>
                   )}
-                  <div className="flex items-end gap-3">
+                  <div className="flex items-end gap-4">
                     <p className="text-sm text-white/90 break-words leading-relaxed flex-1">
                       {msg.message}
                     </p>
-                    <span className="text-[9px] text-white/25 whitespace-nowrap shrink-0 pb-0.5">
+                    <span className="text-[9px] text-white/20 whitespace-nowrap shrink-0 pb-0.5 font-mono">
                       {formatTime(msg.created_at)}
                     </span>
                   </div>
@@ -128,18 +128,18 @@ export default function Chat() {
       </div>
 
       {/* Input bar */}
-      <div className="shrink-0 border-t border-purple-DEFAULT/15 bg-[#1a1a2e]/80 rounded-b-2xl">
-        <div className="px-3 py-3">
+      <div className="shrink-0 border-t border-purple-DEFAULT/15 bg-[#1a1a2e]/95 p-4">
+        <div className="">
           {!wallet ? (
-            <div className="text-center py-2.5 text-white/30 text-sm">
-              Connect wallet to chat
+            <div className="text-center py-2.5 text-white/30 text-sm font-bold tracking-wide">
+              CONNECT WALLET TO CHAT
             </div>
           ) : !isHolder ? (
-            <div className="text-center py-2.5 text-gold-DEFAULT/50 text-sm">
-              Hold 10K $BULK to chat
+            <div className="text-center py-2.5 text-gold-DEFAULT/50 text-sm font-bold tracking-wide animate-pulse">
+              HOLD 10K $BULK TO CHAT
             </div>
           ) : (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <input
                 type="text"
                 value={input}
@@ -147,17 +147,17 @@ export default function Chat() {
                 onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                 placeholder="Message..."
                 maxLength={280}
-                className="flex-1 px-4 py-2.5 bg-[#12121f] border border-white/10 rounded-full text-white text-sm outline-none focus:border-purple-DEFAULT/60 placeholder:text-white/25 transition-colors"
+                className="flex-1 px-5 py-3 bg-[#0a0a14] border border-purple-DEFAULT/20 rounded-2xl text-white text-sm outline-none focus:border-purple-DEFAULT/60 focus:ring-1 focus:ring-purple-DEFAULT/30 placeholder:text-white/20 transition-all shadow-inner"
               />
               <button
                 onClick={handleSend}
                 disabled={sendState === 'sending' || !input.trim()}
-                className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-DEFAULT to-purple-dark flex items-center justify-center cursor-pointer hover:scale-105 transition-all disabled:opacity-30 disabled:cursor-not-allowed shrink-0 shadow-[0_0_12px_rgba(155,77,202,0.4)]"
+                className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-DEFAULT to-purple-dark flex items-center justify-center cursor-pointer hover:scale-105 active:scale-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed shrink-0 shadow-[0_0_20px_rgba(155,77,202,0.3)]"
               >
                 {sendState === 'sending' ? (
-                  <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                  <div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
                 ) : (
-                  <svg viewBox="0 0 24 24" fill="white" className="w-4 h-4 translate-x-[1px]">
+                  <svg viewBox="0 0 24 24" fill="white" className="w-5 h-5 translate-x-[1px]">
                     <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
                   </svg>
                 )}

@@ -39,25 +39,25 @@ export default function Leaderboard() {
   }, [entries])
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-purple-darker via-bulk-bg to-purple-darker">
+    <div className="min-h-dvh flex items-center justify-center bg-gradient-to-b from-purple-darker via-bulk-bg to-purple-darker p-3 sm:p-4">
       <BackButton />
 
-      <div className="w-full max-w-lg mx-4 my-8 bg-[#0e0e1a] rounded-2xl border border-purple-DEFAULT/30 shadow-[0_0_40px_rgba(155,77,202,0.2)] overflow-hidden">
-        <div className="px-5 pt-6 pb-6 max-h-[85dvh] overflow-y-auto">
-        <h1 className="text-3xl sm:text-4xl font-bold text-gold-DEFAULT text-shadow-gold text-center mb-6 font-[family-name:var(--font-display)]">
+      <div className="w-full max-w-lg bg-[#0e0e1a]/95 backdrop-blur-xl rounded-2xl border border-purple-DEFAULT/20 shadow-[0_0_50px_rgba(0,0,0,0.5),0_0_20px_rgba(155,77,202,0.1)] overflow-hidden">
+        <div className="px-6 sm:px-8 pt-8 pb-6 max-h-[90dvh] overflow-y-auto custom-scrollbar">
+        <h1 className="text-3xl sm:text-4xl font-bold text-gold-DEFAULT text-shadow-gold text-center mb-6 font-[family-name:var(--font-display)] tracking-tighter">
           LEADERBOARD
         </h1>
 
         {/* Game tabs */}
-        <div className="flex flex-wrap gap-2 justify-center mb-6">
+        <div className="flex flex-wrap gap-2 justify-center mb-8 bg-black/20 p-1.5 rounded-xl border border-white/5">
           {GAMES.map((game) => (
             <button
               key={game.key}
               onClick={() => setActiveGame(game.key)}
-              className={`px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+              className={`px-4 py-2 rounded-lg text-[10px] sm:text-xs font-bold transition-all cursor-pointer tracking-wider ${
                 activeGame === game.key
-                  ? 'bg-gradient-to-r from-gold-DEFAULT to-gold-dark text-black shadow-[0_0_15px_rgba(255,215,0,0.5)]'
-                  : 'bg-purple-darker/80 border border-purple-DEFAULT/50 text-white/70 hover:border-purple-DEFAULT hover:text-white'
+                  ? 'bg-gradient-to-r from-gold-DEFAULT to-gold-dark text-black shadow-[0_0_15px_rgba(255,215,0,0.4)]'
+                  : 'text-white/40 hover:text-white/70 hover:bg-white/5'
               }`}
             >
               {game.label}
@@ -66,10 +66,10 @@ export default function Leaderboard() {
         </div>
 
         {/* Leaderboard table */}
-        <div className="bg-purple-darker/60 border border-purple-DEFAULT/30 rounded-xl overflow-hidden">
+        <div className="bg-purple-darker/40 border border-purple-DEFAULT/20 rounded-2xl overflow-hidden shadow-inner">
           {/* Header */}
-          <div className="grid grid-cols-[3rem_1fr_5rem_4rem] sm:grid-cols-[3rem_1fr_5rem_6rem_5rem] gap-2 px-4 py-3 border-b border-purple-DEFAULT/30 text-xs text-white/50 font-bold tracking-wider">
-            <div>#</div>
+          <div className="grid grid-cols-[3rem_1fr_5rem_4rem] sm:grid-cols-[3.5rem_1fr_6rem_6rem_5.5rem] gap-2 px-5 py-4 border-b border-purple-DEFAULT/20 text-[10px] text-white/30 font-bold tracking-[0.2em]">
+            <div>RANK</div>
             <div>PLAYER</div>
             <div className="text-right">SCORE</div>
             <div className="text-right hidden sm:block">STATS</div>
@@ -77,13 +77,13 @@ export default function Leaderboard() {
           </div>
 
           {loading && (
-            <div className="px-4 py-12 text-center text-white/40 text-sm animate-pulse">
-              Loading scores...
+            <div className="px-5 py-16 text-center text-white/20 text-sm animate-pulse font-bold tracking-widest">
+              FETCHING SCORES...
             </div>
           )}
 
           {!loading && entries.length === 0 && (
-            <div className="px-4 py-12 text-center text-white/40 text-sm">
+            <div className="px-5 py-16 text-center text-white/20 text-sm italic">
               No scores yet. Be the first!
             </div>
           )}
@@ -96,56 +96,56 @@ export default function Leaderboard() {
 
               const statsStr = entry.stats
                 ? Object.entries(entry.stats)
-                    .map(([k, v]) => `${k}: ${v}`)
+                    .map(([k, v]) => `${v}`)
                     .join(', ')
                 : ''
 
               return (
                 <div
                   key={entry.wallet_address}
-                  className={`grid grid-cols-[3rem_1fr_5rem_4rem] sm:grid-cols-[3rem_1fr_5rem_6rem_5rem] gap-2 px-4 py-3.5 border-b border-purple-DEFAULT/10 text-sm transition-colors ${
+                  className={`grid grid-cols-[3rem_1fr_5rem_4rem] sm:grid-cols-[3.5rem_1fr_6rem_6rem_5.5rem] gap-2 px-5 py-4 border-b border-white/[0.03] text-sm transition-all duration-300 ${
                     isCurrentUser
-                      ? 'bg-purple-DEFAULT/20 border-l-2 border-l-purple-DEFAULT'
+                      ? 'bg-purple-DEFAULT/15 border-l-4 border-l-purple-DEFAULT shadow-inner'
                       : isFirst
-                        ? 'bg-gold-DEFAULT/10'
-                        : 'hover:bg-purple-DEFAULT/10'
+                        ? 'bg-gold-DEFAULT/5'
+                        : 'hover:bg-white/[0.02]'
                   }`}
                 >
                   <div
-                    className={`font-bold ${
-                      isFirst ? 'text-gold-DEFAULT' : rank <= 3 ? 'text-white' : 'text-white/50'
+                    className={`font-bold flex items-center ${
+                      isFirst ? 'text-gold-DEFAULT scale-110' : rank <= 3 ? 'text-white' : 'text-white/30 font-mono'
                     }`}
                   >
-                    {rank}
+                    {isFirst ? '👑' : rank}
                   </div>
                   <div
-                    className={`truncate ${
-                      isCurrentUser ? 'text-purple-DEFAULT font-bold' : isFirst ? 'text-gold-DEFAULT' : 'text-white/80'
+                    className={`truncate flex items-center ${
+                      isCurrentUser ? 'text-purple-DEFAULT font-bold' : isFirst ? 'text-gold-DEFAULT' : 'text-white/70'
                     }`}
                     title={entry.wallet_address}
                   >
                     {usernames.get(entry.wallet_address) ? (
-                      <span className="font-bold font-[family-name:var(--font-display)]">
+                      <span className="font-bold font-[family-name:var(--font-display)] tracking-tight">
                         {usernames.get(entry.wallet_address)}
                       </span>
                     ) : (
-                      <span className="font-mono">{truncateWallet(entry.wallet_address)}</span>
+                      <span className="font-mono text-xs opacity-80">{truncateWallet(entry.wallet_address)}</span>
                     )}
                     {isCurrentUser && (
-                      <span className="ml-1 text-[10px] text-purple-DEFAULT/80">(you)</span>
+                      <span className="ml-1.5 text-[8px] px-1.5 py-0.5 rounded-md bg-purple-DEFAULT/20 text-purple-DEFAULT font-bold uppercase">YOU</span>
                     )}
                   </div>
                   <div
-                    className={`text-right font-bold ${
-                      isFirst ? 'text-gold-DEFAULT' : 'text-white'
+                    className={`text-right font-bold flex items-center justify-end ${
+                      isFirst ? 'text-gold-DEFAULT' : 'text-white/90'
                     }`}
                   >
                     {entry.score.toLocaleString()}
                   </div>
-                  <div className="text-right text-white/40 text-xs truncate hidden sm:block">
+                  <div className="text-right text-white/30 text-[11px] truncate hidden sm:flex items-center justify-end font-mono">
                     {statsStr}
                   </div>
-                  <div className="text-right text-white/40 text-xs">
+                  <div className="text-right text-white/20 text-[10px] flex items-center justify-end font-mono">
                     {formatDate(entry.submitted_at)}
                   </div>
                 </div>
@@ -154,8 +154,8 @@ export default function Leaderboard() {
         </div>
 
         {!walletAddress && (
-          <p className="text-center text-white/30 text-xs mt-5">
-            Connect wallet to see your rank highlighted
+          <p className="text-center text-white/20 text-[10px] mt-8 font-bold tracking-[0.1em] uppercase">
+            Connect wallet to rank up ⚡️
           </p>
         )}
         </div>
