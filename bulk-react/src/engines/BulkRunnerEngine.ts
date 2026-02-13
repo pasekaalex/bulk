@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { BaseGameEngine, type GameCallbacks } from './shared/BaseGameEngine'
 import { loadGLBModel } from './shared/ModelLoader'
 import { AudioManager } from './shared/AudioManager'
+import { ParticleSystem } from './shared/ParticleSystem'
 import { ASSET_PATHS } from '../constants'
 
 export class BulkRunnerEngine extends BaseGameEngine {
@@ -57,6 +58,12 @@ export class BulkRunnerEngine extends BaseGameEngine {
 
   // Audio
   private audio = new AudioManager()
+
+  // Visual effects
+  private particleSystem: ParticleSystem | null = null
+  private rageGlow: THREE.Mesh | null = null
+  private rageShakeStart = 0
+  private readonly cameraBaseY = 6
 
   // Bound event handlers
   private boundKeyDown: (e: KeyboardEvent) => void
@@ -116,6 +123,9 @@ export class BulkRunnerEngine extends BaseGameEngine {
     this.createGround()
     this.createCity()
     this.createBulk()
+
+    // Particle system for visual effects
+    this.particleSystem = new ParticleSystem(this.scene)
 
     // Audio
     this.audio.loadBGM(ASSET_PATHS.audio.run, 0.25)
@@ -1246,6 +1256,16 @@ export class BulkRunnerEngine extends BaseGameEngine {
     this.explosions.forEach((e) => this.scene.remove(e))
     this.explosions = []
 
+    // Clear rage visual effects
+    if (this.rageGlow && this.bulk) {
+      this.bulk.remove(this.rageGlow)
+      this.rageGlow.geometry.dispose()
+      ;(this.rageGlow.material as THREE.Material).dispose()
+      this.rageGlow = null
+    }
+    this.particleSystem?.clear()
+    ;(this.camera as THREE.PerspectiveCamera).position.y = this.cameraBaseY
+
     // Reset biome to city
     if (this.currentBiome !== 'city') {
       this.scenery.forEach((s) => this.disposeObject(s))
@@ -1310,8 +1330,9 @@ export class BulkRunnerEngine extends BaseGameEngine {
       this.mixer.update(delta)
     }
 
-    // Always update explosions (visible after game over)
+    // Always update explosions and particles (visible after game over)
     this.updateExplosions()
+    this.particleSystem?.update()
 
     if (!this.gameStarted || this.gameOver) return
 
@@ -1401,11 +1422,21 @@ export class BulkRunnerEngine extends BaseGameEngine {
   private activateRageMode(): void {
     this.rageMode = true
     this.rageTimer = Date.now()
+    this.rageShakeStart = Date.now()
     this.callbacks.onRageModeChange?.(true)
 
-    // Visual effect - make scene flash purple
-    if (this.scene.background instanceof THREE.Color) {
-      this.scene.background.setHex(0x4a0080)
+    // Player glow aura
+    if (this.bulk && !this.rageGlow) {
+      const glowGeo = new THREE.SphereGeometry(2.5, 16, 16)
+      const glowMat = new THREE.MeshBasicMaterial({
+        color: 0x9b30ff,
+        transparent: true,
+        opacity: 0.3,
+        side: THREE.BackSide,
+      })
+      this.rageGlow = new THREE.Mesh(glowGeo, glowMat)
+      this.rageGlow.position.y = 2
+      this.bulk.add(this.rageGlow)
     }
   }
 
@@ -1415,12 +1446,64 @@ export class BulkRunnerEngine extends BaseGameEngine {
     const elapsed = Date.now() - this.rageTimer
     if (elapsed >= this.rageDuration) {
       this.deactivateRageMode()
+      return
+    }
+
+    // Pulsing purple background
+    if (this.scene.background instanceof THREE.Color) {
+      const t = Math.sin(Date.now() * 0.008) * 0.5 + 0.5
+      const dark = new THREE.Color(0x2a0050)
+      const bright = new THREE.Color(0x6a00b0)
+      this.scene.background.copy(dark).lerp(bright, t)
+    }
+
+    // Pulse glow aura opacity and scale
+    if (this.rageGlow) {
+      const pulse = Math.sin(Date.now() * 0.01) * 0.5 + 0.5
+      const mat = this.rageGlow.material as THREE.MeshBasicMaterial
+      mat.opacity = 0.15 + pulse * 0.3
+      const s = 1 + pulse * 0.3
+      this.rageGlow.scale.set(s, s, s)
+    }
+
+    // Camera shake (decays over first 500ms)
+    const shakeElapsed = Date.now() - this.rageShakeStart
+    if (shakeElapsed < 500) {
+      const intensity = 0.3 * (1 - shakeElapsed / 500)
+      ;(this.camera as THREE.PerspectiveCamera).position.y =
+        this.cameraBaseY + (Math.random() - 0.5) * intensity * 2
+    } else {
+      ;(this.camera as THREE.PerspectiveCamera).position.y = this.cameraBaseY
+    }
+
+    // Purple trail particles behind bulk
+    if (this.bulk && this.particleSystem) {
+      this.particleSystem.emit(
+        new THREE.Vector3(
+          this.bulk.position.x,
+          this.bulk.position.y + 1,
+          this.bulk.position.z + 1,
+        ),
+        2,
+        { color: 0x9b30ff, size: 0.2, speed: 0.15, life: 20, spread: 0.5 },
+      )
     }
   }
 
   private deactivateRageMode(): void {
     this.rageMode = false
     this.callbacks.onRageModeChange?.(false)
+
+    // Remove glow aura
+    if (this.rageGlow && this.bulk) {
+      this.bulk.remove(this.rageGlow)
+      this.rageGlow.geometry.dispose()
+      ;(this.rageGlow.material as THREE.Material).dispose()
+      this.rageGlow = null
+    }
+
+    // Reset camera Y
+    ;(this.camera as THREE.PerspectiveCamera).position.y = this.cameraBaseY
 
     // Restore original scene color based on biome
     const biomeColors: Record<string, number> = {
@@ -1448,6 +1531,13 @@ export class BulkRunnerEngine extends BaseGameEngine {
       // Pickup check
       if (drink.position.z > -2 && drink.position.z < 2 && this.bulk) {
         if (Math.abs(this.bulk.position.x - drink.position.x) < 1.5) {
+          // Orb collection particle burst
+          this.particleSystem?.emit(
+            drink.position.clone(),
+            10,
+            { color: 0x9b30ff, size: 0.3, speed: 0.3, life: 30, spread: 1 },
+          )
+
           this.orbs += 1
           this.callbacks.onOrbsChange?.(this.orbs)
 
@@ -1479,7 +1569,17 @@ export class BulkRunnerEngine extends BaseGameEngine {
       const obs = this.obstacles[i]
       obs.position.z += this.speed
 
-      // Collision check (skip if in rage mode - invincible)
+      // Rage mode - smash through cars
+      if (this.rageMode && obs.position.z > -2 && obs.position.z < 2 && this.bulk) {
+        if (Math.abs(this.bulk.position.x - obs.position.x) < 2) {
+          this.createExplosion(obs.position.x, obs.position.y + 1, obs.position.z)
+          this.disposeObject(obs)
+          this.obstacles.splice(i, 1)
+          continue
+        }
+      }
+
+      // Collision check (normal mode - game over)
       if (!this.rageMode && obs.position.z > -2 && obs.position.z < 2 && this.bulk) {
         if (Math.abs(this.bulk.position.x - obs.position.x) < 2) {
           const carHeight = 2
@@ -1571,6 +1671,7 @@ export class BulkRunnerEngine extends BaseGameEngine {
 
     this.audio.dispose()
     this.mixer = null
+    this.particleSystem?.clear()
 
     super.dispose()
   }
