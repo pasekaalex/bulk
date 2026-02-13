@@ -23,7 +23,7 @@ export const ALL_ACHIEVEMENTS: AchievementDef[] = [
   // Bulk Runner
   { id: 'runner_500', game: 'Bulk Runner', icon: '\u{1F3C3}', title: 'Jogger', desc: 'Run 500m' },
   { id: 'runner_2000', game: 'Bulk Runner', icon: '\u{1F3C3}\u{200D}\u{2642}\u{FE0F}', title: 'Marathon Man', desc: 'Run 2000m' },
-  { id: 'runner_money', game: 'Bulk Runner', icon: '\u{1F4B0}', title: 'Money Bags', desc: 'Collect $100' },
+  { id: 'runner_rage', game: 'Bulk Runner', icon: '\u{1F608}', title: 'Rampage Runner', desc: 'Activate rage mode' },
 
   // Bulk Rampage
   { id: 'rampage_wave3', game: 'Bulk Rampage', icon: '\u{1F4A5}', title: 'Warmed Up', desc: 'Reach Wave 3' },

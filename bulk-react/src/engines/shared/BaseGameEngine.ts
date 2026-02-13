@@ -12,6 +12,8 @@ export interface GameCallbacks {
   onRageChange?: (rage: number) => void
   onWaveChange?: (wave: number) => void
   onHighScoreChange?: (highScore: number) => void
+  onOrbsChange?: (orbs: number) => void
+  onRageModeChange?: (rageMode: boolean) => void
 }
 
 export abstract class BaseGameEngine {

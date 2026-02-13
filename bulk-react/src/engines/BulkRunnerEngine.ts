@@ -15,7 +15,10 @@ export class BulkRunnerEngine extends BaseGameEngine {
   private score = 0
   private distance = 0
   private speed = 0.5
-  private money = 0
+  private orbs = 0
+  private rageMode = false
+  private rageTimer = 0
+  private readonly rageDuration = 5000 // 5 seconds in ms
 
   // Lane system
   private currentLane = 1 // 0=left, 1=center, 2=right
@@ -1222,7 +1225,9 @@ export class BulkRunnerEngine extends BaseGameEngine {
     this.score = 0
     this.distance = 0
     this.speed = 0.5
-    this.money = 0
+    this.orbs = 0
+    this.rageMode = false
+    this.rageTimer = 0
     this.currentLane = 1
     this.isJumping = false
     this.jumpVelocity = 0
@@ -1287,8 +1292,9 @@ export class BulkRunnerEngine extends BaseGameEngine {
     this.audio.playBGM()
 
     this.callbacks.onScoreChange?.(0)
-    this.callbacks.onMoneyChange?.(0)
+    this.callbacks.onOrbsChange?.(0)
     this.callbacks.onDistanceChange?.(0)
+    this.callbacks.onRageModeChange?.(false)
     this.callbacks.onStateChange?.('playing')
   }
 
@@ -1385,6 +1391,47 @@ export class BulkRunnerEngine extends BaseGameEngine {
       (this.camera as THREE.PerspectiveCamera).position.x +=
         (this.bulk.position.x - this.camera.position.x) * 0.1
     }
+
+    // Update rage mode timer
+    this.updateRageMode()
+  }
+
+  // ─── Rage mode system ──────────────────────────────────────────
+
+  private activateRageMode(): void {
+    this.rageMode = true
+    this.rageTimer = Date.now()
+    this.callbacks.onRageModeChange?.(true)
+
+    // Visual effect - make scene flash purple
+    if (this.scene.background instanceof THREE.Color) {
+      this.scene.background.setHex(0x4a0080)
+    }
+  }
+
+  private updateRageMode(): void {
+    if (!this.rageMode) return
+
+    const elapsed = Date.now() - this.rageTimer
+    if (elapsed >= this.rageDuration) {
+      this.deactivateRageMode()
+    }
+  }
+
+  private deactivateRageMode(): void {
+    this.rageMode = false
+    this.callbacks.onRageModeChange?.(false)
+
+    // Restore original scene color based on biome
+    const biomeColors: Record<string, number> = {
+      city: 0x0a0a15,
+      countryside: 0x1a2a1a,
+      desert: 0x2a2010,
+      moon: 0x000005,
+    }
+    if (this.scene.background instanceof THREE.Color) {
+      this.scene.background.setHex(biomeColors[this.currentBiome])
+    }
   }
 
   // ─── Drink update ──────────────────────────────────────────────
@@ -1401,8 +1448,16 @@ export class BulkRunnerEngine extends BaseGameEngine {
       // Pickup check
       if (drink.position.z > -2 && drink.position.z < 2 && this.bulk) {
         if (Math.abs(this.bulk.position.x - drink.position.x) < 1.5) {
-          this.money += 50
-          this.callbacks.onMoneyChange?.(this.money)
+          this.orbs += 1
+          this.callbacks.onOrbsChange?.(this.orbs)
+
+          // Trigger rage mode at 20 orbs
+          if (this.orbs >= 20) {
+            this.activateRageMode()
+            this.orbs = 0
+            this.callbacks.onOrbsChange?.(0)
+          }
+
           this.disposeObject(drink)
           this.drinks.splice(i, 1)
           continue
@@ -1424,8 +1479,8 @@ export class BulkRunnerEngine extends BaseGameEngine {
       const obs = this.obstacles[i]
       obs.position.z += this.speed
 
-      // Collision check
-      if (obs.position.z > -2 && obs.position.z < 2 && this.bulk) {
+      // Collision check (skip if in rage mode - invincible)
+      if (!this.rageMode && obs.position.z > -2 && obs.position.z < 2 && this.bulk) {
         if (Math.abs(this.bulk.position.x - obs.position.x) < 2) {
           const carHeight = 2
           if (this.bulk.position.y < carHeight) {
