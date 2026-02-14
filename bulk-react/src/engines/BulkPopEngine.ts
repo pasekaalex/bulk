@@ -49,6 +49,15 @@ export class BulkPopEngine extends BaseGameEngine {
   // Sweat particles
   private sweatTimer = 0
 
+  // Stuffing animation
+  private chewTimer = 0
+  private chewIntensity = 0
+  private hiccupTimer = 0
+  private hiccupCooldown = 0
+  private hiccupJolt = 0
+  private tremble = 0
+  private leanAngle = 0
+
   // Visual effects
   private ambientTimer = 0
   private foodSpawnScale = 0
@@ -415,6 +424,8 @@ export class BulkPopEngine extends BaseGameEngine {
     this.callbacks.onComboChange?.(this.foodsEaten)
     this.wobbleTimer = 0
     this.wobbleIntensity = 0.15
+    this.chewTimer = 0
+    this.chewIntensity = 0.4
 
     // Eat burst particles — crumbs in the food's color
     if (this.bulk) {
@@ -481,11 +492,19 @@ export class BulkPopEngine extends BaseGameEngine {
     this.isPopping = false
     this.wobbleTimer = 0
     this.wobbleIntensity = 0
+    this.chewTimer = 0
+    this.chewIntensity = 0
+    this.hiccupTimer = 0
+    this.hiccupCooldown = 0
+    this.hiccupJolt = 0
+    this.tremble = 0
+    this.leanAngle = 0
 
     if (this.bulk) {
       this.bulk.visible = true
-      // Reset scale
+      // Reset scale and rotation
       this.bulk.scale.copy(this.bulkBaseScale)
+      this.bulk.rotation.x = 0
       // Reset colors
       this.bulk.traverse((child) => {
         if (child instanceof THREE.Mesh && child.material instanceof THREE.MeshStandardMaterial) {
@@ -625,51 +644,90 @@ export class BulkPopEngine extends BaseGameEngine {
       this.currentFood.rotation.y += delta * 1.2
     }
 
-    // Bulk animations
+    // Bulk animations — stuffing/gorging feel
     if (this.bulk && this.bulk.visible) {
-      // Inflation scale: gets wider/rounder, slightly squishes down
-      const sx = this.bulkBaseScale.x * (1 + this.inflation * 1.3)
-      const sy = this.bulkBaseScale.y * (1 - this.inflation * 0.12)
-      const sz = this.bulkBaseScale.z * (1 + this.inflation * 1.3)
+      // Belly bulges forward (Z) more than sides (X), height barely changes
+      const bellyOut = this.inflation * 1.8
+      const sideOut = this.inflation * 0.8
+      const sx = this.bulkBaseScale.x * (1 + sideOut)
+      const sy = this.bulkBaseScale.y * (1 + this.inflation * 0.05)
+      const sz = this.bulkBaseScale.z * (1 + bellyOut)
 
-      // Wobble after feeding (X/Z only, no Y jitter)
-      let wobbleOffset = 0
+      // Chewing animation — rapid Y squash/stretch after eating
+      let chewOffset = 0
+      if (this.chewIntensity > 0) {
+        this.chewTimer += delta
+        // Fast jaw-like motion
+        chewOffset = Math.abs(Math.sin(this.chewTimer * 30)) * this.chewIntensity * 0.08
+        this.chewIntensity *= 0.93
+        if (this.chewIntensity < 0.01) this.chewIntensity = 0
+      }
+
+      // Wobble after feeding — side-to-side sway from the weight
+      let wobbleX = 0
       if (this.wobbleIntensity > 0) {
         this.wobbleTimer += delta
-        wobbleOffset = Math.sin(this.wobbleTimer * 20) * this.wobbleIntensity
+        wobbleX = Math.sin(this.wobbleTimer * 12) * this.wobbleIntensity
         this.wobbleIntensity *= 0.92
         if (this.wobbleIntensity < 0.001) this.wobbleIntensity = 0
       }
 
-      // Breathing — very subtle
+      // Breathing — gets heavier/faster with more food
       this.breathTimer += delta
-      const breathOffset = Math.sin(this.breathTimer * 1.5) * 0.008
+      const breathSpeed = 1.5 + this.inflation * 2
+      const breathDepth = 0.01 + this.inflation * 0.02
+      const breathOffset = Math.sin(this.breathTimer * breathSpeed) * breathDepth
 
-      // Belly pulse/throb at high inflation (X/Z only)
-      let pulseOffset = 0
-      if (this.inflation > 0.5) {
-        this.pulseTimer += delta
-        const pulseSpeed = 3 + this.inflation * 4
-        pulseOffset = Math.sin(this.pulseTimer * pulseSpeed) * this.inflation * 0.04
+      // Hiccups at mid inflation — random jolts
+      if (this.inflation > 0.3 && this.inflation < 0.85) {
+        this.hiccupCooldown -= delta
+        if (this.hiccupCooldown <= 0) {
+          this.hiccupCooldown = 1.5 + Math.random() * 3 // random 1.5-4.5s apart
+          this.hiccupJolt = 0.12
+          // Hiccup sound — short chirp
+          this.audio.synthTone(500, 0.06, 'square', 0.15)
+        }
+      }
+      if (this.hiccupJolt > 0) {
+        this.hiccupJolt *= 0.85
+        if (this.hiccupJolt < 0.001) this.hiccupJolt = 0
       }
 
-      this.bulk.scale.set(
-        sx + wobbleOffset + pulseOffset,
-        sy + breathOffset,
-        sz - wobbleOffset + pulseOffset,
-      )
+      // Trembling when about to pop — gets violent near 1.0
+      if (this.inflation > 0.75) {
+        const severity = (this.inflation - 0.75) / 0.25 // 0→1 as inflation 0.75→1.0
+        this.tremble = severity * 0.06
+      } else {
+        this.tremble = 0
+      }
+      const trembleX = this.tremble > 0 ? (Math.random() - 0.5) * this.tremble : 0
+      const trembleZ = this.tremble > 0 ? (Math.random() - 0.5) * this.tremble : 0
 
-      // Color shift toward red with inflation
-      const redLerp = this.inflation * 0.6
+      // Lean back from belly weight
+      this.leanAngle = this.inflation * -0.15 // tilts backward
+
+      this.bulk.scale.set(
+        sx + wobbleX + trembleX,
+        sy - chewOffset + breathOffset + this.hiccupJolt,
+        sz + trembleZ,
+      )
+      this.bulk.rotation.x = this.leanAngle
+
+      // Color: starts normal, goes flushed pink, then angry red near pop
+      const flushAmount = Math.min(this.inflation * 1.2, 1)
+      const flushColor = this.inflation < 0.6
+        ? new THREE.Color(0xff8888) // pink flush
+        : new THREE.Color(0xff2222) // angry red
       this.bulk.traverse((child) => {
         if (child instanceof THREE.Mesh && child.material instanceof THREE.MeshStandardMaterial) {
           const original = this.originalColors.get(child)
           if (original) {
-            child.material.color.copy(original).lerp(new THREE.Color(0xff2222), redLerp)
-            if (this.inflation > 0.5) {
-              // Pulsing red emissive glow
-              const emissiveStrength = this.inflation * 0.3 + Math.sin(this.pulseTimer * 6) * 0.1
-              child.material.emissive.set(emissiveStrength, 0, 0)
+            child.material.color.copy(original).lerp(flushColor, flushAmount * 0.5)
+            if (this.inflation > 0.6) {
+              // Strained glow — pulsing
+              this.pulseTimer += delta * 0.5 // shared across traverse, but fine for visual
+              const glow = (this.inflation - 0.6) * 0.5 + Math.sin(this.pulseTimer * 8) * 0.08
+              child.material.emissive.set(glow, 0, 0)
             } else {
               child.material.emissive.setHex(0x000000)
             }
@@ -677,13 +735,13 @@ export class BulkPopEngine extends BaseGameEngine {
         }
       })
 
-      // Purple underlight intensifies with inflation
+      // Purple underlight intensifies
       this.purpleLight.intensity = 1.5 + this.inflation * 3
 
-      // Sweat particles at high inflation
-      if (this.inflation > 0.7) {
+      // Sweat drops when stuffed
+      if (this.inflation > 0.5) {
         this.sweatTimer += delta
-        const sweatRate = 0.3 - this.inflation * 0.15 // faster sweating as inflation rises
+        const sweatRate = 0.5 - this.inflation * 0.3
         if (this.sweatTimer > sweatRate) {
           this.sweatTimer = 0
           const headPos = this.bulk.position.clone().add(new THREE.Vector3(
@@ -691,12 +749,12 @@ export class BulkPopEngine extends BaseGameEngine {
             3,
             0.5,
           ))
-          this.particles.emit(headPos, 2, {
-            color: 0xffffff,
-            size: 0.3,
-            speed: 1,
-            life: 20,
-            spread: 0.3,
+          this.particles.emit(headPos, 1, {
+            color: 0x88ccff,
+            size: 0.25,
+            speed: 0.5,
+            life: 25,
+            spread: 0.2,
           })
         }
       }
@@ -714,10 +772,18 @@ export class BulkPopEngine extends BaseGameEngine {
     this.wobbleIntensity = 0
     this.shakeIntensity = 0
     this.sweatTimer = 0
+    this.chewTimer = 0
+    this.chewIntensity = 0
+    this.hiccupTimer = 0
+    this.hiccupCooldown = 0
+    this.hiccupJolt = 0
+    this.tremble = 0
+    this.leanAngle = 0
 
     if (this.bulk) {
       this.bulk.visible = true
       this.bulk.scale.copy(this.bulkBaseScale)
+      this.bulk.rotation.x = 0
       // Reset colors
       this.bulk.traverse((child) => {
         if (child instanceof THREE.Mesh && child.material instanceof THREE.MeshStandardMaterial) {
