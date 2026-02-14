@@ -9,6 +9,7 @@ const GAMES = [
   { key: 'climb', label: 'BULK CLIMB' },
   { key: 'runner', label: 'BULK RUNNER' },
   { key: 'rampage', label: 'BULK RAMPAGE' },
+  { key: 'pop', label: 'BULK POP' },
 ] as const
 
 function truncateWallet(address: string): string {

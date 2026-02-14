@@ -25,6 +25,12 @@ export const ALL_ACHIEVEMENTS: AchievementDef[] = [
   { id: 'runner_2000', game: 'Bulk Runner', icon: '\u{1F3C3}\u{200D}\u{2642}\u{FE0F}', title: 'Marathon Man', desc: 'Run 2000m' },
   { id: 'runner_rage', game: 'Bulk Runner', icon: '\u{1F608}', title: 'Rampage Runner', desc: 'Activate rage mode' },
 
+  // Bulk Pop
+  { id: 'pop_first', game: 'Bulk Pop', icon: '\u{1F4A5}', title: 'First Pop', desc: 'Pop Bulk for the first time' },
+  { id: 'pop_5', game: 'Bulk Pop', icon: '\u{1F388}', title: 'Pop Addict', desc: 'Pop Bulk 5 times in one session' },
+  { id: 'pop_10', game: 'Bulk Pop', icon: '\u{1F386}', title: 'Pop Machine', desc: 'Pop Bulk 10 times in one session' },
+  { id: 'pop_25', game: 'Bulk Pop', icon: '\u{1F9E8}', title: 'Pop Maniac', desc: 'Pop Bulk 25 times in one session' },
+
   // Bulk Rampage
   { id: 'rampage_wave3', game: 'Bulk Rampage', icon: '\u{1F4A5}', title: 'Warmed Up', desc: 'Reach Wave 3' },
   { id: 'rampage_wave5', game: 'Bulk Rampage', icon: '\u{1F525}', title: 'Unstoppable', desc: 'Reach Wave 5' },

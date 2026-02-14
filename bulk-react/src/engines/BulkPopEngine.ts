@@ -23,6 +23,7 @@ export class BulkPopEngine extends BaseGameEngine {
   // State
   private inflation = 0
   private pops = 0
+  private foodsEaten = 0
   private isPopping = false
   private isEating = false
   private popTimer = 0
@@ -47,6 +48,16 @@ export class BulkPopEngine extends BaseGameEngine {
 
   // Sweat particles
   private sweatTimer = 0
+
+  // Visual effects
+  private ambientTimer = 0
+  private foodSpawnScale = 0
+  private foodSpawning = false
+  private shockwave: THREE.Mesh | null = null
+  private shockwaveTimer = 0
+  private popFlashTimer = 0
+  private pulseTimer = 0
+  private purpleLight!: THREE.PointLight
 
   // Raycaster
   private raycaster = new THREE.Raycaster()
@@ -78,9 +89,9 @@ export class BulkPopEngine extends BaseGameEngine {
     directional.position.set(5, 10, 5)
     this.scene.add(directional)
 
-    const purpleLight = new THREE.PointLight(0x9b30ff, 1.5, 15)
-    purpleLight.position.set(0, -1, 3)
-    this.scene.add(purpleLight)
+    this.purpleLight = new THREE.PointLight(0x9b30ff, 1.5, 15)
+    this.purpleLight.position.set(0, -1, 3)
+    this.scene.add(this.purpleLight)
 
     // Ground plane
     const groundGeo = new THREE.PlaneGeometry(20, 20)
@@ -164,6 +175,7 @@ export class BulkPopEngine extends BaseGameEngine {
       chip.position.set(Math.cos(angle) * 0.25, 0.07, Math.sin(angle) * 0.25)
       group.add(chip)
     }
+    this.addFoodGlow(group, 0xd4a037)
     return group
   }
 
@@ -174,6 +186,7 @@ export class BulkPopEngine extends BaseGameEngine {
     const donut = new THREE.Mesh(geo, mat)
     donut.rotation.x = Math.PI / 2
     group.add(donut)
+    this.addFoodGlow(group, 0xe75480)
     return group
   }
 
@@ -192,6 +205,7 @@ export class BulkPopEngine extends BaseGameEngine {
       dot.position.set((Math.random() - 0.5) * 0.3, 0.05, (Math.random() - 0.5) * 0.2)
       group.add(dot)
     }
+    this.addFoodGlow(group, 0xe8a030)
     return group
   }
 
@@ -221,6 +235,7 @@ export class BulkPopEngine extends BaseGameEngine {
     )
     topBun.position.y = 0.15
     group.add(topBun)
+    this.addFoodGlow(group, 0xd4a037)
     return group
   }
 
@@ -243,6 +258,7 @@ export class BulkPopEngine extends BaseGameEngine {
     const cherry = new THREE.Mesh(cherryGeo, cherryMat)
     cherry.position.y = 0.4
     group.add(cherry)
+    this.addFoodGlow(group, 0xff69b4)
     return group
   }
 
@@ -289,6 +305,46 @@ export class BulkPopEngine extends BaseGameEngine {
     return group
   }
 
+  /** Add a BackSide glow outline to food meshes for tap affordance */
+  private addFoodGlow(group: THREE.Group, color: number): void {
+    group.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        const glowMat = new THREE.MeshBasicMaterial({
+          color,
+          transparent: true,
+          opacity: 0.25,
+          side: THREE.BackSide,
+        })
+        const glow = new THREE.Mesh(child.geometry, glowMat)
+        glow.scale.set(1.25, 1.25, 1.25)
+        glow.position.copy(child.position)
+        glow.rotation.copy(child.rotation)
+        group.add(glow)
+      }
+    })
+  }
+
+  /** Spawn a shockwave ring at a position */
+  private spawnShockwave(pos: THREE.Vector3): void {
+    if (this.shockwave) {
+      this.scene.remove(this.shockwave)
+      this.shockwave.geometry.dispose()
+      ;(this.shockwave.material as THREE.Material).dispose()
+    }
+    const geo = new THREE.RingGeometry(0.3, 0.6, 32)
+    const mat = new THREE.MeshBasicMaterial({
+      color: 0xff00ff,
+      transparent: true,
+      opacity: 0.8,
+      side: THREE.DoubleSide,
+    })
+    this.shockwave = new THREE.Mesh(geo, mat)
+    this.shockwave.rotation.x = -Math.PI / 2
+    this.shockwave.position.set(pos.x, 0.05, pos.z)
+    this.scene.add(this.shockwave)
+    this.shockwaveTimer = 0
+  }
+
   // ─── Input ──────────────────────────────────────────────────────
 
   private handleInput(clientX: number, clientY: number): void {
@@ -330,16 +386,47 @@ export class BulkPopEngine extends BaseGameEngine {
     const type = this.foodTypes[Math.floor(Math.random() * this.foodTypes.length)]
     const food = type.create()
     food.userData.inflation = type.inflation
+    food.userData.glowColor = this.getFoodColor(type.name)
     food.position.set(0, 3, 4)
+    // Start at scale 0 for pop-in animation
+    food.scale.set(0, 0, 0)
     this.scene.add(food)
     this.currentFood = food
     this.foodBobTimer = 0
+    this.foodSpawning = true
+    this.foodSpawnScale = 0
   }
 
-  private feedBulk(inflationAmount: number): void {
+  private getFoodColor(name: string): number {
+    const colors: Record<string, number> = {
+      cookie: 0xd4a037,
+      donut: 0xe75480,
+      pizza: 0xe8a030,
+      burger: 0x8b4513,
+      cake: 0xff69b4,
+      schmeg: 0x9b30ff,
+    }
+    return colors[name] || 0xffffff
+  }
+
+  private feedBulk(inflationAmount: number, foodColor: number = 0xffffff): void {
     this.inflation += inflationAmount
+    this.foodsEaten++
+    this.callbacks.onComboChange?.(this.foodsEaten)
     this.wobbleTimer = 0
     this.wobbleIntensity = 0.15
+
+    // Eat burst particles — crumbs in the food's color
+    if (this.bulk) {
+      const mouthPos = this.bulk.position.clone().add(new THREE.Vector3(0, 2.5, 0.5))
+      this.particles.emit(mouthPos, 8, {
+        color: foodColor,
+        size: 0.4,
+        speed: 3,
+        life: 20,
+        spread: 0.8,
+      })
+    }
 
     // Eat sound — pitch rises with inflation
     const freq = 300 + this.inflation * 600
@@ -370,6 +457,13 @@ export class BulkPopEngine extends BaseGameEngine {
       : new THREE.Vector3(0, 1.5, 0)
     this.particles.emit(pos, 25, { color: 0x9b30ff, size: 2, speed: 8, life: 40, spread: 1.5 })
     this.particles.emit(pos, 15, { color: 0xff3333, size: 1.5, speed: 6, life: 35, spread: 1.2 })
+
+    // Shockwave ring on ground
+    this.spawnShockwave(this.bulk?.position || new THREE.Vector3(0, 0, 0))
+
+    // Screen flash
+    this.popFlashTimer = 0.15
+    this.scene.background = new THREE.Color(0x6622aa)
 
     // Camera shake
     this.shakeIntensity = 0.5
@@ -425,6 +519,48 @@ export class BulkPopEngine extends BaseGameEngine {
       }
     }
 
+    // Pop flash decay — lerp background back to normal
+    if (this.popFlashTimer > 0) {
+      this.popFlashTimer -= delta
+      if (this.popFlashTimer <= 0) {
+        this.scene.background = new THREE.Color(0x1a0a2a)
+      }
+    }
+
+    // Shockwave expansion
+    if (this.shockwave) {
+      this.shockwaveTimer += delta
+      const t = this.shockwaveTimer / 0.6 // expand over 600ms
+      const scale = 1 + t * 12
+      this.shockwave.scale.set(scale, scale, 1)
+      const mat = this.shockwave.material as THREE.MeshBasicMaterial
+      mat.opacity = Math.max(0, 0.8 * (1 - t))
+      if (t >= 1) {
+        this.scene.remove(this.shockwave)
+        this.shockwave.geometry.dispose()
+        ;(this.shockwave.material as THREE.Material).dispose()
+        this.shockwave = null
+      }
+    }
+
+    // Ambient floating purple sparkles
+    this.ambientTimer += delta
+    if (this.ambientTimer > 0.4) {
+      this.ambientTimer = 0
+      const sparklePos = new THREE.Vector3(
+        (Math.random() - 0.5) * 8,
+        Math.random() * 5,
+        (Math.random() - 0.5) * 4 + 2,
+      )
+      this.particles.emit(sparklePos, 1, {
+        color: 0x9b30ff,
+        size: 0.15,
+        speed: 0.3,
+        life: 40,
+        spread: 0.2,
+      })
+    }
+
     // Popping state
     if (this.isPopping) {
       this.popTimer += delta
@@ -442,16 +578,34 @@ export class BulkPopEngine extends BaseGameEngine {
       }
     }
 
+    // Food spawn scale-in animation (elastic overshoot)
+    if (this.foodSpawning && this.currentFood) {
+      this.foodSpawnScale += delta * 4 // ~250ms
+      if (this.foodSpawnScale >= 1) {
+        this.foodSpawnScale = 1
+        this.foodSpawning = false
+        this.currentFood.scale.set(1, 1, 1)
+      } else {
+        // Elastic ease-out: overshoot to 1.15 then settle
+        const t = this.foodSpawnScale
+        const s = t < 0.7
+          ? (t / 0.7) * 1.15
+          : 1.15 - (t - 0.7) / 0.3 * 0.15
+        this.currentFood.scale.set(s, s, s)
+      }
+    }
+
     // Eating animation
     if (this.isEating && this.currentFood) {
       this.eatProgress += delta * 3.3 // ~300ms
       if (this.eatProgress >= 1) {
         // Food arrived — feed Bulk
         const inflationAmount = (this.currentFood.userData.inflation as number) || 0.05
+        const foodColor = (this.currentFood.userData.glowColor as number) || 0xffffff
         this.disposeObject(this.currentFood)
         this.currentFood = null
         this.isEating = false
-        this.feedBulk(inflationAmount)
+        this.feedBulk(inflationAmount, foodColor)
         if (!this.isPopping) {
           this.foodSpawnTimer = 0.5
         }
@@ -464,8 +618,8 @@ export class BulkPopEngine extends BaseGameEngine {
       }
     }
 
-    // Food idle animation (bob + rotate)
-    if (this.currentFood && !this.isEating) {
+    // Food idle animation (bob + rotate + glow pulse)
+    if (this.currentFood && !this.isEating && !this.foodSpawning) {
       this.foodBobTimer += delta
       this.currentFood.position.y = 3 + Math.sin(this.foodBobTimer * 2.5) * 0.3
       this.currentFood.rotation.y += delta * 1.2
@@ -491,34 +645,46 @@ export class BulkPopEngine extends BaseGameEngine {
       this.breathTimer += delta
       const breathOffset = Math.sin(this.breathTimer * 1.5) * 0.02
 
+      // Belly pulse/throb at high inflation (rhythmic expansion)
+      let pulseOffset = 0
+      if (this.inflation > 0.5) {
+        this.pulseTimer += delta
+        const pulseSpeed = 3 + this.inflation * 5 // faster as inflation grows
+        pulseOffset = Math.sin(this.pulseTimer * pulseSpeed) * this.inflation * 0.06
+      }
+
       this.bulk.scale.set(
-        sx + wobbleOffset,
+        sx + wobbleOffset + pulseOffset,
         sy + breathOffset,
-        sz - wobbleOffset,
+        sz - wobbleOffset + pulseOffset,
       )
 
       // Color shift toward red with inflation
+      const redLerp = this.inflation * 0.6
       this.bulk.traverse((child) => {
         if (child instanceof THREE.Mesh && child.material instanceof THREE.MeshStandardMaterial) {
           const original = this.originalColors.get(child)
           if (original) {
-            child.material.color.copy(original).lerp(new THREE.Color(0xff2222), this.inflation * 0.6)
-            child.material.emissive.setHex(0x000000)
+            child.material.color.copy(original).lerp(new THREE.Color(0xff2222), redLerp)
             if (this.inflation > 0.5) {
-              child.material.emissive.set(
-                this.inflation * 0.3,
-                0,
-                0,
-              )
+              // Pulsing red emissive glow
+              const emissiveStrength = this.inflation * 0.3 + Math.sin(this.pulseTimer * 6) * 0.1
+              child.material.emissive.set(emissiveStrength, 0, 0)
+            } else {
+              child.material.emissive.setHex(0x000000)
             }
           }
         }
       })
 
+      // Purple underlight intensifies with inflation
+      this.purpleLight.intensity = 1.5 + this.inflation * 3
+
       // Sweat particles at high inflation
       if (this.inflation > 0.7) {
         this.sweatTimer += delta
-        if (this.sweatTimer > 0.3) {
+        const sweatRate = 0.3 - this.inflation * 0.15 // faster sweating as inflation rises
+        if (this.sweatTimer > sweatRate) {
           this.sweatTimer = 0
           const headPos = this.bulk.position.clone().add(new THREE.Vector3(
             (Math.random() - 0.5) * 0.8,
@@ -542,6 +708,7 @@ export class BulkPopEngine extends BaseGameEngine {
   start(): void {
     this.inflation = 0
     this.pops = 0
+    this.foodsEaten = 0
     this.isPopping = false
     this.isEating = false
     this.wobbleIntensity = 0
@@ -567,11 +734,32 @@ export class BulkPopEngine extends BaseGameEngine {
       this.currentFood = null
     }
 
+    if (this.shockwave) {
+      this.scene.remove(this.shockwave)
+      this.shockwave.geometry.dispose()
+      ;(this.shockwave.material as THREE.Material).dispose()
+      this.shockwave = null
+    }
+    this.popFlashTimer = 0
+    this.pulseTimer = 0
+    this.scene.background = new THREE.Color(0x1a0a2a)
+    this.purpleLight.intensity = 1.5
+
     this.particles.clear()
     this.callbacks.onStateChange?.('playing')
     this.callbacks.onScoreChange?.(0)
     this.audio.playBGM()
     this.spawnFood()
+  }
+
+  stop(): void {
+    this.audio.stopBGM()
+    if (this.currentFood) {
+      this.disposeObject(this.currentFood)
+      this.currentFood = null
+    }
+    this.isEating = false
+    this.callbacks.onStateChange?.('gameover')
   }
 
   restart(): void {
