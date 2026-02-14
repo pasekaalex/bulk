@@ -627,30 +627,30 @@ export class BulkPopEngine extends BaseGameEngine {
 
     // Bulk animations
     if (this.bulk && this.bulk.visible) {
-      // Apply inflation scale (fatter, not taller)
-      const sx = this.bulkBaseScale.x * (1 + this.inflation * 1.5)
-      const sy = this.bulkBaseScale.y * (1 + this.inflation * 0.3)
-      const sz = this.bulkBaseScale.z * (1 + this.inflation * 1.5)
+      // Inflation scale: gets wider/rounder, slightly squishes down
+      const sx = this.bulkBaseScale.x * (1 + this.inflation * 1.3)
+      const sy = this.bulkBaseScale.y * (1 - this.inflation * 0.12)
+      const sz = this.bulkBaseScale.z * (1 + this.inflation * 1.3)
 
-      // Wobble after feeding
+      // Wobble after feeding (X/Z only, no Y jitter)
       let wobbleOffset = 0
       if (this.wobbleIntensity > 0) {
         this.wobbleTimer += delta
-        wobbleOffset = Math.sin(this.wobbleTimer * 25) * this.wobbleIntensity
-        this.wobbleIntensity *= 0.95
+        wobbleOffset = Math.sin(this.wobbleTimer * 20) * this.wobbleIntensity
+        this.wobbleIntensity *= 0.92
         if (this.wobbleIntensity < 0.001) this.wobbleIntensity = 0
       }
 
-      // Breathing
+      // Breathing — very subtle
       this.breathTimer += delta
-      const breathOffset = Math.sin(this.breathTimer * 1.5) * 0.02
+      const breathOffset = Math.sin(this.breathTimer * 1.5) * 0.008
 
-      // Belly pulse/throb at high inflation (rhythmic expansion)
+      // Belly pulse/throb at high inflation (X/Z only)
       let pulseOffset = 0
       if (this.inflation > 0.5) {
         this.pulseTimer += delta
-        const pulseSpeed = 3 + this.inflation * 5 // faster as inflation grows
-        pulseOffset = Math.sin(this.pulseTimer * pulseSpeed) * this.inflation * 0.06
+        const pulseSpeed = 3 + this.inflation * 4
+        pulseOffset = Math.sin(this.pulseTimer * pulseSpeed) * this.inflation * 0.04
       }
 
       this.bulk.scale.set(

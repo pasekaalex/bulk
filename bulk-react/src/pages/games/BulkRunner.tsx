@@ -78,7 +78,7 @@ export default function BulkRunner() {
       {gameState === 'playing' && (
         <HUD items={[
           { label: 'Score', value: score },
-          { label: 'Orbs', value: `${orbs}/20` },
+          { label: 'Schmeg', value: `${orbs}/20` },
           { label: 'Distance', value: `${distance}m` },
         ]} />
       )}
