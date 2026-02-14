@@ -12,6 +12,7 @@ const FlappyBulk = lazy(() => import('./pages/games/FlappyBulk'))
 const BulkRunner = lazy(() => import('./pages/games/BulkRunner'))
 const Bulkagachi = lazy(() => import('./pages/games/Bulkagachi'))
 const BulkRampage = lazy(() => import('./pages/games/BulkRampage'))
+const BulkPop = lazy(() => import('./pages/games/BulkPop'))
 
 export default function App() {
   return (
@@ -28,6 +29,7 @@ export default function App() {
           <Route path="/games/runner" element={<BulkRunner />} />
           <Route path="/games/bulkagachi" element={<Bulkagachi />} />
           <Route path="/games/rampage" element={<BulkRampage />} />
+          <Route path="/games/pop" element={<BulkPop />} />
         </Routes>
       </Suspense>
     </BrowserRouter>

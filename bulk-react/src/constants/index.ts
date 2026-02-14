@@ -46,4 +46,5 @@ export const GAMES: GameInfo[] = [
   { name: 'FLAPPY BULK', path: '/games/flappy', description: 'Fly through the city' },
   { name: 'BULKAGACHI', path: '/games/bulkagachi', description: 'Care for your Bulk' },
   { name: 'BULK CLIMB', path: '/games/climb', description: 'Climb the skyscraper' },
+  { name: 'BULK POP', path: '/games/pop', description: 'Feed him till he pops!' },
 ]
